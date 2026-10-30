@@ -76,7 +76,9 @@ docker compose up -d
 docker compose ps
 ```
 
-O `ps` deve mostrar o serviço `app` como `healthy` em alguns segundos. Se ainda estiver `starting`, aguarde e rode de novo.
+O `make up` usa `docker compose up -d --wait`: ele espera o serviço ficar `healthy` antes de testar o `/healthz`. Se o healthcheck não ficar pronto em 90 segundos, o comando falha e não tenta acessar uma porta ainda fechada.
+
+Se você usa `docker compose up` diretamente, aguarde o status `healthy` em `docker compose ps` antes de testar a aplicação.
 
 ### 2.4 Verificar a saúde
 
@@ -488,6 +490,8 @@ Os testes usam bancos temporários em `tmp_path` e não tocam no banco de produ�
 | PWA não instala | URL | Use HTTPS via `tailscale serve` |
 | Offline só mostra “Sem conexão” | Comportamento | Dados exigem o servidor; o shell é offline |
 | Porta ocupada | `ss -ltnp \| grep 8090` | Mude `APP_PORT` ou `BIND_ADDR` |
+| `APP_PORT=5060` no `.env` | `grep APP_PORT .env` | Use `APP_PORT=8090`; 5060 é bloqueada pelo Firefox |
+| `make up` falhou no healthcheck | `docker compose ps` | O comando espera até 90s; veja `docker compose logs app` |
 | Registro retorna 403 | `ALLOW_REGISTRATION` | Abra temporariamente ou crie via CLI |
 | Tailscale sem HTTPS | Admin console | Habilite MagicDNS e HTTPS certificates |
 | Timer estranho após suspensão | iOS/background | O estado se reconcilia por timestamp; recarregue |

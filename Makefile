@@ -53,12 +53,12 @@ pull:
 
 up:
 	@test -f .env || (echo "Crie o .env: cp .env.example .env && make secret"; exit 1)
+	@if grep -Eq '^APP_PORT=(5060|5061)([[:space:]]|$$)' .env; then 		echo "APP_PORT=5060/5061 é bloqueada pelo Firefox (portas SIP)."; 		echo "Corrija: sed -i 's/^APP_PORT=.*/APP_PORT=8090/' .env"; 		exit 1; 	fi
 	$(COMPOSE) pull
-	$(COMPOSE) up -d
+	$(COMPOSE) up -d --wait --wait-timeout 90
 	$(COMPOSE) ps
-	@echo "Aguardando healthcheck..."
-	@sleep 3
-	@$(COMPOSE) exec -T app python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:5000/healthz').read().decode())" || true
+	@echo "Healthcheck OK."
+	@$(COMPOSE) exec -T app python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:5000/healthz').read().decode())"
 
 down:
 	$(COMPOSE) down
