@@ -12,6 +12,7 @@ Para a apresentação do app, o tour visual e o guia de uso, volte ao **[README]
 | --- | --- |
 | Stack | Python 3.11, Flask 3, SQLAlchemy, SQLite |
 | Servidor | Gunicorn `gthread`, 2 workers × 2 threads |
+| Imagem | `nickolback/prodsuite:latest` (Docker Hub) |
 | Porta no container | `5000` |
 | Porta publicada padrão | `8090` (livre da stack Grafana/Prometheus; não use `5060`) |
 | Volume | `prodsuite_data` → `/data` |
@@ -70,7 +71,8 @@ Nunca use o valor de exemplo em produção.
 ### 2.3 Subir o container
 
 ```bash
-docker compose up -d --build
+docker compose pull
+docker compose up -d
 docker compose ps
 ```
 
@@ -178,7 +180,8 @@ COOKIE_SECURE=false
 ```
 
 ```bash
-docker compose up -d --build
+docker compose pull
+docker compose up -d
 ```
 
 Abra no celular:
@@ -198,7 +201,8 @@ COOKIE_SECURE=true
 ```
 
 ```bash
-docker compose up -d --build
+docker compose pull
+docker compose up -d
 sudo tailscale serve --bg 8090
 sudo tailscale serve status
 ```
@@ -267,11 +271,21 @@ docker compose start
 
 ### Atualizar
 
+A imagem vem do Docker Hub e o Compose usa `pull_policy: always`.
+
 ```bash
-git pull
-docker compose up -d --build
+docker compose pull
+docker compose up -d
 docker compose ps
 ```
+
+Se a imagem for privada, faça login antes:
+
+```bash
+docker login
+```
+
+O `latest` só é aplicado quando o container é recriado. Para atualização automática em segundo plano, agende o comando acima no cron/Watchtower; o Compose sozinho não fica monitorando o Docker Hub.
 
 ### Limpar imagens antigas
 

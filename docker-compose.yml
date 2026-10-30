@@ -2,9 +2,9 @@ name: prodsuite
 
 services:
   app:
-    build:
-      context: .
-    image: prodsuite:1.0
+    image: nickolback/prodsuite:latest
+    # Sempre consulta o Docker Hub ao subir; não usa uma imagem local antiga.
+    pull_policy: always
     container_name: prodsuite
     restart: unless-stopped
     init: true

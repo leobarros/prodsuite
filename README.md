@@ -232,11 +232,12 @@ O `make secret` gera uma chave aleatória e atualiza o `.env`. O arquivo fica fo
 ### 3. Suba o app
 
 ```bash
-docker compose up -d --build
+docker compose pull
+docker compose up -d
 docker compose ps
 ```
 
-A aplicação fica em **http://localhost:8090**. O container publica a porta **8090** no host e guarda os dados no volume `prodsuite_data`.
+A aplicação fica em **http://localhost:8090**. A imagem usada é **`nickolback/prodsuite:latest`**, com `pull_policy: always`; o container publica a porta **8090** no host e guarda os dados no volume `prodsuite_data`.
 
 > Não use a porta `5060`: o Firefox a bloqueia por ser reservada a SIP. A `8090` foi escolhida por não conflitar com as portas usuais de Grafana, Prometheus, Loki e Alertmanager. Se estiver ocupada, defina outra porta segura em `APP_PORT`, como `8095` ou `18080`.
 

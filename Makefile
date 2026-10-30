@@ -4,7 +4,7 @@ PYTHON ?= python3
 VENV := .venv
 COMPOSE := docker compose
 
-.PHONY: help install test coverage run init-db icons secret up down logs ps backup backup-local
+.PHONY: help install test coverage run init-db icons secret pull up down logs ps backup backup-local
 
 help:
 	@echo "PRD//SUITE"
@@ -15,7 +15,8 @@ help:
 	@echo "  make init-db   cria as tabelas SQLite locais"
 	@echo "  make icons     regenera os ícones PWA (requer Pillow)"
 	@echo "  make secret    gera um SECRET_KEY e atualiza .env"
-	@echo "  make up        build + sobe o Compose"
+	@echo "  make pull      baixa a imagem latest do Docker Hub"
+	@echo "  make up        pull + sobe o Compose"
 	@echo "  make down      para o Compose"
 	@echo "  make logs      acompanha logs"
 	@echo "  make ps        status + healthcheck"
@@ -47,9 +48,13 @@ secret:
 	@chmod 600 .env
 	@$(PYTHON) -c "import pathlib,re,secrets; p=pathlib.Path('.env'); p.write_text(re.sub(r'^SECRET_KEY=.*$$', 'SECRET_KEY='+secrets.token_hex(32), p.read_text(), flags=re.M)); print('SECRET_KEY atualizado em .env')"
 
+pull:
+	$(COMPOSE) pull
+
 up:
 	@test -f .env || (echo "Crie o .env: cp .env.example .env && make secret"; exit 1)
-	$(COMPOSE) up -d --build
+	$(COMPOSE) pull
+	$(COMPOSE) up -d
 	$(COMPOSE) ps
 	@echo "Aguardando healthcheck..."
 	@sleep 3
