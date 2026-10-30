@@ -236,11 +236,13 @@ docker compose up -d --build
 docker compose ps
 ```
 
-A aplicação fica em **http://localhost:5060**. O container publica a porta **5060** no host e guarda os dados no volume `prodsuite_data`.
+A aplicação fica em **http://localhost:8090**. O container publica a porta **8090** no host e guarda os dados no volume `prodsuite_data`.
+
+> Não use a porta `5060`: o Firefox a bloqueia por ser reservada a SIP. A `8090` foi escolhida por não conflitar com as portas usuais de Grafana, Prometheus, Loki e Alertmanager. Se estiver ocupada, defina outra porta segura em `APP_PORT`, como `8095` ou `18080`.
 
 ### 4. Crie sua conta
 
-Abra **http://localhost:5060**, crie a conta e faça o tour.
+Abra **http://localhost:8090**, crie a conta e faça o tour.
 
 Se preferir criar a primeira conta pelo terminal:
 
@@ -265,7 +267,7 @@ docker compose up -d --force-recreate
 ### Verificação rápida
 
 ```bash
-curl http://127.0.0.1:5060/healthz
+curl http://127.0.0.1:8090/healthz
 # {"status":"ok"}
 ```
 

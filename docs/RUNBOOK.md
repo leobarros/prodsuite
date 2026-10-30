@@ -13,7 +13,7 @@ Para a apresentação do app, o tour visual e o guia de uso, volte ao **[README]
 | Stack | Python 3.11, Flask 3, SQLAlchemy, SQLite |
 | Servidor | Gunicorn `gthread`, 2 workers × 2 threads |
 | Porta no container | `5000` |
-| Porta publicada padrão | `5060` |
+| Porta publicada padrão | `8090` (livre da stack Grafana/Prometheus; não use `5060`) |
 | Volume | `prodsuite_data` → `/data` |
 | Banco | `/data/prodsuite.db` |
 | Limite de memória | 512 MB |
@@ -79,7 +79,7 @@ O `ps` deve mostrar o serviço `app` como `healthy` em alguns segundos. Se ainda
 ### 2.4 Verificar a saúde
 
 ```bash
-curl http://127.0.0.1:5060/healthz
+curl http://127.0.0.1:8090/healthz
 # {"status":"ok"}
 ```
 
@@ -95,7 +95,7 @@ O log deve mostrar `Banco inicializado`, o Gunicorn escutando em `0.0.0.0:5000` 
 
 ## 3. Primeiro acesso
 
-1. Abra `http://localhost:5060`.
+1. Abra `http://localhost:8090`.
 2. Crie a conta em **Criar conta**.
 3. Faça o tour de boas-vindas.
 4. Confirme que o dashboard mostra seu nome de perfil.
@@ -134,7 +134,7 @@ O comando pede nome de acesso, nome de perfil, e-mail e senha.
 | --- | --- | --- |
 | `SECRET_KEY` | — | Assinatura de sessão e CSRF. Obrigatória; use 32+ bytes. |
 | `BIND_ADDR` | `0.0.0.0` | Interface do host onde a porta é publicada. |
-| `APP_PORT` | `5060` | Porta publicada no host. |
+| `APP_PORT` | `8090` | Porta publicada no host. |
 | `APP_TIMEZONE` | `America/Sao_Paulo` | Fuso de “hoje”, prazos e métricas. |
 | `COOKIE_SECURE` | `false` | Use `true` atrás de HTTPS. |
 | `SESSION_LIFETIME_MINUTES` | `30` | Inatividade até a sessão expirar. |
@@ -173,7 +173,7 @@ Bom para testar rápido. Não terá service worker/offline, porque HTTP não é 
 
 ```env
 BIND_ADDR=100.101.102.103
-APP_PORT=5060
+APP_PORT=8090
 COOKIE_SECURE=false
 ```
 
@@ -184,7 +184,7 @@ docker compose up -d --build
 Abra no celular:
 
 ```text
-http://100.101.102.103:5060
+http://100.101.102.103:8090
 ```
 
 ### 5.3 Modo B — HTTPS com `tailscale serve` (recomendado)
@@ -193,20 +193,20 @@ Mantenha o container fechado em localhost e deixe o Tailscale terminar o TLS.
 
 ```env
 BIND_ADDR=127.0.0.1
-APP_PORT=5060
+APP_PORT=8090
 COOKIE_SECURE=true
 ```
 
 ```bash
 docker compose up -d --build
-sudo tailscale serve --bg 5060
+sudo tailscale serve --bg 8090
 sudo tailscale serve status
 ```
 
 O status deve mostrar algo como:
 
 ```text
-https://seu-host.sua-tailnet.ts.net -> http://127.0.0.1:5060
+https://seu-host.sua-tailnet.ts.net -> http://127.0.0.1:8090
 ```
 
 Abra a URL HTTPS no celular. Para desfazer:
@@ -241,7 +241,7 @@ O shell fica em cache; os dados continuam no servidor.
 
 ```bash
 docker compose ps
-curl http://127.0.0.1:5060/healthz
+curl http://127.0.0.1:8090/healthz
 ```
 
 ### Logs
@@ -473,7 +473,7 @@ Os testes usam bancos temporários em `tmp_path` e não tocam no banco de produ�
 | Login não persiste em HTTP | `COOKIE_SECURE` | Coloque `false` no modo HTTP direto |
 | PWA não instala | URL | Use HTTPS via `tailscale serve` |
 | Offline só mostra “Sem conexão” | Comportamento | Dados exigem o servidor; o shell é offline |
-| Porta ocupada | `ss -ltnp \| grep 5060` | Mude `APP_PORT` ou `BIND_ADDR` |
+| Porta ocupada | `ss -ltnp \| grep 8090` | Mude `APP_PORT` ou `BIND_ADDR` |
 | Registro retorna 403 | `ALLOW_REGISTRATION` | Abra temporariamente ou crie via CLI |
 | Tailscale sem HTTPS | Admin console | Habilite MagicDNS e HTTPS certificates |
 | Timer estranho após suspensão | iOS/background | O estado se reconcilia por timestamp; recarregue |

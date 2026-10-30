@@ -9,10 +9,10 @@ services:
     restart: unless-stopped
     init: true
     ports:
-      # Host 5060 -> container 5000 (Gunicorn).
+      # Host 8090 -> container 5000 (Gunicorn).
       # BIND_ADDR permite expor apenas no IP Tailscale (100.x.y.z) ou só em
       # 127.0.0.1 quando o TLS é terminado por `tailscale serve`.
-      - "${BIND_ADDR:-0.0.0.0}:${APP_PORT:-5060}:5000"
+      - "${BIND_ADDR:-0.0.0.0}:${APP_PORT:-8090}:5000"
     environment:
       SECRET_KEY: ${SECRET_KEY:?Defina SECRET_KEY no .env (veja .env.example)}
       DATABASE_URL: sqlite:////data/prodsuite.db
