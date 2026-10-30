@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Meu dia{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow"><i class="bi bi-calendar-day"></i> {{ today_local.strftime('%d/%m/%Y') }} <span class="sep">·</span> {{ current_user.display_name }}</p>
+    <h1 class="page-title">Meu dia</h1>
+    <p class="page-sub">Tudo o que importa para hoje, sem excesso de informação.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('planner.plan') }}">
+      <i class="bi bi-calendar2-check"></i> Planejar meu dia
+    </a>
+    <a class="btn btn-neon btn-sm" href="{{ url_for('tasks.index', nova=1) }}">
+      <i class="bi bi-plus-lg"></i> Nova tarefa
+    </a>
+  </div>
+</div>
+
+<div class="bento-grid">
+  <!-- HERO -->
+  <section class="bento-card bento-hero">
+    <div class="hero-grid">
+      <div>
+        <p class="eyebrow"><span class="emoji-icon tomato-glyph" aria-hidden="true"></span> {{ stats.streak }} dia{{ 's' if stats.streak != 1 }} seguido{{ 's' if stats.streak != 1 }} de foco</p>
+        <h2 class="hero-greeting">{{ greeting }},<br><span class="accent">{{ current_user.display_name }}</span>. <span class="hero-wave" aria-hidden="true">👋</span></h2>
+        <p class="hero-copy">
+          {% if counts.overdue %}
+            <span class="text-danger-soft">Você tem {{ counts.overdue }} tarefa{{ 's' if counts.overdue != 1 }} atrasada{{ 's' if counts.overdue != 1 }}.</span> Sem culpa: escolha uma e recomece.
+          {% elif counts.open %}
+            Você tem {{ counts.open }} tarefa{{ 's' if counts.open != 1 }} aberta{{ 's' if counts.open != 1 }}. Que tal começar pela mais importante?
+          {% else %}
+            Nenhuma tarefa aberta. Aproveite para planejar o dia ou descansar um pouco.
+          {% endif %}
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-neon btn-sm" href="{{ url_for('pomodoro.focus') }}">
+            <span class="emoji-icon tomato-glyph" aria-hidden="true"></span> Começar foco
+          </a>
+          <button class="btn btn-ghost btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#captureModal">
+            <i class="bi bi-lightbulb"></i> Anotar ideia
+          </button>
+        </div>
+        <div class="hero-metrics">
+          <div class="hero-metric">
+            <strong>{{ stats.today.label }}</strong>
+            <span>foco hoje</span>
+          </div>
+          <div class="hero-metric">
+            <strong>{{ stats.today.cycles }}</strong>
+            <span>sessões hoje</span>
+          </div>
+          <div class="hero-metric">
+            <strong>{{ counts.completed_today }}</strong>
+            <span>tarefas concluídas</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-orbit" aria-hidden="true">
+        <span class="hero-orbit-emoji tomato-glyph" aria-hidden="true"></span>
+        <span class="hero-orbit-value">{{ '%02d'|format(stats.week.cycles) }}</span>
+        <span class="hero-orbit-label">sessões<br>na semana</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRÓXIMO FOCO -->
+  <section class="bento-card bento-focus" data-dashboard-focus>
+    <div class="card-head">
+      <h2 class="card-title"><span class="emoji-icon tomato-glyph" aria-hidden="true"></span> <span data-focus-heading>Próxima tarefa</span></h2>
+      <a class="card-link" href="{{ url_for('tasks.index') }}">ver tarefas <i class="bi bi-arrow-up-right"></i></a>
+    </div>
+    {% if focus_task %}
+    <div class="focus-card-body">
+      <div>
+        <span class="focus-task-label" data-focus-label>uma boa escolha para começar</span>
+        <h3 class="focus-task-title mt-1">
+          <a href="{{ url_for('tasks.edit', task_id=focus_task.id) }}" data-focus-title-link><span data-focus-title>{{ focus_task.title }}</span></a>
+        </h3>
+        <div class="focus-task-meta" data-focus-meta>
+          <span class="chip">
+            <i class="bi bi-bookmark"></i> {{ focus_task.status_label }}
+          </span>
+          <span class="chip"><span class="emoji-icon tomato-glyph" aria-hidden="true"></span> {{ focus_task.completed_pomodoros }}/{{ focus_task.estimate_pomodoros }} sessões</span>
+          {% if focus_task.due_date %}
+          <span class="chip {{ 'is-urgent' if focus_task.is_overdue }}"><i class="bi bi-calendar3"></i> {{ focus_task.due_date|datebr }}</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="mini-timer">
+        <span class="mini-timer-digits" data-timer-display>25:00</span>
+        <span class="text-dim" style="font-size:.7rem;">foco</span>
+      </div>
+      <div class="focus-progress" aria-hidden="true" data-focus-progress>
+        <span style="width: {{ focus_task.progress_percent }}%"></span>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-neon btn-sm flex-grow-1" type="button"
+                data-quick-focus data-task-id="{{ focus_task.id }}" data-focus-start>
+          <span class="emoji-icon tomato-glyph" aria-hidden="true"></span> <span data-focus-action-label>Começar foco</span>
+        </button>
+        <a class="btn btn-neon btn-sm flex-grow-1 d-none" data-focus-resume
+           href="{{ url_for('pomodoro.focus', tarefa=focus_task.id) }}">
+          <span class="emoji-icon tomato-glyph" aria-hidden="true"></span> Abrir Pomodoro
+        </a>
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('pomodoro.focus', tarefa=focus_task.id) }}" aria-label="Abrir cronômetro completo" data-focus-expand>
+          <i class="bi bi-arrows-angle-expand"></i>
+        </a>
+      </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <span class="emoji-icon tomato-glyph" aria-hidden="true"></span>
+      <span>Nenhuma tarefa ativa. Crie uma para começar seu próximo foco.</span>
+      <a class="btn btn-ghost btn-xs" href="{{ url_for('tasks.index', nova=1) }}">Criar tarefa</a>
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- PRIORIDADES (MIT) -->
+  <section class="bento-card bento-stats dashboard-priorities">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-star-fill text-amber" aria-hidden="true"></i> Prioridades do dia</h2>
+      <a class="card-link" href="{{ url_for('planner.plan') }}">planejar <i class="bi bi-arrow-up-right"></i></a>
+    </div>
+    {% if mit_tasks %}
+    <div class="dashboard-mit-list">
+      {% for task in mit_tasks %}
+      <a class="dashboard-mit-item" href="{{ url_for('tasks.edit', task_id=task.id) }}">
+        <span class="mit-number">{{ loop.index }}</span>
+        <span class="mit-main">
+          <span class="mit-title">{{ task.title }}</span>
+          <span class="mit-meta"><i class="bi {{ task.category_icon }}"></i> {{ task.category_label }} <span class="sep">·</span> {{ task.estimate_label }}</span>
+        </span>
+      </a>
+      {% endfor %}
+    </div>
+    <div class="stat-foot">
+      <span>{{ counts.mit }}/3 prioridades</span>
+      <strong>{{ counts.planned_today }} no plano de hoje</strong>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-star text-amber" aria-hidden="true"></i>
+      <span>Nenhuma prioridade escolhida. Comece pelo mais importante do dia.</span>
+      <a class="btn btn-ghost btn-xs" href="{{ url_for('planner.plan') }}">Escolher prioridades</a>
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- CAPTURA -->
+  <section class="bento-card bento-capture">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-lightbulb"></i> Anotação rápida</h2>
+      <a class="card-link" href="{{ url_for('scratchpad.index') }}">ver rascunhos <i class="bi bi-arrow-up-right"></i></a>
+    </div>
+    <form class="quick-capture" method="post" action="{{ url_for('scratchpad.index') }}" data-ajax-capture>
+      {{ csrf() }}
+      <label class="visually-hidden" for="dashboardCapture">Captura rápida</label>
+      <textarea class="form-control" id="dashboardCapture" name="content" rows="3" maxlength="5000"
+                placeholder="Ideia, tarefa, link…" required></textarea>
+      <div class="quick-capture-actions">
+        <span class="char-count" data-char-count>0/5000</span>
+        <button class="btn btn-cyan btn-sm" type="submit">
+          <i class="bi bi-plus-lg"></i> Salvar
+        </button>
+      </div>
+    </form>
+    {% if recent_scratch %}
+    <div class="recent-scratch" data-scratch-preview>
+      {% for item in recent_scratch %}
+      <div class="recent-scratch-item">
+        <i class="bi bi-{{ 'check2' if item.is_converted else 'dash' }}"></i>
+        <span>{{ item.preview }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- NOTAS -->
+  <section class="bento-card bento-notes">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-journal-bookmark"></i> Notas recentes</h2>
+      <a class="card-link" href="{{ url_for('notes.index') }}">todas <i class="bi bi-arrow-up-right"></i></a>
+    </div>
+    {% if recent_notes %}
+    <div class="list-stack">
+      {% for note in recent_notes %}
+      <a class="list-row" href="{{ url_for('notes.view', note_id=note.id) }}">
+        <span class="list-main">
+          <span class="list-title">{{ note.title }}</span>
+          <span class="list-meta">{{ note.updated_at|localtime('%d/%m %H:%M') }}</span>
+        </span>
+        <i class="bi bi-arrow-right list-arrow"></i>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-journal-plus"></i>
+      <span>Nenhuma nota ainda. Que tal registrar uma ideia de estudo ou trabalho?</span>
+      <a class="btn btn-ghost btn-xs" href="{{ url_for('notes.create') }}">Criar nota</a>
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- CHART -->
+  <section class="bento-card bento-chart">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-graph-up"></i> Foco na semana</h2>
+      <span class="card-link">{{ stats.week.label }} · {{ stats.week.cycles }} sessões</span>
+    </div>
+    <div class="chart" role="img" aria-label="Minutos de foco por dia nos últimos sete dias">
+      {% for day in stats.daily %}
+      {% set h = (day.minutes / stats.max_minutes * 100)|round|int %}
+      <div class="chart-col {{ 'is-today' if day.date == today_local.isoformat() }}">
+        <span class="chart-value">{{ day.minutes }}</span>
+        <div class="chart-bar-wrap">
+          <span class="chart-bar" style="height: {{ [h, 3]|max }}%" title="{{ day.label }}: {{ day.minutes }} min"></span>
+        </div>
+        <span class="chart-label">{{ day.label }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="stat-foot mt-3">
+      <a class="card-link" href="{{ url_for('review.weekly') }}">revisão da semana <i class="bi bi-arrow-up-right"></i></a>
+      <strong class="text-emerald">{{ week_metrics.sessions }}/{{ week_metrics.goal }} sessões</strong>
+    </div>
+  </section>
+
+  <!-- UPCOMING -->
+  <section class="bento-card bento-upcoming">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-calendar-event"></i> Próximos prazos</h2>
+      <a class="card-link" href="{{ url_for('tasks.index') }}">ver tudo <i class="bi bi-arrow-up-right"></i></a>
+    </div>
+    {% if upcoming %}
+    <div class="list-stack">
+      {% for task in upcoming %}
+      <div class="due-row">
+        <span class="due-dot {{ 'is-overdue' if task.is_overdue }}"></span>
+        <span class="due-main">
+          <a class="due-title" href="{{ url_for('tasks.edit', task_id=task.id) }}">{{ task.title }}</a>
+          <span class="due-date {{ 'is-overdue' if task.is_overdue }}">{{ task.due_date|datebr }}{% if task.is_overdue %} · atrasada{% endif %}</span>
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-calendar-check"></i>
+      <span>Nada vencendo nos próximos 7 dias. Aproveite o espaço livre.</span>
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

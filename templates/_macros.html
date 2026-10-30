@@ -1,0 +1,23 @@
+{%- macro field_errors(field) -%}
+  {%- if field.errors -%}
+    <div class="invalid-feedback d-block">
+      {%- for error in field.errors -%}
+        <div>{{ error }}</div>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+{%- endmacro -%}
+
+{%- macro csrf() -%}
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{%- endmacro -%}
+
+{%- macro password_field(field, autocomplete="current-password") -%}
+  <div class="password-wrap">
+    {{ field(class="form-control" + (" is-invalid" if field.errors else ""), autocomplete=autocomplete) }}
+    <button type="button" class="password-toggle" data-toggle-password aria-label="Mostrar ou ocultar senha" tabindex="-1">
+      <i class="bi bi-eye"></i>
+    </button>
+  </div>
+  {{ field_errors(field) }}
+{%- endmacro -%}

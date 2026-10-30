@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}{{ note.title }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow"><a href="{{ url_for('notes.index') }}">notas</a> <span class="sep">/</span> #{{ note.id }}</p>
+    <h1 class="page-title">Nota</h1>
+    <p class="page-sub">Atualizada em {{ note.updated_at|localtime }}</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('notes.index') }}"><i class="bi bi-arrow-left"></i> Notas</a>
+    <a class="btn btn-neon btn-sm" href="{{ url_for('notes.edit', note_id=note.id) }}"><i class="bi bi-pencil"></i> Editar</a>
+  </div>
+</div>
+
+<article class="bento-card">
+  <header class="note-header">
+    <h1>{{ note.title }}</h1>
+    <div class="note-meta">
+      <span><i class="bi bi-clock"></i> criada {{ note.created_at|localtime('%d/%m/%Y') }}</span>
+      <span><i class="bi bi-pencil"></i> {{ note.updated_at|localtime('%d/%m/%Y %H:%M') }}</span>
+      {% for tag in note.tag_list %}<span class="tag">#{{ tag }}</span>{% endfor %}
+    </div>
+  </header>
+  <div class="prose">
+    {{ rendered }}
+  </div>
+
+  {% if backlinks %}
+  <div class="backlinks">
+    <p class="section-label">notas que apontam para esta</p>
+    <div class="list-stack">
+      {% for backlink in backlinks %}
+      <a class="list-row" href="{{ url_for('notes.view', note_id=backlink.id) }}">
+        <i class="bi bi-arrow-90deg-up text-dim"></i>
+        <span class="list-main"><span class="list-title">{{ backlink.title }}</span></span>
+        <i class="bi bi-arrow-right list-arrow"></i>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</article>
+
+<div class="d-flex justify-content-end mt-3">
+  <form method="post" action="{{ url_for('notes.delete', note_id=note.id) }}"
+        data-confirm="Excluir a nota «{{ note.title }}»?">
+    {{ csrf() }}
+    <button class="btn btn-danger-ghost btn-sm" type="submit"><i class="bi bi-trash3"></i> Excluir nota</button>
+  </form>
+</div>
+{% endblock %}

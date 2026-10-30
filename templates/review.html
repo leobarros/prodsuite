@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field_errors %}
+{% block title %}Revisão da semana{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow"><i class="bi bi-journal-check"></i> revisão semanal <span class="sep">·</span> {{ metrics.week_start.strftime('%d/%m') }} a {{ metrics.week_end.strftime('%d/%m') }}</p>
+    <h1 class="page-title">Sua semana</h1>
+    <p class="page-sub">Olhe para trás com gentileza e escolha o foco da próxima semana.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('planner.plan') }}"><i class="bi bi-calendar2-check"></i> Planejar</a>
+    <a class="btn btn-neon btn-sm" href="{{ url_for('tasks.index', nova=1) }}"><i class="bi bi-plus-lg"></i> Nova tarefa</a>
+  </div>
+</div>
+
+<div class="bento-grid">
+  <section class="bento-card review-stats">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-bar-chart"></i> Como foi a semana</h2>
+      <span class="card-link">{{ metrics.sessions }}/{{ metrics.goal }} sessões</span>
+    </div>
+    <div class="review-metrics">
+      <div class="review-metric">
+        <span class="review-emoji tomato-glyph" aria-hidden="true"></span>
+        <strong>{{ metrics.sessions }}</strong>
+        <span>sessões de foco</span>
+      </div>
+      <div class="review-metric">
+        <span class="review-emoji" aria-hidden="true">⏱️</span>
+        <strong>{{ metrics.minutes }}</strong>
+        <span>minutos de foco</span>
+      </div>
+      <div class="review-metric">
+        <span class="review-emoji" aria-hidden="true">✅</span>
+        <strong>{{ metrics.completed_tasks }}</strong>
+        <span>tarefas concluídas</span>
+      </div>
+      <div class="review-metric">
+        <i class="review-emoji bi bi-star-fill text-amber" aria-hidden="true"></i>
+        <strong>{{ metrics.mit_done }}/{{ metrics.mit_total }}</strong>
+        <span>prioridades</span>
+      </div>
+    </div>
+    <div class="goal-bar mt-3" role="img" aria-label="{{ metrics.goal_percent }}% da meta">
+      <span style="width: {{ metrics.goal_percent }}%"></span>
+    </div>
+    <div class="goal-labels">
+      <span>meta: {{ metrics.goal }} sessões</span>
+      <span>{{ metrics.goal_percent }}%</span>
+    </div>
+  </section>
+
+  <section class="bento-card review-categories">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-pie-chart"></i> Onde foi seu foco</h2>
+      <span class="card-link">por categoria</span>
+    </div>
+    <div class="category-bars">
+      {% for category in metrics.categories %}
+      <div class="category-row">
+        <span class="category-name">
+          <i class="bi {{ category.icon }}"></i>
+          {{ category.label }}
+        </span>
+        <div class="category-bar"><span style="width: {{ (category.minutes / metrics.category_max_minutes * 100)|round|int }}%"></span></div>
+        <span class="category-value">{{ category.minutes }} min</span>
+      </div>
+      {% endfor %}
+    </div>
+    <p class="form-hint mt-3 mb-0">Use isso como bússola: mais tempo no que faz diferença, menos no que só ocupa a agenda.</p>
+  </section>
+
+  <section class="bento-card review-form-card">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-pencil-square"></i> Suas anotações</h2>
+      <div class="d-flex align-items-center gap-2">
+        {% if review and not editing %}
+        <a class="btn btn-ghost btn-xs" href="{{ url_for('review.weekly', editar=1) }}">
+          <i class="bi bi-pencil"></i> Editar
+        </a>
+        {% endif %}
+        <span class="card-link">{{ 'editando' if editing else 'salva' if review else 'ainda não escrita' }}</span>
+      </div>
+    </div>
+
+    {% if editing %}
+    <form method="post" action="{{ url_for('review.weekly', editar=1) }}">
+      {{ form.hidden_tag() }}
+      <div class="mb-3">
+        {{ form.wins.label(class="form-label") }}
+        {{ form.wins(class="form-control" + (" is-invalid" if form.wins.errors else "")) }}
+        {{ field_errors(form.wins) }}
+      </div>
+      <div class="mb-3">
+        {{ form.challenges.label(class="form-label") }}
+        {{ form.challenges(class="form-control" + (" is-invalid" if form.challenges.errors else "")) }}
+        {{ field_errors(form.challenges) }}
+      </div>
+      <div class="mb-3">
+        {{ form.next_steps.label(class="form-label") }}
+        {{ form.next_steps(class="form-control" + (" is-invalid" if form.next_steps.errors else "")) }}
+        {{ field_errors(form.next_steps) }}
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-neon btn-sm" type="submit"><i class="bi bi-check-lg"></i> Salvar revisão</button>
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('review.weekly') }}">Cancelar</a>
+      </div>
+    </form>
+    {% elif review %}
+    <div class="review-notes">
+      {% for label, value in review_notes %}
+      <div class="review-note">
+        <span class="review-note-label">{{ label }}</span>
+        {% if value %}
+        <p>{{ value }}</p>
+        {% else %}
+        <p class="review-note-empty">Não registrado.</p>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state review-empty">
+      <i class="bi bi-journal-text"></i>
+      <span>Você ainda não escreveu a revisão desta semana.</span>
+      <a class="btn btn-neon btn-xs" href="{{ url_for('review.weekly', editar=1) }}">
+        <i class="bi bi-pencil"></i> Escrever revisão
+      </a>
+    </div>
+    {% endif %}
+  </section>
+
+  <section class="bento-card review-completed">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-check2-circle"></i> O que ficou pronto</h2>
+      <span class="card-link">{{ metrics.completed_tasks }}</span>
+    </div>
+    {% if metrics.completed_list %}
+    <div class="list-stack">
+      {% for task in metrics.completed_list[:8] %}
+      <div class="list-row">
+        <i class="bi {{ task.category_icon }} text-emerald"></i>
+        <span class="list-main">
+          <span class="list-title">{{ task.title }}</span>
+          <span class="list-meta">{{ task.category_label }} · {{ task.completed_at|localtime('%d/%m %H:%M') }}</span>
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-seedling"></i>
+      <span>Ainda não há tarefas concluídas nesta semana. Pequenos passos também contam.</span>
+    </div>
+    {% endif %}
+    <div class="divider"></div>
+    <p class="page-sub mb-0">“Produtividade não é fazer mais. É fazer o que importa e ainda sobrar energia para você.”</p>
+  </section>
+</div>
+{% endblock %}

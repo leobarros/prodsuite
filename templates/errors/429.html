@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Muitas tentativas{% endblock %}
+{% block content %}
+<div class="error-page">
+  <div>
+    <p class="error-code">429</p>
+    <h1>Muitas tentativas</h1>
+    <p>Você fez muitas tentativas seguidas. Aguarde alguns minutos e tente de novo.</p>
+    <a class="btn btn-neon btn-sm" href="{{ url_for('auth.login') }}"><i class="bi bi-arrow-left"></i> Voltar ao login</a>
+  </div>
+</div>
+{% endblock %}

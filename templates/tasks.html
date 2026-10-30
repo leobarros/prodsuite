@@ -1,0 +1,494 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, field_errors %}
+{% block title %}Tarefas{% endblock %}
+{% block body_attrs %}{% if open_modal %}data-auto-open="#taskModal"{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow"><i class="bi bi-briefcase"></i> {% if project %}{{ project.name }} <span class="sep">·</span> {% endif %}{{ counts.open }} aberta{{ 's' if counts.open != 1 }} <span class="sep">·</span> {{ counts.done }} concluída{{ 's' if counts.done != 1 }}</p>
+    <h1 class="page-title">Tarefas</h1>
+    <p class="page-sub">Crie projetos e colunas do seu jeito. Arraste no computador ou mova pelo seletor no celular.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    {% if project %}
+    <button class="btn btn-ghost btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#columnsModal">
+      <i class="bi bi-columns-gap"></i> Colunas
+    </button>
+    <button class="btn btn-ghost btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#categoriesModal">
+      <i class="bi bi-tags"></i> Categorias
+    </button>
+    {% if board_columns %}
+    <button class="btn btn-neon btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#taskModal">
+      <i class="bi bi-plus-lg"></i> Nova tarefa
+    </button>
+    {% else %}
+    <button class="btn btn-neon btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#columnsModal">
+      <i class="bi bi-plus-lg"></i> Nova coluna
+    </button>
+    {% endif %}
+    {% else %}
+    <button class="btn btn-neon btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#newProjectModal">
+      <i class="bi bi-plus-lg"></i> Novo projeto
+    </button>
+    {% endif %}
+  </div>
+</div>
+
+<div class="project-bar" aria-label="Seus projetos">
+  <div class="project-tabs">
+    {% for item in projects %}
+    <a class="project-chip {{ 'is-active' if item.id == project.id }}" href="{{ url_for('tasks.index', projeto=item.id) }}">
+      <i class="bi bi-kanban"></i> {{ item.name }}
+    </a>
+    {% endfor %}
+  </div>
+  <div class="project-actions">
+    {% if project %}
+    <button class="btn btn-ghost btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#manageProjectModal" title="Editar projeto" aria-label="Editar projeto">
+      <i class="bi bi-three-dots"></i>
+    </button>
+    {% endif %}
+    <button class="btn btn-ghost btn-sm project-new" type="button" data-bs-toggle="modal" data-bs-target="#newProjectModal">
+      <i class="bi bi-plus-lg"></i> Novo projeto
+    </button>
+  </div>
+</div>
+
+{% if project %}
+<div class="filter-bar" aria-label="Filtros de tarefas">
+  <a class="filter-chip {{ 'is-active' if not active_filter }}" href="{{ url_for('tasks.index') }}" title="Todas as tarefas do projeto">
+    Todas <span class="filter-count">{{ filter_counts.todas }}</span>
+  </a>
+  <a class="filter-chip {{ 'is-active' if filters.filtro == 'hoje' }}" href="{{ url_for('tasks.index', filtro='hoje') }}" title="Tarefas com prazo final para hoje">
+    <i class="bi bi-sun"></i> Hoje <span class="filter-count">{{ filter_counts.hoje }}</span>
+  </a>
+  <a class="filter-chip {{ 'is-active' if filters.filtro == 'mit' }}" href="{{ url_for('tasks.index', filtro='mit') }}" title="Tarefas marcadas com a estrela de prioridade do dia">
+    <i class="bi bi-star"></i> Prioridades do dia <span class="filter-count">{{ filter_counts.mit }}</span>
+  </a>
+  <a class="filter-chip {{ 'is-active' if filters.filtro == 'rapidas' }}" href="{{ url_for('tasks.index', filtro='rapidas') }}" title="Tarefas com estimativa de até uma sessão de foco">
+    <i class="bi bi-lightning-charge"></i> Rápidas <span class="filter-count">{{ filter_counts.rapidas }}</span>
+  </a>
+  <form class="filter-selects" method="get" action="{{ url_for('tasks.index') }}">
+    {% if filters.filtro %}<input type="hidden" name="filtro" value="{{ filters.filtro }}">{% endif %}
+    <label class="visually-hidden" for="filterCategory">Categoria</label>
+    <select class="form-select form-select-sm" id="filterCategory" name="categoria">
+      <option value="">Todas as categorias</option>
+      {% for category in categories %}
+      <option value="{{ category.key }}" {{ 'selected' if filters.categoria == category.key }}>{{ category.name }}</option>
+      {% endfor %}
+    </select>
+    <label class="visually-hidden" for="filterQuadrant">Quadrante</label>
+    <select class="form-select form-select-sm" id="filterQuadrant" name="quadrante">
+      <option value="">Todos os quadrantes</option>
+      {% for key, label in [('do', 'Fazer agora'), ('schedule', 'Agendar'), ('delegate', 'Delegar'), ('eliminate', 'Deixar de lado')] %}
+      <option value="{{ key }}" {{ 'selected' if filters.quadrante == key }}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn btn-ghost btn-sm" type="submit" aria-label="Aplicar filtros"><i class="bi bi-funnel"></i></button>
+  </form>
+  {% if active_filter %}
+  <a class="filter-clear" href="{{ url_for('tasks.index') }}">limpar <i class="bi bi-x-lg"></i></a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if active_filter and not tasks_all %}
+<div class="filter-empty">
+  <i class="bi bi-funnel"></i>
+  <div>
+    <strong>Nenhuma tarefa neste filtro.</strong>
+    {% if filters.filtro == 'hoje' %}
+    <span>Defina o prazo final para hoje para que a tarefa apareça aqui.</span>
+    {% elif filters.filtro == 'mit' %}
+    <span>Use a estrela no card para marcar uma prioridade do dia.</span>
+    {% elif filters.filtro == 'rapidas' %}
+    <span>Nenhuma tarefa com estimativa de até uma sessão de foco.</span>
+    {% else %}
+    <span>Tente outra categoria ou quadrante.</span>
+    {% endif %}
+  </div>
+  <a class="btn btn-ghost btn-sm" href="{{ url_for('tasks.index') }}">Ver todas</a>
+</div>
+{% endif %}
+
+{% if not project %}
+<div class="empty-board empty-project">
+  <span class="empty-board-icon"><i class="bi bi-kanban"></i></span>
+  <h2>Crie seu primeiro projeto</h2>
+  <p>Crie um projeto para começar. Ele nasce em branco; depois você adiciona as colunas que quiser.</p>
+  <button class="btn btn-neon btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#newProjectModal">
+    <i class="bi bi-plus-lg"></i> Criar projeto
+  </button>
+</div>
+{% elif not board_columns %}
+<div class="kanban-board empty-board-columns">
+  <button class="kanban-add-column empty-column-add" type="button" data-bs-toggle="modal" data-bs-target="#columnsModal">
+    <i class="bi bi-plus-lg"></i>
+    <strong>Nova coluna</strong>
+  </button>
+</div>
+{% else %}
+<div class="kanban-board" data-kanban>
+  {% for column in board_columns %}
+  <section class="kanban-col" data-column-id="{{ column.id }}" data-dropzone="{{ column.id }}">
+    <header class="kanban-head">
+      <span class="dot"></span>
+      <span class="kanban-title">{{ column.title }}</span>
+      {% if column.kind == 'done' %}
+      <i class="bi bi-check2-circle column-done-badge" title="Coluna de conclusão" aria-label="Coluna de conclusão"></i>
+      {% endif %}
+      <span class="kanban-count" data-count-for="{{ column.id }}">{{ column_counts[column.id] }}</span>
+      <button class="column-menu" type="button" data-bs-toggle="modal" data-bs-target="#columnsModal" aria-label="Editar colunas" title="Editar colunas">
+        <i class="bi bi-three-dots"></i>
+      </button>
+    </header>
+    <div class="kanban-list" data-dropzone-list="{{ column.id }}">
+      {% for task in column_tasks[column.id] %}
+      <article class="task-card quadrant-{{ task.quadrant or 'none' }} {{ 'is-done' if task.is_done }}"
+               draggable="true" data-task-id="{{ task.id }}" data-column-id="{{ task.column_id }}">
+        <div class="task-top">
+          <div class="d-flex flex-wrap gap-1 justify-content-end">
+            {% if not task.is_done %}
+            <form method="post" action="{{ url_for('tasks.toggle_mit', task_id=task.id) }}">
+              {{ csrf() }}
+              <input type="hidden" name="next" value="{{ request.full_path }}">
+              <button class="icon-btn-sm task-star {{ 'is-active' if task.is_mit }}" type="submit"
+                      aria-label="{{ 'Remover prioridade do dia' if task.is_mit else 'Marcar como prioridade do dia' }}"
+                      title="{{ 'Remover prioridade do dia' if task.is_mit else 'Marcar como prioridade do dia' }}">
+                <i class="bi {{ 'bi-star-fill' if task.is_mit else 'bi-star' }}"></i>
+              </button>
+            </form>
+            <a class="icon-btn-sm" href="{{ url_for('pomodoro.focus', tarefa=task.id) }}" aria-label="Focar nesta tarefa" title="Focar">
+              <span class="emoji-icon tomato-glyph" aria-hidden="true"></span>
+            </a>
+            {% endif %}
+            <a class="icon-btn-sm" href="{{ url_for('tasks.edit', task_id=task.id) }}" aria-label="Editar tarefa" title="Editar">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <form method="post" action="{{ url_for('tasks.delete', task_id=task.id) }}"
+                  data-confirm="Excluir a tarefa «{{ task.title }}»?">
+              {{ csrf() }}
+              <button class="icon-btn-sm" type="submit" aria-label="Excluir tarefa" title="Excluir">
+                <i class="bi bi-trash3"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+        <a class="task-title" href="{{ url_for('tasks.edit', task_id=task.id) }}">{{ task.title }}</a>
+        {% if task.description %}
+        <p class="task-desc">{{ task.description }}</p>
+        {% endif %}
+        <div class="task-flags">
+          <span class="task-flag"><i class="bi {{ task.category_icon }}"></i> {{ task.category_label }}</span>
+          {% if task.quadrant %}
+          <span class="task-flag" title="{{ task.quadrant_hint }}">{{ task.quadrant_label }}</span>
+          {% endif %}
+          {% if task.is_mit %}
+          <span class="task-flag task-flag-mit"><i class="bi bi-star-fill"></i> prioridade</span>
+          {% endif %}
+        </div>
+        {% if task.tag_list %}
+        <div class="task-tags">
+          {% for tag in task.tag_list[:4] %}<span class="tag">#{{ tag }}</span>{% endfor %}
+        </div>
+        {% endif %}
+        <div class="task-foot">
+          {% if task.due_date %}
+          <span class="due {{ 'overdue' if task.is_overdue }}"><i class="bi bi-calendar3"></i> {{ task.due_date|datebr }}</span>
+          {% else %}
+          <span class="due"><i class="bi bi-inbox"></i> sem prazo</span>
+          {% endif %}
+          <span class="pomo"><span class="emoji-icon tomato-glyph" aria-hidden="true"></span> {{ task.completed_pomodoros }}/{{ task.estimate_pomodoros }}</span>
+        </div>
+        <form class="task-status-form" method="post" action="{{ url_for('tasks.move_to_column', task_id=task.id) }}">
+          {{ csrf() }}
+          <label class="visually-hidden" for="column-{{ task.id }}">Mover {{ task.title }} para</label>
+          <select class="form-select form-select-sm" id="column-{{ task.id }}" name="column_id" data-column-select>
+            {% for target in board_columns %}
+            <option value="{{ target.id }}" {{ 'selected' if task.column_id == target.id }}>{{ target.title }}</option>
+            {% endfor %}
+          </select>
+          <button class="btn btn-ghost btn-xs" type="submit" aria-label="Mover tarefa"><i class="bi bi-arrow-return-left"></i></button>
+        </form>
+      </article>
+      {% endfor %}
+      <button class="kanban-add" type="button" data-bs-toggle="modal" data-bs-target="#taskModal" data-add-task-column="{{ column.id }}">
+        <i class="bi bi-plus-lg"></i> Adicionar tarefa
+      </button>
+    </div>
+  </section>
+  {% endfor %}
+  <button class="kanban-add kanban-add-column" type="button" data-bs-toggle="modal" data-bs-target="#columnsModal" aria-label="Nova coluna" title="Nova coluna">
+    <i class="bi bi-plus-lg"></i>
+  </button>
+</div>
+{% endif %}
+
+<!-- ============================== MODAL: NOVA TAREFA -->
+<div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="taskModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('tasks.index') }}">
+        {{ form.hidden_tag() }}
+        <div class="modal-header">
+          <h2 class="modal-title" id="taskModalLabel"><i class="bi bi-briefcase text-emerald"></i> Nova tarefa</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          {% if form.errors %}
+          <div class="flash flash-danger mb-3">
+            <i class="bi bi-exclamation-octagon"></i>
+            <span>Revise os campos destacados.</span>
+          </div>
+          {% endif %}
+          <div class="mb-3">
+            {{ form.title.label(class="form-label") }}
+            {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else ""), autofocus=true) }}
+            {{ field_errors(form.title) }}
+          </div>
+          <div class="mb-3">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else "")) }}
+            {{ field_errors(form.description) }}
+          </div>
+          <div class="row g-3">
+            <div class="col-6 col-md-4">
+              <label class="form-label" for="taskColumnSelect">Coluna</label>
+              <select class="form-select" id="taskColumnSelect" name="column_id">
+                {% for column in board_columns %}
+                <option value="{{ column.id }}" {{ 'selected' if selected_column_id == column.id }}>{{ column.title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-6 col-md-4">
+              {{ form.estimate_pomodoros.label(class="form-label") }}
+              {{ form.estimate_pomodoros(class="form-control") }}
+              {{ field_errors(form.estimate_pomodoros) }}
+            </div>
+            <div class="col-6 col-md-4">
+              {{ form.due_date.label(class="form-label") }}
+              {{ form.due_date(class="form-control") }}
+              {{ field_errors(form.due_date) }}
+            </div>
+          </div>
+          <div class="row g-3 mt-1">
+            <div class="col-6 col-md-3">
+              {{ form.category.label(class="form-label") }}
+              {{ form.category(class="form-select") }}
+            </div>
+            <div class="col-6 col-md-3">
+              {{ form.quadrant.label(class="form-label") }}
+              {{ form.quadrant(class="form-select") }}
+            </div>
+            <div class="col-6 col-md-3 d-flex align-items-end pb-1">
+              <div class="form-check">
+                {{ form.is_mit(class="form-check-input") }}
+                {{ form.is_mit.label(class="form-check-label") }}
+              </div>
+            </div>
+          </div>
+          <div class="mt-3">
+            {{ form.tags.label(class="form-label") }}
+            {{ form.tags(class="form-control") }}
+            <div class="form-hint">Separe por vírgula: trabalho, estudo, pessoal…</div>
+            {{ field_errors(form.tags) }}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-neon btn-sm"><i class="bi bi-check-lg"></i> Criar tarefa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- ============================== MODAL: COLUNAS -->
+<div class="modal fade" id="columnsModal" tabindex="-1" aria-labelledby="columnsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="columnsModalLabel"><i class="bi bi-columns-gap text-emerald"></i> Suas colunas</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <p class="page-sub mb-3">Uma coluna é uma coluna. Dê um nome e organize as tarefas como fizer sentido.</p>
+
+        <form class="column-create-form" method="post" action="{{ url_for('tasks.create_column') }}">
+          {{ csrf() }}
+          <input type="hidden" name="project_id" value="{{ project.id }}">
+          <div class="row g-2 align-items-end">
+            <div class="col-12 col-sm-9">
+              <label class="form-label" for="newColumnTitle">Nova coluna</label>
+              <input class="form-control" id="newColumnTitle" name="title" maxlength="50" placeholder="ex.: Esta semana" required>
+            </div>
+            <div class="col-12 col-sm-3">
+              <button class="btn btn-neon btn-sm w-100" type="submit"><i class="bi bi-plus-lg"></i> Criar</button>
+            </div>
+          </div>
+          <div class="form-check mt-2">
+            <input class="form-check-input" type="checkbox" name="is_done" id="newColumnDone">
+            <label class="form-check-label" for="newColumnDone">Esta é a coluna de conclusão</label>
+          </div>
+        </form>
+
+        <div class="column-manage-list">
+          {% for column in board_columns %}
+          <div class="column-manage-row">
+            <form class="column-manage-form" method="post" action="{{ url_for('tasks.edit_column', column_id=column.id) }}">
+              {{ csrf() }}
+              <input class="form-control form-control-sm" name="title" value="{{ column.title }}" maxlength="50" aria-label="Nome da coluna">
+              <label class="column-done-toggle" title="Esta coluna conclui as tarefas">
+                <input class="form-check-input" type="checkbox" name="is_done" {{ 'checked' if column.kind == 'done' }}>
+                <span>Conclui</span>
+              </label>
+              <button class="btn btn-ghost btn-sm" type="submit" title="Salvar coluna"><i class="bi bi-check-lg"></i></button>
+            </form>
+            <div class="column-manage-actions">
+              <form method="post" action="{{ url_for('tasks.move_column', column_id=column.id) }}">
+                {{ csrf() }}
+                <input type="hidden" name="direction" value="up">
+                <button class="icon-btn-sm" type="submit" aria-label="Mover coluna para a esquerda" title="Mover para a esquerda"><i class="bi bi-arrow-left"></i></button>
+              </form>
+              <form method="post" action="{{ url_for('tasks.move_column', column_id=column.id) }}">
+                {{ csrf() }}
+                <input type="hidden" name="direction" value="down">
+                <button class="icon-btn-sm" type="submit" aria-label="Mover coluna para a direita" title="Mover para a direita"><i class="bi bi-arrow-right"></i></button>
+              </form>
+              {% if board_columns|length > 1 or column_tasks[column.id]|length == 0 %}
+              <form method="post" action="{{ url_for('tasks.delete_column', column_id=column.id) }}" data-confirm="Remover a coluna «{{ column.title }}»? As tarefas serão movidas para outra coluna.">
+                {{ csrf() }}
+                <button class="icon-btn-sm" type="submit" aria-label="Remover coluna" title="Remover coluna"><i class="bi bi-trash3"></i></button>
+              </form>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================== MODAL: NOVO PROJETO -->
+<div class="modal fade" id="newProjectModal" tabindex="-1" aria-labelledby="newProjectModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="newProjectModalLabel"><i class="bi bi-kanban text-emerald"></i> Novo projeto</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <form method="post" action="{{ url_for('tasks.create_project') }}">
+        {{ csrf() }}
+        <div class="modal-body">
+          <p class="page-sub mb-3">O projeto nasce em branco. Depois você cria as colunas que quiser.</p>
+          <label class="form-label" for="newProjectName">Nome do projeto</label>
+          <input class="form-control" id="newProjectName" name="name" maxlength="60" placeholder="ex.: Estudos" required autofocus>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-neon btn-sm" type="submit"><i class="bi bi-plus-lg"></i> Criar projeto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== MODAL: GERENCIAR PROJETO -->
+{% if project %}
+<div class="modal fade" id="manageProjectModal" tabindex="-1" aria-labelledby="manageProjectModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="manageProjectModalLabel"><i class="bi bi-sliders text-emerald"></i> Este projeto</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post" action="{{ url_for('tasks.edit_project', project_id=project.id) }}">
+          {{ csrf() }}
+          <label class="form-label" for="editProjectName">Nome do projeto</label>
+          <input class="form-control" id="editProjectName" name="name" value="{{ project.name }}" maxlength="60" required>
+          <button class="btn btn-ghost btn-sm mt-3" type="submit"><i class="bi bi-check-lg"></i> Salvar nome</button>
+        </form>
+      </div>
+      <div class="modal-footer d-flex justify-content-between">
+        <form method="post" action="{{ url_for('tasks.delete_project', project_id=project.id) }}" data-confirm="Remover o projeto «{{ project.name }}»? As tarefas serão movidas para outro projeto ou, se este for o único, também serão excluídas.">
+          {{ csrf() }}
+          <button class="btn btn-danger-ghost btn-sm" type="submit"><i class="bi bi-trash3"></i> Excluir projeto</button>
+        </form>
+        <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- ============================== MODAL: CATEGORIAS -->
+<div class="modal fade" id="categoriesModal" tabindex="-1" aria-labelledby="categoriesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="categoriesModalLabel"><i class="bi bi-tags text-emerald"></i> Suas categorias</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <p class="page-sub mb-3">Use categorias para separar trabalho, estudos, casa, saúde ou qualquer assunto seu.</p>
+
+        <form class="column-create-form" method="post" action="{{ url_for('tasks.create_category') }}">
+          {{ csrf() }}
+          <div class="row g-2 align-items-end">
+            <div class="col-12 col-sm-5">
+              <label class="form-label" for="newCategoryName">Nova categoria</label>
+              <input class="form-control" id="newCategoryName" name="name" maxlength="40" placeholder="ex.: Saúde" required>
+            </div>
+            <div class="col-6 col-sm-4">
+              <label class="form-label" for="newCategoryIcon">Ícone</label>
+              <select class="form-select" id="newCategoryIcon" name="icon">
+                {% for value, label in category_icon_choices %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-6 col-sm-3">
+              <button class="btn btn-neon btn-sm w-100" type="submit"><i class="bi bi-plus-lg"></i> Criar</button>
+            </div>
+          </div>
+        </form>
+
+        <div class="column-manage-list">
+          {% for category in categories %}
+          <div class="column-manage-row">
+            <form class="column-manage-form" method="post" action="{{ url_for('tasks.edit_category', category_id=category.id) }}">
+              {{ csrf() }}
+              <input class="form-control form-control-sm" name="name" value="{{ category.name }}" maxlength="40" aria-label="Nome da categoria">
+              <select class="form-select form-select-sm" name="icon" aria-label="Ícone da categoria">
+                {% for value, label in category_icon_choices %}
+                <option value="{{ value }}" {{ 'selected' if category.icon == value }}>{{ label }}</option>
+                {% endfor %}
+              </select>
+              <button class="btn btn-ghost btn-sm" type="submit" title="Salvar categoria"><i class="bi bi-check-lg"></i></button>
+            </form>
+            {% if categories|length > 1 %}
+            <div class="column-manage-actions">
+              <form method="post" action="{{ url_for('tasks.delete_category', category_id=category.id) }}" data-confirm="Remover a categoria «{{ category.name }}»? As tarefas serão movidas para outra categoria.">
+                {{ csrf() }}
+                <button class="icon-btn-sm" type="submit" aria-label="Remover categoria" title="Remover categoria"><i class="bi bi-trash3"></i></button>
+              </form>
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

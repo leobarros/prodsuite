@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Meus dados{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow"><span class="status-dot"></span> cópias <span class="sep">/</span> segurança</p>
+    <h1 class="page-title">Meus dados</h1>
+    <p class="page-sub">Baixe uma cópia das suas tarefas, notas e ideias quando quiser.</p>
+  </div>
+  <a class="btn btn-ghost btn-sm" href="{{ url_for('main.dashboard') }}"><i class="bi bi-arrow-left"></i> Voltar ao meu dia</a>
+</div>
+
+<div class="export-grid">
+  <section class="bento-card export-card">
+    <span class="export-icon"><i class="bi bi-file-earmark-arrow-down"></i></span>
+    <h2>Cópia organizada</h2>
+    <p>
+      Uma cópia leve com suas tarefas, notas, rascunhos, prioridades e sessões de foco.
+      Fácil de guardar e consultar quando precisar.
+    </p>
+    <div class="divider"></div>
+    <table class="counts-table mb-3">
+      <tbody>
+        <tr><td>Tarefas</td><td>{{ counts.tasks }}</td></tr>
+        <tr><td>Notas</td><td>{{ counts.notes }}</td></tr>
+        <tr><td>Rascunhos</td><td>{{ counts.scratchpads }}</td></tr>
+        <tr><td>Sessões de foco</td><td>{{ counts.pomodoro_cycles }}</td></tr>
+        <tr><td>Revisões semanais</td><td>{{ counts.weekly_reviews }}</td></tr>
+      </tbody>
+    </table>
+    <a class="btn btn-neon btn-sm" href="{{ url_for('export.export_json') }}">
+      <i class="bi bi-download"></i> Baixar cópia organizada
+    </a>
+  </section>
+
+  <section class="bento-card export-card">
+    <span class="export-icon"><i class="bi bi-archive"></i></span>
+    <h2>Cópia completa</h2>
+    <p>
+      Uma cópia completa de tudo o que você registrou, sem a sua senha.
+      Guarde em um lugar seguro, como uma pasta pessoal ou um disco externo.
+    </p>
+    <div class="divider"></div>
+    <div class="flash flash-info mb-3" style="font-size:.7rem;">
+      <i class="bi bi-info-circle"></i>
+      <span>Use esta opção quando quiser guardar uma cópia fiel de tudo.</span>
+    </div>
+    <a class="btn btn-cyan btn-sm" href="{{ url_for('export.export_db') }}">
+      <i class="bi bi-download"></i> Baixar cópia completa
+    </a>
+  </section>
+</div>
+
+<section class="bento-card mt-3">
+  <div class="card-head"><h2 class="card-title"><i class="bi bi-heart"></i> Uma cópia de vez em quando</h2></div>
+  <p class="page-sub mb-2">
+    Não é preciso fazer isso todos os dias. Escolha um momento tranquilo — por exemplo,
+    no fim do mês — e guarde uma cópia em um lugar seguro. Assim, você tem um registro
+    das suas tarefas, notas e ideias quando precisar.
+  </p>
+</section>
+{% endblock %}

@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Ajuda{% endblock %}
+{% block body_class %}help-page{% endblock %}
+
+{% block content %}
+<div class="page-head help-head">
+  <div>
+    <p class="eyebrow"><i class="bi bi-life-preserver"></i> ajuda e conceitos</p>
+    <h1 class="page-title">Como usar o ProdSuite</h1>
+    <p class="page-sub">Um guia curto para o dia a dia e uma explicação dos conceitos que estão por trás do app.</p>
+  </div>
+  <div class="d-flex gap-2">
+    {% if current_user.onboarding_completed %}
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('onboarding.welcome') }}"><i class="bi bi-mortarboard"></i> Rever os primeiros passos</a>
+    <a class="btn btn-neon btn-sm" href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Voltar ao meu dia</a>
+    {% else %}
+    <a class="btn btn-neon btn-sm" href="{{ url_for('onboarding.welcome') }}"><i class="bi bi-arrow-right"></i> Continuar os primeiros passos</a>
+    {% endif %}
+  </div>
+</div>
+
+{% if not current_user.onboarding_completed %}
+<div class="flash flash-warning mb-3">
+  <i class="bi bi-stars"></i>
+  <span>Seus primeiros passos ainda não foram concluídos. <a href="{{ url_for('onboarding.welcome') }}">Ver os primeiros passos</a>.</span>
+</div>
+{% endif %}
+
+<div class="help-grid">
+  <section class="bento-card help-intro">
+    <h2 class="help-section-title"><span class="emoji-icon tomato-glyph" aria-hidden="true"></span> Comece em quatro passos</h2>
+    <ol class="help-steps">
+      <li>
+        <span class="help-step-number">1</span>
+        <div><strong>Planeje</strong><p>Abra <a href="{{ url_for('planner.plan') }}">Planejar</a> e escolha no máximo três prioridades. Se estiver em dúvida, use a matriz de prioridades.</p></div>
+      </li>
+      <li>
+        <span class="help-step-number">2</span>
+        <div><strong>Execute</strong><p>Abra o <a href="{{ url_for('pomodoro.focus') }}">Pomodoro</a>, escolha uma tarefa e trabalhe por 25 minutos. Faça uma pausa de 5 minutos depois.</p></div>
+      </li>
+      <li>
+        <span class="help-step-number">3</span>
+        <div><strong>Organize</strong><p>Use <a href="{{ url_for('tasks.index') }}">Tarefas</a> para o que precisa ser feito, <a href="{{ url_for('scratchpad.index') }}">Rascunhos</a> para ideias e <a href="{{ url_for('notes.index') }}">Notas</a> para o que vale relembrar.</p></div>
+      </li>
+      <li>
+        <span class="help-step-number">4</span>
+        <div><strong>Revise</strong><p>No fim da semana, abra a <a href="{{ url_for('review.weekly') }}">Revisão</a>: veja o que funcionou, o que pesou e ajuste a meta.</p></div>
+      </li>
+    </ol>
+  </section>
+
+  <aside class="bento-card help-toc">
+    <h2 class="help-section-title"><i class="bi bi-list-ul"></i> Nesta ajuda</h2>
+    <nav class="help-toc-links">
+      <a href="#planejar">Planejar o dia</a>
+      <a href="#pomodoro">Pomodoro e pausas</a>
+      <a href="#tarefas">Tarefas e prioridades</a>
+      <a href="#organizar">Rascunhos e notas</a>
+      <a href="#revisao">Metas e revisão</a>
+      <a href="#conceitos">Conceitos aplicados</a>
+      <a href="#duvidas">Dúvidas frequentes</a>
+    </nav>
+  </aside>
+
+  <section class="bento-card help-section" id="planejar">
+    <h2 class="help-section-title"><i class="bi bi-calendar2-check"></i> Planejar o dia</h2>
+    <p>O planejador reúne o que você quer fazer hoje e ajuda a não encher a agenda. A lógica é simples:</p>
+    <div class="help-concept-list">
+      <div><span class="concept-symbol"><i class="bi bi-star-fill" aria-hidden="true"></i></span><p><strong>Prioridades do dia:</strong> marque até três tarefas como as mais importantes. A primeira é o seu “sapo” — comece por ela.</p></div>
+      <div><span aria-hidden="true">1·3·5</span><p><strong>Regra 1-3-5:</strong> uma tarefa grande, três médias e cinco pequenas é um dia realista. O planejador mostra essa proporção.</p></div>
+      <div><span class="concept-symbol">▦</span><p><strong>Matriz de prioridades:</strong> classifique cada tarefa como <em>fazer agora</em>, <em>agendar</em>, <em>delegar</em> ou <em>deixar de lado</em>.</p></div>
+      <div><span class="concept-symbol"><i class="bi bi-lightning-charge" aria-hidden="true"></i></span><p><strong>Tarefas rápidas:</strong> tarefas com estimativa de até uma sessão aparecem como rápidas. Resolva-as em uma janela curta.</p></div>
+    </div>
+    <p class="help-note"><i class="bi bi-lightbulb"></i> Dica: planeje o dia na noite anterior ou nos primeiros minutos da manhã. Reserve blocos de tempo no seu calendário para as tarefas grandes.</p>
+  </section>
+
+  <section class="bento-card help-section" id="pomodoro">
+    <h2 class="help-section-title"><span class="emoji-icon tomato-glyph" aria-hidden="true"></span> Pomodoro e pausas</h2>
+    <p>O ciclo padrão é <strong>25 minutos de foco</strong>, <strong>5 de pausa curta</strong> e <strong>20 de pausa longa</strong> a cada quatro sessões.</p>
+    <ul class="help-bullets">
+      <li>No <a href="{{ url_for('pomodoro.focus') }}">Pomodoro</a>, escolha uma tarefa antes de começar.</li>
+      <li>Durante o foco, trabalhe em uma coisa só. Feche abas e silencie notificações.</li>
+      <li>Nas pausas, levante, beba água e afaste os olhos da tela.</li>
+      <li>O cronômetro continua nas outras páginas pelo atalho flutuante. Na página do Pomodoro, use o cronômetro grande.</li>
+      <li>Fechar o app não “rouba” o ciclo: ao voltar, o app ajusta o tempo decorrido.</li>
+    </ul>
+    <p class="help-note"><i class="bi bi-phone"></i> No celular, mantenha o app aberto para ouvir o aviso ao fim do ciclo. Toque em <strong>Testar som</strong> na página do Pomodoro para liberar o áudio do navegador.</p>
+  </section>
+
+  <section class="bento-card help-section" id="tarefas">
+    <h2 class="help-section-title"><i class="bi bi-briefcase"></i> Tarefas e prioridades</h2>
+    <ul class="help-bullets">
+      <li>As colunas são listas livres: Todo, Doing, Validation, Block, Done ou o nome que você quiser.</li>
+      <li>Marque uma coluna como <strong>coluna de conclusão</strong>. Ao mover o card para ela, a tarefa é concluída; ao sair, é reaberta.</li>
+      <li>O <strong>quadrante da matriz</strong> combina urgência e importância. A <strong>estrela</strong> marca as prioridades do dia.</li>
+      <li><strong>Etiquetas</strong> ajudam a filtrar por assunto; <strong>categoria</strong> separa Trabalho, Estudos e Pessoal.</li>
+      <li><strong>Sessões de foco</strong> são a estimativa de quanto tempo a tarefa pede em ciclos de 25 minutos.</li>
+      <li>Os detalhes da tarefa mostram <strong>quanto tempo ela passou em cada coluna</strong>.</li>
+      <li><strong>Hoje</strong> mostra tarefas com prazo final para hoje.</li>
+      <li><strong>Prioridades do dia</strong> mostra as tarefas marcadas com a estrela no card (até três).</li>
+      <li><strong>Rápidas</strong> mostra tarefas com estimativa de até uma sessão de foco.</li>
+      <li>Arraste os cartões no computador ou use o seletor de status no celular.</li>
+    </ul>
+  </section>
+
+  <section class="bento-card help-section" id="organizar">
+    <h2 class="help-section-title"><i class="bi bi-lightbulb"></i> Rascunhos e notas</h2>
+    <p><strong>Rascunhos</strong> são para capturar rápido, sem decidir onde cada coisa vai. Depois, transforme o rascunho em tarefa ou apague. <strong>Notas</strong> são para conhecimento: use formatação simples, listas e links <span class="mono">[[como este]]</span> para conectar ideias.</p>
+    <p>A busca no topo procura ao mesmo tempo em tarefas, notas e rascunhos.</p>
+  </section>
+
+  <section class="bento-card help-section" id="revisao">
+    <h2 class="help-section-title"><i class="bi bi-journal-check"></i> Metas e revisão</h2>
+    <p>Defina uma <strong>meta semanal de sessões</strong> no planejador. A meta é uma bússola, não uma cobrança: ajuste se a semana pedir outra coisa.</p>
+    <p>Na <a href="{{ url_for('review.weekly') }}">revisão semanal</a>, responda três perguntas: o que funcionou, o que foi difícil e qual é o foco da próxima semana. O app mostra também suas sessões, tarefas concluídas e a divisão do foco por categoria.</p>
+    <p class="help-note"><i class="bi bi-heart"></i> Produtividade também é descansar. Uma semana mais leve não é uma semana perdida.</p>
+  </section>
+
+  <section class="bento-card help-section help-concepts" id="conceitos">
+    <h2 class="help-section-title"><i class="bi bi-stars"></i> Conceitos aplicados</h2>
+    <div class="help-concepts-grid">
+      <div><strong>Prioridade do dia / coma o sapo</strong><span>Priorize o que mais importa e enfrente a tarefa mais difícil primeiro.</span></div>
+      <div><strong>Regra 1-3-5</strong><span>Planeje uma tarefa grande, três médias e cinco pequenas.</span></div>
+      <div><strong>Matriz de prioridades</strong><span>Decida entre fazer agora, agendar, delegar ou deixar de lado.</span></div>
+      <div><strong>Tarefas rápidas</strong><span>Até uma sessão de foco, para encaixar no dia.</span></div>
+      <div><strong>Blocos de tempo</strong><span>Reserve blocos para o trabalho importante e execute um por vez.</span></div>
+      <div><strong>Pomodoro</strong><span>Foco de 25 minutos, pausas curtas e uma pausa longa de 20 min a cada quatro ciclos.</span></div>
+      <div><strong>Meta semanal</strong><span>Uma meta específica, mensurável e com prazo: sessões por semana.</span></div>
+      <div><strong>Revisão semanal</strong><span>Olhe para trás, aprenda e ajuste o próximo passo.</span></div>
+    </div>
+    <p class="help-sources">Baseado em <a href="https://www.alura.com.br/artigos/gestao-do-tempo" target="_blank" rel="noopener noreferrer">gestão do tempo — Alura</a> e <a href="https://clickup.com/pt-BR/blog/36442/dicas-de-produtividade" target="_blank" rel="noopener noreferrer">20 dicas de produtividade — ClickUp</a>.</p>
+  </section>
+
+  <section class="bento-card help-section" id="duvidas">
+    <h2 class="help-section-title"><i class="bi bi-question-circle"></i> Dúvidas frequentes</h2>
+    <div class="help-faq">
+      <details>
+        <summary>Preciso preencher tudo?</summary>
+        <p>Não. Comece com uma tarefa e o Pomodoro. As prioridades, a matriz e a revisão são apoio para quando você quiser mais estrutura.</p>
+      </details>
+      <details>
+        <summary>O que acontece se eu fechar o app durante o foco?</summary>
+        <p>O cronômetro usa o horário real. Ao voltar, ele ajusta o tempo decorrido. No celular, o sistema pode pausar o app em segundo plano; mantenha-o aberto para receber o aviso sonoro.</p>
+      </details>
+      <details>
+        <summary>Como faço uma cópia?</summary>
+        <p>Abra <a href="{{ url_for('export.index') }}">Meus dados</a> e baixe uma cópia das suas tarefas, notas e rascunhos quando quiser.</p>
+      </details>
+      <details>
+        <summary>Como instalar no celular?</summary>
+        <p>Abra o app no navegador do celular e procure <strong>Adicionar à Tela de Início</strong> no menu. Para usar sem internet, peça o endereço seguro a quem administra o app.</p>
+      </details>
+      <details>
+        <summary>Como troco o tema?</summary>
+        <p>Use o botão de lua/sol no topo ou no menu lateral, ou abra <a href="{{ url_for('auth.profile') }}">Perfil → Aparência</a>. O tema claro é o padrão; o escuro é uma escolha sua.</p>
+      </details>
+      <details>
+        <summary>Como rever os primeiros passos?</summary>
+        <p>Abra <a href="{{ url_for('onboarding.welcome') }}">Bem-vindo</a> a qualquer momento. Nada é apagado ao rever.</p>
+      </details>
+    </div>
+  </section>
+</div>
+{% endblock %}

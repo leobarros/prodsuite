@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Não foi possível concluir{% endblock %}
+{% block content %}
+<div class="error-page">
+  <div>
+    <p class="error-code">400</p>
+    <h1>Não foi possível concluir</h1>
+    <p>Algo não saiu como esperado. Volte e tente novamente.</p>
+    <a class="btn btn-neon btn-sm" href="{{ url_for('main.dashboard') }}"><i class="bi bi-arrow-left"></i> Voltar ao meu dia</a>
+  </div>
+</div>
+{% endblock %}

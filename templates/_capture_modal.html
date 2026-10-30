@@ -1,0 +1,31 @@
+{% from "_macros.html" import csrf %}
+<div class="modal fade" id="captureModal" tabindex="-1" aria-labelledby="captureModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('scratchpad.index') }}" data-ajax-capture>
+        {{ csrf() }}
+        <div class="modal-header">
+          <h2 class="modal-title" id="captureModalLabel">
+            <i class="bi bi-lightning-charge text-amber"></i> Captura rápida
+          </h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label" for="captureModalText">Despeje a ideia. Organize depois.</label>
+          <textarea class="form-control" id="captureModalText" name="content" rows="5" maxlength="5000"
+                    placeholder="Ideia, tarefa, link, pensamento solto…" required></textarea>
+          <div class="d-flex justify-content-between mt-2">
+            <span class="form-hint">Fica em Rascunhos até você converter em tarefa.</span>
+            <span class="char-count" data-char-count>0/5000</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal">Fechar</button>
+          <button type="submit" class="btn btn-neon btn-sm">
+            <i class="bi bi-lightning-charge-fill"></i> Capturar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

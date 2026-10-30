@@ -1,0 +1,32 @@
+<section class="pomodoro-hud" id="pomodoro-hud" aria-label="Cronômetro Pomodoro flutuante">
+  <span class="hud-glow" aria-hidden="true"></span>
+  <div class="hud-head">
+    <span class="hud-mode"><span data-timer-emoji aria-hidden="true"><span class="tomato-glyph"></span></span> <span data-timer-mode-label>Foco</span></span>
+    <span class="hud-status"><span class="status-dot"></span> <span data-timer-status>pronto</span></span>
+  </div>
+  <div class="hud-main">
+    <button class="hud-toggle" type="button" data-timer-toggle aria-label="Iniciar ou pausar cronômetro">
+      <i class="bi bi-play-fill" data-timer-icon></i>
+    </button>
+    <span class="hud-emoji" data-timer-emoji aria-hidden="true"><span class="tomato-glyph"></span></span>
+    <div class="hud-time" data-timer-display aria-live="off">25:00</div>
+    <a class="hud-expand" href="{{ url_for('pomodoro.focus') }}" aria-label="Abrir Pomodoro">
+      <i class="bi bi-arrows-angle-expand"></i>
+    </a>
+    <button class="hud-reset" type="button" data-timer-reset aria-label="Reiniciar cronômetro">
+      <i class="bi bi-arrow-counterclockwise"></i>
+    </button>
+  </div>
+  <div class="hud-progress" aria-hidden="true"><span data-timer-progress></span></div>
+  <div class="hud-foot">
+    <select class="form-select hud-task" data-timer-task aria-label="Tarefa vinculada ao foco">
+      <option value="">escolha uma tarefa</option>
+      {% for task in hud_tasks %}
+      <option value="{{ task.id }}" data-task-title="{{ task.title }}">{{ task.title }}</option>
+      {% endfor %}
+    </select>
+    <a class="hud-expand" href="{{ url_for('pomodoro.focus') }}" aria-label="Abrir Pomodoro">
+      <i class="bi bi-chevron-up"></i>
+    </a>
+  </div>
+</section>

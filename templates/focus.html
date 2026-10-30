@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Pomodoro{% endblock %}
+{% block body_class %}focus-page{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow"><span class="emoji-icon tomato-glyph" aria-hidden="true"></span> Pomodoro <span class="sep">·</span> {{ stats.today.cycles }} {{ 'sessão' if stats.today.cycles == 1 else 'sessões' }} hoje <span class="sep">·</span> {{ stats.streak }} dia{{ 's' if stats.streak != 1 }} seguido{{ 's' if stats.streak != 1 }}</p>
+    <h1 class="page-title">Hora de focar</h1>
+    <p class="page-sub">Trabalhe 25 minutos sem distrações. O cronômetro continua nas outras páginas.</p>
+  </div>
+  <a class="btn btn-ghost btn-sm" href="{{ url_for('tasks.index', nova=1) }}"><i class="bi bi-plus-lg"></i> Nova tarefa</a>
+</div>
+
+<div class="focus-grid">
+  <section class="bento-card timer-card">
+    <div class="mode-switch" role="tablist" aria-label="Modo do cronômetro">
+      <button class="mode-btn active" type="button" role="tab" aria-selected="true" data-timer-mode="focus"><span class="tomato-glyph" aria-hidden="true"></span> Foco · 25</button>
+      <button class="mode-btn" type="button" role="tab" aria-selected="false" data-timer-mode="short_break"><i class="bi bi-cup-hot" aria-hidden="true"></i> Intervalo · 5</button>
+      <button class="mode-btn" type="button" role="tab" aria-selected="false" data-timer-mode="long_break"><i class="bi bi-moon-stars" aria-hidden="true"></i> Longo · 20</button>
+    </div>
+
+    <div class="timer-ring-wrap" data-timer-ring-wrap>
+      <svg class="timer-ring" viewBox="0 0 300 300" aria-hidden="true">
+        <circle class="track" cx="150" cy="150" r="132"></circle>
+        <circle class="progress" cx="150" cy="150" r="132"
+                stroke-dasharray="829.38" stroke-dashoffset="0" data-timer-ring></circle>
+      </svg>
+      <div class="timer-digits">
+        <div>
+          <span class="timer-mode-label"><span data-timer-emoji aria-hidden="true"><span class="tomato-glyph"></span></span> <span data-timer-mode-label>Foco</span></span>
+          <span data-timer-display aria-live="off">25:00</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="session-dots" data-session-dots data-cycles="{{ stats.focus_cycles_today }}" data-filled="{{ stats.focus_cycles_today % 4 }}" aria-label="Sessões até a pausa longa">
+      {% for _ in range(4) %}<span class="session-dot"></span>{% endfor %}
+    </div>
+
+    <div class="timer-actions">
+      <button class="btn-timer" type="button" data-timer-toggle>
+        <i class="bi bi-play-fill" data-timer-icon></i> <span data-timer-action-label>Começar</span>
+      </button>
+      <button class="btn btn-ghost btn-sm" type="button" data-timer-reset aria-label="Reiniciar cronômetro" title="Reiniciar cronômetro">
+        <i class="bi bi-arrow-counterclockwise"></i>
+      </button>
+      <button class="btn btn-ghost btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#captureModal" aria-label="Anotar distração" title="Anotar distração">
+        <i class="bi bi-lightbulb"></i>
+      </button>
+      <button class="btn btn-ghost btn-sm" type="button" data-test-sound aria-label="Testar som" title="Testar som">
+        <i class="bi bi-volume-up"></i>
+      </button>
+    </div>
+
+    <div class="task-picker">
+      <label class="form-label" for="focusTaskSelect">O que você vai fazer?</label>
+      <select class="form-select" id="focusTaskSelect" data-timer-task>
+        <option value="">Sem tarefa — só focar</option>
+        {% for task in tasks %}
+        <option value="{{ task.id }}" {{ 'selected' if selected_task_id == task.id }}>{{ task.title }} · {{ task.completed_pomodoros }}/{{ task.estimate_pomodoros }}</option>
+        {% endfor %}
+      </select>
+      <p class="form-hint mb-0">Cada sessão de foco conta para a tarefa escolhida. As pausas ficam só no histórico.</p>
+    </div>
+  </section>
+
+  <div class="focus-side">
+    <section class="bento-card">
+      <div class="card-head">
+        <h2 class="card-title"><i class="bi bi-graph-up"></i> Seu ritmo</h2>
+        <span class="card-link">últimos 7 dias</span>
+      </div>
+      <div class="metric-grid">
+        <div class="metric-cell">
+          <strong data-stat="today-cycles">{{ stats.today.cycles }}</strong>
+          <span>sessões hoje</span>
+        </div>
+        <div class="metric-cell">
+          <strong data-stat="today-minutes">{{ stats.today.minutes }}</strong>
+          <span>minutos hoje</span>
+        </div>
+        <div class="metric-cell">
+          <strong data-stat="streak">{{ stats.streak }}</strong>
+          <span>dias seguidos</span>
+        </div>
+      </div>
+      <div class="chart mt-3" role="img" aria-label="Minutos de foco nos últimos sete dias">
+        {% for day in stats.daily %}
+        {% set h = (day.minutes / stats.max_minutes * 100)|round|int %}
+        <div class="chart-col {{ 'is-today' if day.date == today_local.isoformat() }}">
+          <div class="chart-bar-wrap"><span class="chart-bar" style="height: {{ [h, 3]|max }}%" title="{{ day.label }}: {{ day.minutes }} min"></span></div>
+          <span class="chart-label">{{ day.label }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="stat-foot">
+        <span>total na semana</span>
+        <strong class="text-emerald" data-stat="week-label">{{ stats.week.label }}</strong>
+      </div>
+    </section>
+
+    <section class="bento-card">
+      <div class="card-head">
+        <h2 class="card-title"><i class="bi bi-clock-history"></i> Sessões recentes</h2>
+        <span class="card-link">últimas 30</span>
+      </div>
+      {% if history %}
+      <div class="history">
+        {% for cycle in history %}
+        <div class="history-row">
+          <span class="history-icon {{ 'break' if cycle.mode != 'focus' }}" aria-hidden="true">{% if cycle.mode == 'focus' %}<span class="tomato-glyph"></span>{% elif cycle.mode == 'short_break' %}<i class="bi bi-cup-hot"></i>{% else %}<i class="bi bi-moon-stars"></i>{% endif %}</span>
+          <span class="history-main">
+            <span class="history-title">{{ cycle.task.title if cycle.task else cycle.mode_label }}</span>
+            <span class="history-meta">{{ cycle.ended_at|localtime('%d/%m %H:%M') }} · {{ cycle.mode_label }}</span>
+          </span>
+          <span class="history-duration">{{ cycle.duration_minutes }}m</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-hourglass-split"></i>
+        <span>Nenhuma sessão ainda. Comece um foco para criar seu histórico.</span>
+      </div>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

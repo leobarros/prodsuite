@@ -1,0 +1,18 @@
+<nav class="bottom-nav" aria-label="Navegação móvel">
+  <a class="bottom-link {{ 'active' if request.endpoint == 'main.dashboard' }}" href="{{ url_for('main.dashboard') }}">
+    <i class="bi bi-house-door"></i><span>Início</span>
+  </a>
+  <a class="bottom-link {{ 'active' if (request.endpoint or '').startswith('tasks.') }}" href="{{ url_for('tasks.index') }}">
+    <i class="bi bi-check2-square"></i><span>Tarefas</span>
+    {% if nav_pending %}<span class="side-badge">{{ nav_pending }}</span>{% endif %}
+  </a>
+  <a class="bottom-link {{ 'active' if (request.endpoint or '').startswith('pomodoro.') }}" href="{{ url_for('pomodoro.focus') }}">
+    <span class="emoji-icon tomato-glyph" aria-hidden="true"></span><span>Pomodoro</span>
+  </a>
+  <a class="bottom-link {{ 'active' if (request.endpoint or '').startswith('scratchpad.') }}" href="{{ url_for('scratchpad.index') }}">
+    <i class="bi bi-lightbulb"></i><span>Rascunhos</span>
+  </a>
+  <a class="bottom-link {{ 'active' if (request.endpoint or '').startswith('notes.') }}" href="{{ url_for('notes.index') }}">
+    <i class="bi bi-journal-bookmark"></i><span>Notas</span>
+  </a>
+</nav>

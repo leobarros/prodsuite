@@ -1,0 +1,62 @@
+<div class="modal fade onboarding-modal" id="onboardingModal" tabindex="-1"
+     aria-labelledby="onboardingModalLabel" aria-hidden="true" data-onboarding-modal>
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="onboarding-badge"><span class="tomato-glyph" aria-hidden="true"></span> primeiros passos</span>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar tutorial"></button>
+      </div>
+      <div class="modal-body">
+        <h2 class="onboarding-title" id="onboardingModalLabel">Bem-vindo, {{ current_user.display_name }}.</h2>
+        <p class="onboarding-lead">Quatro ideias para o ProdSuite caber no seu dia — sem precisar configurar tudo agora.</p>
+
+        <div class="onboarding-steps">
+          <div class="onboarding-step">
+            <span class="onboarding-step-number">1</span>
+            <div>
+              <strong>Planeje o essencial</strong>
+              <p>Abra <b>Planejar</b> e escolha até três prioridades. O resto pode esperar.</p>
+            </div>
+          </div>
+          <div class="onboarding-step">
+            <span class="onboarding-step-number">2</span>
+            <div>
+              <strong>Trabalhe em blocos</strong>
+              <p>Use o <b>Pomodoro</b> de 25 minutos. Faça uma pausa curta depois de cada ciclo.</p>
+            </div>
+          </div>
+          <div class="onboarding-step">
+            <span class="onboarding-step-number">3</span>
+            <div>
+              <strong>Organize do seu jeito</strong>
+              <p>Crie tarefas e colunas em <b>Tarefas</b>. Capture ideias soltas em <b>Rascunhos</b>.</p>
+            </div>
+          </div>
+          <div class="onboarding-step">
+            <span class="onboarding-step-number">4</span>
+            <div>
+              <strong>Revise e ajuste</strong>
+              <p>No fim da semana, veja o que funcionou em <b>Revisão</b> e escolha o próximo foco.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="onboarding-concepts" aria-label="Conceitos usados no app">
+          <span>Coma o sapo</span>
+          <span>Regra 1-3-5</span>
+          <span>Matriz de prioridades</span>
+          <span>Tarefas rápidas</span>
+        </div>
+
+        <p class="onboarding-help">
+          Quer entender melhor? A <a href="{{ url_for('help.help_page') }}" data-bs-dismiss="modal">Ajuda</a> explica cada parte.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-neon" data-bs-dismiss="modal">
+          <i class="bi bi-check2-circle"></i> Começar a usar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

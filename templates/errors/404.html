@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Página não encontrada{% endblock %}
+{% block content %}
+<div class="error-page">
+  <div>
+    <p class="error-code">404</p>
+    <h1>Página não encontrada</h1>
+    <p>O endereço não existe, foi movido ou pertence a outra conta.</p>
+    <a class="btn btn-neon btn-sm" href="{{ url_for('main.dashboard') }}"><i class="bi bi-arrow-left"></i> Voltar ao meu dia</a>
+  </div>
+</div>
+{% endblock %}

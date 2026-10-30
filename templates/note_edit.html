@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, field_errors %}
+{% block title %}{{ 'Editar nota' if note else 'Nova nota' }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow"><a href="{{ url_for('notes.index') }}">notas</a> <span class="sep">/</span> {{ 'editar' if note else 'nova' }}</p>
+    <h1 class="page-title">{{ note.title if note else 'Nova nota' }}</h1>
+    <p class="page-sub">Escreva com formatação simples e veja a prévia ao lado. Use <span class="mono">[[Título]]</span> para conectar notas.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('notes.index') }}"><i class="bi bi-arrow-left"></i> Voltar</a>
+    {% if note %}
+    <button class="btn btn-neon btn-sm" type="submit" form="noteForm"><i class="bi bi-check-lg"></i> Salvar</button>
+    {% endif %}
+  </div>
+</div>
+
+<form id="noteForm" method="post"
+      action="{{ url_for('notes.edit', note_id=note.id) if note else url_for('notes.create') }}"
+      data-note-editor data-preview-url="{{ url_for('notes.preview') }}">
+  {{ form.hidden_tag() }}
+
+  <div class="row g-3 mb-3">
+    <div class="col-md-8">
+      {{ form.title.label(class="form-label") }}
+      {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else "")) }}
+      {{ field_errors(form.title) }}
+    </div>
+    <div class="col-md-4">
+      {{ form.tags.label(class="form-label") }}
+      {{ form.tags(class="form-control") }}
+      {{ field_errors(form.tags) }}
+    </div>
+  </div>
+
+  <div class="editor-grid">
+    <div class="editor-pane">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <label class="form-label mb-0" for="noteBody">Conteúdo</label>
+        <span class="char-count" data-note-count>0 / 40000</span>
+      </div>
+      <div class="markdown-toolbar" aria-label="Atalhos de formatação">
+        <button class="md-btn" type="button" data-md-insert="**|**" title="Negrito">B</button>
+        <button class="md-btn" type="button" data-md-insert="*|*" title="Itálico"><em>I</em></button>
+        <button class="md-btn" type="button" data-md-insert="# |" title="Título">H1</button>
+        <button class="md-btn" type="button" data-md-insert="## |" title="Subtítulo">H2</button>
+        <button class="md-btn" type="button" data-md-insert="- |" title="Lista">•</button>
+        <button class="md-btn" type="button" data-md-insert="> |" title="Citação">”</button>
+        <button class="md-btn" type="button" data-md-insert="`|`" title="Código">&lt;/&gt;</button>
+        <button class="md-btn" type="button" data-md-insert="[texto](https://)|" title="Link">link</button>
+        <button class="md-btn" type="button" data-md-insert="[[|]]" title="Link interno">[[ ]]</button>
+      </div>
+      {{ form.body(class="form-control" + (" is-invalid" if form.body.errors else ""), id="noteBody") }}
+      {{ field_errors(form.body) }}
+      <div class="d-flex flex-wrap justify-content-between align-items-center mt-2 gap-2">
+        <span class="form-hint">Salve quando terminar. A prévia é atualizada automaticamente.</span>
+        <div class="d-flex gap-2">
+          {% if note %}
+          <a class="btn btn-ghost btn-sm" href="{{ url_for('notes.view', note_id=note.id) }}">Ver nota</a>
+          {% endif %}
+          <button class="btn btn-neon btn-sm" type="submit"><i class="bi bi-check-lg"></i> Salvar nota</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="preview-pane">
+      <div class="preview-label"><i class="bi bi-eye"></i> preview ao vivo</div>
+      <div class="prose" data-note-preview>
+        {{ rendered }}
+      </div>
+    </div>
+  </div>
+</form>
+
+{% if note %}
+<div class="divider"></div>
+<form method="post" action="{{ url_for('notes.delete', note_id=note.id) }}"
+      data-confirm="Excluir a nota «{{ note.title }}»? Links para ela ficarão pendentes.">
+  {{ csrf() }}
+  <button class="btn btn-danger-ghost btn-sm" type="submit"><i class="bi bi-trash3"></i> Excluir nota</button>
+</form>
+{% endif %}
+{% endblock %}

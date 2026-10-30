@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Algo deu errado · ProdSuite</title>
+  <meta name="theme-color" content="#faf7f2">
+  <script src="{{ url_for('static', filename='js/theme-init.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body>
+  <main class="app-main" style="max-width: 720px;">
+    <div class="error-page">
+      <div>
+        <p class="error-code">500</p>
+        <h1>Algo deu errado</h1>
+        <p>Não foi possível abrir esta página. Tente novamente em alguns instantes.</p>
+        <a class="btn btn-neon btn-sm" href="{{ url_for('main.dashboard') }}"><i class="bi bi-arrow-clockwise"></i> Recarregar</a>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

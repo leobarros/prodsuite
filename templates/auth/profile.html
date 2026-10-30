@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, field_errors, password_field %}
+{% block title %}Perfil{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow"><i class="bi bi-person-circle"></i> sua conta</p>
+    <h1 class="page-title">Perfil</h1>
+    <p class="page-sub">Sua conta, aparência e segurança em um só lugar.</p>
+  </div>
+  <form method="post" action="{{ url_for('auth.logout') }}">
+    {{ csrf() }}
+    <button class="btn btn-ghost btn-sm" type="submit"><i class="bi bi-box-arrow-right"></i> Sair</button>
+  </form>
+</div>
+
+<div class="profile-grid">
+  <div>
+    <section class="bento-card mb-3">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <span class="avatar" style="width: 52px; height: 52px; flex-basis: 52px; font-size: 1rem;">{{ current_user.initials }}</span>
+        <div class="min-w-0">
+          <h2 class="mb-0" style="font-size: 1.1rem; letter-spacing: -0.02em;">{{ current_user.display_name }}</h2>
+          <span class="text-dim" style="font-size: .78rem;">{{ current_user.email }}</span>
+        </div>
+      </div>
+      <div class="counts-table">
+        <table class="counts-table">
+          <tbody>
+            <tr><td><i class="bi bi-calendar-heart"></i> Conta criada</td><td>{{ current_user.created_at|localtime('%d/%m/%Y') }}</td></tr>
+            <tr><td><i class="bi bi-box-arrow-in-right"></i> Último acesso</td><td>{{ current_user.last_login_at|localtime('%d/%m/%Y %H:%M') if current_user.last_login_at else '—' }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="bento-card mb-3">
+      <div class="card-head">
+        <h2 class="card-title"><i class="bi bi-person"></i> Seu nome</h2>
+      </div>
+      <p class="page-sub mb-3">É assim que vamos te chamar nas boas-vindas e no dia a dia.</p>
+      <form method="post" action="{{ url_for('auth.update_display_name') }}">
+        {{ name_form.hidden_tag() }}
+        <div class="mb-2">
+          {{ name_form.display_name.label(class="form-label") }}
+          {{ name_form.display_name(class="form-control" + (" is-invalid" if name_form.display_name.errors else "")) }}
+        </div>
+        <button class="btn btn-neon btn-sm" type="submit"><i class="bi bi-check-lg"></i> Salvar nome</button>
+      </form>
+    </section>
+
+    <section class="bento-card mb-3">
+      <div class="card-head">
+        <h2 class="card-title"><i class="bi bi-palette"></i> Aparência</h2>
+      </div>
+      <p class="page-sub mb-3">Escolha o tema que combina com você. A preferência fica salva.</p>
+      <div class="theme-options">
+        <button class="theme-option" type="button" data-theme-set="light" aria-pressed="false">
+          <i class="bi bi-sun"></i><span>Claro</span>
+        </button>
+        <button class="theme-option" type="button" data-theme-set="dark" aria-pressed="false">
+          <i class="bi bi-moon-stars"></i><span>Escuro</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="bento-card mb-3">
+      <div class="card-head"><h2 class="card-title"><i class="bi bi-life-preserver"></i> Ajuda</h2></div>
+      <p class="page-sub mb-3">Aprenda o método, releia os conceitos ou reveja os primeiros passos.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('help.help_page') }}"><i class="bi bi-question-circle"></i> Como usar</a>
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('onboarding.welcome') }}"><i class="bi bi-mortarboard"></i> Rever primeiros passos</a>
+      </div>
+    </section>
+
+    <section class="bento-card">
+      <div class="card-head"><h2 class="card-title"><i class="bi bi-cloud-arrow-down"></i> Cópias</h2></div>
+      <p class="page-sub mb-3">Guarde uma cópia das suas tarefas, notas e rascunhos quando quiser.</p>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('export.index') }}"><i class="bi bi-box-arrow-up-right"></i> Abrir cópias</a>
+        <a class="btn btn-cyan btn-sm" href="{{ url_for('export.export_json') }}"><i class="bi bi-download"></i> Baixar uma cópia</a>
+      </div>
+    </section>
+  </div>
+
+  <div>
+    <section class="bento-card mb-3">
+      <div class="card-head">
+        <h2 class="card-title"><i class="bi bi-key"></i> Trocar senha</h2>
+      </div>
+      <form method="post" action="{{ url_for('auth.profile') }}">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+          {{ form.current_password.label(class="form-label") }}
+          {{ password_field(form.current_password) }}
+        </div>
+        <div class="mb-3">
+          {{ form.new_password.label(class="form-label") }}
+          {{ password_field(form.new_password, autocomplete="new-password") }}
+        </div>
+        <div class="mb-3">
+          {{ form.confirm.label(class="form-label") }}
+          {{ password_field(form.confirm, autocomplete="new-password") }}
+        </div>
+        <button class="btn btn-neon btn-sm" type="submit"><i class="bi bi-shield-check"></i> Atualizar senha</button>
+      </form>
+    </section>
+
+    <section class="bento-card mb-3">
+      <div class="card-head">
+        <h2 class="card-title"><i class="bi bi-shield-lock"></i> Segurança</h2>
+      </div>
+      <p class="page-sub mb-3">
+        Se você esqueceu de sair em outro aparelho, desconecte os outros acessos.
+        Este aparelho continua conectado.
+      </p>
+      <form method="post" action="{{ url_for('auth.revoke_other_sessions') }}"
+            data-confirm="Desconectar os outros aparelhos?">
+        {{ csrf() }}
+        <button class="btn btn-danger-ghost btn-sm" type="submit">
+          <i class="bi bi-box-arrow-right"></i> Desconectar outros aparelhos
+        </button>
+      </form>
+    </section>
+
+    <section class="bento-card">
+      <div class="card-head"><h2 class="card-title"><i class="bi bi-heart"></i> Sobre</h2></div>
+      <p class="page-sub mb-2"><strong>ProdSuite v1.0</strong></p>
+      <p class="page-sub mb-0">Uma ferramenta simples para organizar tarefas, estudos e ideias — sem complicação e do seu jeito.</p>
+    </section>
+  </div>
+</div>
+{% endblock %}

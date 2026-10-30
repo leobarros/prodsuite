@@ -1,0 +1,42 @@
+# Dependências e artefatos locais
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Banco local (o volume Docker é a fonte de verdade em produção)
+instance/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+data/
+
+# Segredos e backups
+.env
+.env.*
+!.env.example
+backups/
+
+# Editores / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Ferramentas locais de validação visual/build
+.playwright-browsers/
+.docker-tmp/
+
+.demo/
+
+.screens/
+
+# Ruff
+.ruff_cache/

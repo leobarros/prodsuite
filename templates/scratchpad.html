@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, field_errors %}
+{% block title %}Rascunhos{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow"><i class="bi bi-lightbulb"></i> anotações rápidas <span class="sep">·</span> {{ items|length }} rascunho{{ 's' if items|length != 1 }}</p>
+    <h1 class="page-title">Rascunhos</h1>
+    <p class="page-sub">Guarde uma ideia agora e transforme em tarefa quando quiser.</p>
+  </div>
+</div>
+
+<section class="bento-card mb-3">
+  <div class="card-head">
+    <h2 class="card-title"><i class="bi bi-lightbulb"></i> Nova anotação</h2>
+    <span class="card-link">sem pressa</span>
+  </div>
+  <form method="post" action="{{ url_for('scratchpad.index') }}" class="quick-capture">
+    {{ form.hidden_tag() }}
+    {{ form.content(class="form-control" + (" is-invalid" if form.content.errors else "")) }}
+    {{ field_errors(form.content) }}
+    <div class="d-flex justify-content-between align-items-center mt-2">
+      <span class="form-hint">Ctrl/Cmd + Enter também envia.</span>
+      <button class="btn btn-neon btn-sm" type="submit"><i class="bi bi-plus-lg"></i> Salvar anotação</button>
+    </div>
+  </form>
+</section>
+
+{% if items %}
+<div class="scratch-grid">
+  {% for item in items %}
+  <article class="scratch-card">
+    <div class="d-flex align-items-start justify-content-between gap-2">
+      <span class="eyebrow mb-0"><i class="bi bi-sticky"></i> {{ item.created_at|localtime('%d/%m · %H:%M') }}</span>
+      {% if item.is_converted %}
+      <span class="chip is-done"><i class="bi bi-check2"></i> virou tarefa</span>
+      {% else %}
+      <span class="chip"><i class="bi bi-clock"></i> pendente</span>
+      {% endif %}
+    </div>
+    <p class="scratch-content">{{ item.content }}</p>
+    <div class="scratch-actions">
+      {% if item.is_converted and item.converted_task %}
+      <a class="btn btn-ghost btn-xs" href="{{ url_for('tasks.edit', task_id=item.converted_task.id) }}">
+        <i class="bi bi-box-arrow-up-right"></i> Ver tarefa
+      </a>
+      {% elif not item.is_converted %}
+      <button class="btn btn-cyan btn-xs" type="button"
+              data-convert-url="{{ url_for('scratchpad.convert', item_id=item.id) }}"
+              data-convert-title="{{ item.content.split('\n')[0][:100] }}"
+              data-bs-toggle="modal" data-bs-target="#convertModal">
+        <i class="bi bi-arrow-right-circle"></i> Transformar em tarefa
+      </button>
+      {% endif %}
+      <form method="post" action="{{ url_for('scratchpad.delete', item_id=item.id) }}" class="ms-auto"
+            data-confirm="Excluir este rascunho?">
+        {{ csrf() }}
+        <button class="icon-btn-sm" type="submit" aria-label="Excluir rascunho" title="Excluir">
+          <i class="bi bi-trash3"></i>
+        </button>
+      </form>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state" style="min-height: 200px;">
+  <i class="bi bi-sticky"></i>
+  <span>Nenhum rascunho. Use o botão + no topo de qualquer página para guardar uma ideia.</span>
+</div>
+{% endif %}
+
+<!-- ============================== MODAL: CONVERTER -->
+<div class="modal fade" id="convertModal" tabindex="-1" aria-labelledby="convertModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="" data-convert-form>
+        {{ convert_form.hidden_tag() }}
+        <div class="modal-header">
+          <h2 class="modal-title" id="convertModalLabel"><i class="bi bi-arrow-right-circle text-cyan"></i> Transformar em tarefa</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            {{ convert_form.title.label(class="form-label") }}
+            {{ convert_form.title(class="form-control", id="convertTitle") }}
+          </div>
+          <div class="row g-3">
+            <div class="col-12 col-sm-6">
+              {{ convert_form.estimate_pomodoros.label(class="form-label") }}
+              {{ convert_form.estimate_pomodoros(class="form-control") }}
+            </div>
+            <div class="col-12 col-sm-6">
+              {{ convert_form.category.label(class="form-label") }}
+              {{ convert_form.category(class="form-select") }}
+            </div>
+          </div>
+          <div class="form-check mt-3">
+            {{ convert_form.keep_note(class="form-check-input") }}
+            {{ convert_form.keep_note.label(class="form-check-label") }}
+          </div>
+          <p class="form-hint mt-2 mb-0">O texto completo vai para a descrição da tarefa.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-neon btn-sm" type="submit"><i class="bi bi-check-lg"></i> Criar tarefa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

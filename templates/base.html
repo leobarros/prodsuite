@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}Meu dia{% endblock %} · ProdSuite</title>
+  <meta name="description" content="ProdSuite: tarefas, foco, anotações e estudos em um só lugar. Simples, leve e no seu ritmo.">
+  <meta name="theme-color" content="#faf7f2">
+  <meta name="color-scheme" content="light dark">
+  <meta name="application-name" content="ProdSuite">
+
+  <!-- PWA / iOS Safari -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ProdSuite">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="manifest" href="{{ url_for('main.manifest') }}">
+  <link rel="icon" href="{{ url_for('static', filename='icons/favicon.ico') }}" sizes="any">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='icons/apple-touch-icon-180.png') }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='icons/icon-32.png') }}">
+  <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+  <link rel="mask-icon" href="{{ url_for('static', filename='icons/icon.svg') }}" color="#7c6aa3">
+
+  <!-- Tema escolhido pelo usuário, aplicado antes da primeira pintura -->
+  <script src="{{ url_for('static', filename='js/theme-init.js') }}"></script>
+
+  <!-- 100% local: nenhum CDN externo -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap-icons/bootstrap-icons.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="user-id" content="{{ current_user.id if current_user.is_authenticated else '' }}">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}"
+      data-authenticated="{{ '1' if current_user.is_authenticated else '0' }}"
+      data-user-id="{{ current_user.id if current_user.is_authenticated else '' }}"
+      data-onboarding="{{ '1' if show_onboarding else '0' }}"
+      {% block body_attrs %}{% endblock %}>
+
+{% from "_macros.html" import csrf, field_errors, password_field %}
+
+{% set ep = request.endpoint or '' %}
+<a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+<div class="app-shell{% if not current_user.is_authenticated %} app-shell--auth{% endif %}">
+  {% if current_user.is_authenticated %}
+  <aside class="sidebar" aria-label="Navegação principal">
+    <a class="brand" href="{{ url_for('main.dashboard') }}">
+      <img class="brand-logo" src="{{ url_for('static', filename='icons/icon.svg') }}" alt="" width="38" height="38">
+      <span>
+        <span class="brand-name">ProdSuite</span>
+        <span class="brand-sub">produtividade pessoal</span>
+      </span>
+    </a>
+
+    <nav class="side-section" aria-label="Workspace">
+      <span class="side-label">meu dia</span>
+      <a class="side-link {{ 'active' if ep == 'main.dashboard' }}" href="{{ url_for('main.dashboard') }}">
+        <i class="bi bi-house-door"></i><span>Meu dia</span>
+      </a>
+      <a class="side-link {{ 'active' if ep == 'planner.plan' }}" href="{{ url_for('planner.plan') }}">
+        <i class="bi bi-calendar2-check"></i><span>Planejar</span>
+      </a>
+      <a class="side-link {{ 'active' if ep.startswith('tasks.') }}" href="{{ url_for('tasks.index') }}">
+        <i class="bi bi-check2-square"></i><span>Tarefas</span>
+        {% if nav_pending %}<span class="side-badge">{{ nav_pending }}</span>{% endif %}
+      </a>
+      <a class="side-link {{ 'active' if ep.startswith('pomodoro.') }}" href="{{ url_for('pomodoro.focus') }}">
+        <span class="emoji-icon tomato-glyph" aria-hidden="true"></span><span>Pomodoro</span>
+      </a>
+      <a class="side-link {{ 'active' if ep.startswith('scratchpad.') }}" href="{{ url_for('scratchpad.index') }}">
+        <i class="bi bi-lightbulb"></i><span>Rascunhos</span>
+      </a>
+      <a class="side-link {{ 'active' if ep.startswith('notes.') }}" href="{{ url_for('notes.index') }}">
+        <i class="bi bi-journal-bookmark"></i><span>Notas</span>
+      </a>
+    </nav>
+
+    <nav class="side-section" aria-label="Sistema">
+      <span class="side-label">ferramentas</span>
+      <a class="side-link {{ 'active' if ep == 'main.search' }}" href="{{ url_for('main.search') }}">
+        <i class="bi bi-search"></i><span>Buscar</span>
+      </a>
+      <a class="side-link {{ 'active' if ep == 'review.weekly' }}" href="{{ url_for('review.weekly') }}">
+        <i class="bi bi-journal-check"></i><span>Revisão</span>
+      </a>
+      <a class="side-link {{ 'active' if ep == 'help.help_page' }}" href="{{ url_for('help.help_page') }}">
+        <i class="bi bi-life-preserver"></i><span>Ajuda</span>
+      </a>
+      <a class="side-link {{ 'active' if ep.startswith('export.') }}" href="{{ url_for('export.index') }}">
+        <i class="bi bi-person-lines-fill"></i><span>Meus dados</span>
+      </a>
+      <a class="side-link {{ 'active' if ep == 'auth.profile' }}" href="{{ url_for('auth.profile') }}">
+        <i class="bi bi-person"></i><span>Perfil</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a class="user-chip" href="{{ url_for('auth.profile') }}">
+        <span class="avatar">{{ current_user.initials }}</span>
+        <span class="user-meta">
+          <strong>{{ current_user.display_name }}</strong>
+          <span>{{ current_user.email }}</span>
+        </span>
+      </a>
+      <div class="sidebar-actions">
+        <a class="icon-btn" href="{{ url_for('main.search') }}" aria-label="Busca global" title="Busca global">
+          <i class="bi bi-search"></i>
+        </a>
+        <button class="icon-btn" type="button" data-bs-toggle="modal" data-bs-target="#captureModal" aria-label="Nova anotação" title="Nova anotação">
+          <i class="bi bi-plus-lg"></i>
+        </button>
+        <button class="icon-btn" type="button" data-theme-toggle aria-label="Alternar tema" title="Alternar tema">
+          <i class="bi bi-moon-stars"></i>
+        </button>
+        <a class="icon-btn" href="{{ url_for('help.help_page') }}" aria-label="Ajuda" title="Ajuda">
+          <i class="bi bi-question-circle"></i>
+        </a>
+        <form method="post" action="{{ url_for('auth.logout') }}" class="ms-auto">
+          {{ csrf() }}
+          <button class="icon-btn" type="submit" aria-label="Sair" title="Sair">
+            <i class="bi bi-box-arrow-right"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </aside>
+  {% endif %}
+
+  <main class="app-main{% if not current_user.is_authenticated %} app-main--auth{% endif %}" id="conteudo">
+    {% if current_user.is_authenticated %}
+    <header class="mobile-topbar">
+      <a class="brand" href="{{ url_for('main.dashboard') }}">
+        <img class="brand-logo" src="{{ url_for('static', filename='icons/icon.svg') }}" alt="" width="29" height="29">
+        <span class="brand-name">ProdSuite</span>
+      </a>
+      <div class="topbar-actions">
+        <a class="icon-btn" href="{{ url_for('main.search') }}" aria-label="Buscar"><i class="bi bi-search"></i></a>
+        <button class="icon-btn" type="button" data-bs-toggle="modal" data-bs-target="#captureModal" aria-label="Nova anotação"><i class="bi bi-plus-lg"></i></button>
+        <button class="icon-btn" type="button" data-theme-toggle aria-label="Alternar tema" title="Alternar tema"><i class="bi bi-moon-stars"></i></button>
+        <a class="icon-btn help-shortcut" href="{{ url_for('help.help_page') }}" aria-label="Ajuda"><i class="bi bi-question-circle"></i></a>
+        <a class="avatar" href="{{ url_for('auth.profile') }}" aria-label="Perfil">{{ current_user.initials }}</a>
+      </div>
+    </header>
+    {% endif %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="flash-stack" role="status">
+        {% for category, message in messages %}
+        <div class="flash flash-{{ category if category in ['success','danger','warning','info'] else 'info' }}">
+          <i class="bi bi-{{ 'check2-circle' if category == 'success' else 'exclamation-octagon' if category == 'danger' else 'exclamation-triangle' if category == 'warning' else 'info-circle' }}"></i>
+          <span>{{ message }}</span>
+          <button type="button" class="flash-close" data-dismiss-flash aria-label="Fechar"><i class="bi bi-x-lg"></i></button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="confirm-dialog" id="confirm-dialog" hidden>
+      <div class="confirm-backdrop" data-confirm-cancel></div>
+      <div class="confirm-card" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message">
+        <span class="confirm-icon" aria-hidden="true"><i class="bi bi-exclamation-triangle"></i></span>
+        <div class="confirm-copy">
+          <h2 id="confirm-title">Confirmar ação</h2>
+          <p id="confirm-message"></p>
+        </div>
+        <div class="confirm-actions">
+          <button class="btn btn-ghost btn-sm" type="button" data-confirm-cancel>Cancelar</button>
+          <button class="btn btn-danger-ghost btn-sm" type="button" data-confirm-accept>Confirmar</button>
+        </div>
+      </div>
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <div class="ios-hint" id="ios-install-hint" role="note">
+      <i class="bi bi-box-arrow-up"></i>
+      <span>Instale como app: <strong>Compartilhar</strong> → <strong>Adicionar à Tela de Início</strong>.</span>
+      <button type="button" data-dismiss-ios-hint aria-label="Dispensar"><i class="bi bi-x-lg"></i></button>
+    </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+
+    {% if current_user.is_authenticated %}
+    <footer class="app-foot">
+      <span>ProdSuite · v1.0</span>
+      <span><a href="{{ url_for('help.help_page') }}">ajuda</a> · feito para o seu dia a dia · {{ today_local.strftime('%d.%m.%Y') }}</span>
+    </footer>
+    {% endif %}
+  </main>
+</div>
+
+{% if current_user.is_authenticated %}
+  {% if show_onboarding %}
+  {% include "_onboarding_modal.html" %}
+  {% endif %}
+  <audio id="pomodoro-sound" src="{{ url_for('static', filename='audio/pomodoro-alert.wav') }}" preload="auto" playsinline aria-hidden="true"></audio>
+  <div class="pomodoro-completion-alert" id="pomodoro-completion-alert" role="alert" aria-live="assertive" hidden>
+    <span class="pomodoro-alert-icon" data-pomodoro-alert-emoji aria-hidden="true"><span class="tomato-glyph"></span></span>
+    <div class="pomodoro-alert-copy">
+      <span class="pomodoro-alert-eyebrow">Pomodoro</span>
+      <strong data-pomodoro-alert-title>Foco concluído</strong>
+      <p data-pomodoro-alert-message>25 min de foco concluídos. Pausa de 5 min.</p>
+      <div class="pomodoro-alert-actions">
+        <button class="btn btn-neon btn-sm" type="button" data-pomodoro-alert-action>Iniciar pausa</button>
+        <button class="btn btn-ghost btn-sm" type="button" data-dismiss-pomodoro-alert>Dispensar</button>
+      </div>
+    </div>
+    <button class="pomodoro-alert-close" type="button" data-dismiss-pomodoro-alert aria-label="Fechar aviso">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+  {% include "_hud.html" %}
+  {% include "_bottom_nav.html" %}
+  {% include "_capture_modal.html" %}
+{% endif %}
+
+<div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+<script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+{% if current_user.is_authenticated %}
+<script src="{{ url_for('static', filename='js/pomodoro.js') }}" defer></script>
+{% endif %}
+{% block scripts %}{% endblock %}
+</body>
+</html>

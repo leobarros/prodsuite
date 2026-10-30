@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Planejar{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow"><i class="bi bi-calendar2-check"></i> seu plano de hoje <span class="sep">·</span> {{ today.strftime('%d/%m/%Y') }}</p>
+    <h1 class="page-title">Planeje o seu dia</h1>
+    <p class="page-sub">Escolha o essencial, distribua o esforço e deixe o resto para depois.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('review.weekly') }}"><i class="bi bi-journal-check"></i> Revisão da semana</a>
+    <a class="btn btn-neon btn-sm" href="{{ url_for('tasks.index', nova=1) }}"><i class="bi bi-plus-lg"></i> Nova tarefa</a>
+  </div>
+</div>
+
+<div class="bento-grid">
+  <section class="bento-card plan-priorities">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-star-fill text-amber" aria-hidden="true"></i> Prioridades do dia</h2>
+      <span class="card-link">{{ mit_tasks|length }}/3</span>
+    </div>
+    <p class="page-sub mb-3">Comece pelo mais importante. Até três prioridades — o resto pode esperar.</p>
+    {% if mit_tasks %}
+    <div class="plan-list">
+      {% for task in mit_tasks %}
+      <div class="plan-item {{ 'is-frog' if loop.first }}">
+        <span class="plan-index">{{ loop.index }}</span>
+        <span class="plan-item-main">
+          <a class="plan-item-title" href="{{ url_for('tasks.edit', task_id=task.id) }}">{{ task.title }}</a>
+          <span class="plan-item-meta">
+            <i class="bi {{ task.category_icon }}"></i> {{ task.category_label }}
+            <span class="sep">·</span> {{ task.estimate_label }}
+            {% if task.due_date %}<span class="sep">·</span> {{ task.due_date|datebr }}{% endif %}
+          </span>
+        </span>
+        <a class="icon-btn-sm" href="{{ url_for('pomodoro.focus', tarefa=task.id) }}" title="Focar nesta tarefa" aria-label="Focar nesta tarefa">
+          <span class="emoji-icon tomato-glyph" aria-hidden="true"></span>
+        </a>
+        <form method="post" action="{{ url_for('tasks.toggle_mit', task_id=task.id) }}">
+          {{ csrf() }}
+          <input type="hidden" name="next" value="{{ url_for('planner.plan') }}">
+          <button class="icon-btn-sm" type="submit" title="Remover das prioridades" aria-label="Remover das prioridades">
+            <i class="bi bi-star-fill"></i>
+          </button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-star text-amber" aria-hidden="true"></i>
+      <span>Nenhuma prioridade escolhida. Marque até três tarefas como prioridade do dia.</span>
+      <a class="btn btn-ghost btn-xs" href="{{ url_for('tasks.index', filtro='rapidas') }}">Ver tarefas</a>
+    </div>
+    {% endif %}
+    <div class="rule-strip">
+      <span><strong>{{ rule_counts.large }}</strong>/{{ rule_counts.target_large }} grande</span>
+      <span><strong>{{ rule_counts.medium }}</strong>/{{ rule_counts.target_medium }} médias</span>
+      <span><strong>{{ rule_counts.small }}</strong>/{{ rule_counts.target_small }} pequenas</span>
+      <a class="card-link ms-auto" href="{{ url_for('tasks.index') }}">ver quadro <i class="bi bi-arrow-up-right"></i></a>
+    </div>
+  </section>
+
+  <section class="bento-card plan-goal">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-bullseye"></i> Meta da semana</h2>
+      <span class="card-link">{{ metrics.sessions }}/{{ metrics.goal }} sessões</span>
+    </div>
+    <p class="page-sub mb-2">Uma meta pequena e possível vale mais que uma lista infinita.</p>
+    <div class="goal-bar" role="img" aria-label="{{ metrics.goal_percent }}% da meta">
+      <span style="width: {{ metrics.goal_percent }}%"></span>
+    </div>
+    <div class="goal-labels">
+      <span>{{ metrics.goal_percent }}%</span>
+      <span>{{ metrics.goal_remaining }} restantes</span>
+    </div>
+    <div class="divider"></div>
+    <form method="post" action="{{ url_for('planner.update_goal') }}" class="goal-form">
+      {{ goal_form.hidden_tag() }}
+      <label class="form-label" for="weekly_focus_goal">Sessões por semana</label>
+      <div class="input-group">
+        {{ goal_form.weekly_focus_goal(class="form-control") }}
+        <button class="btn btn-ghost" type="submit">Salvar</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="bento-card plan-matrix">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-grid-3x3-gap"></i> Matriz de prioridades</h2>
+      <a class="card-link" href="{{ url_for('tasks.index') }}">ver tarefas <i class="bi bi-arrow-up-right"></i></a>
+    </div>
+    <p class="page-sub mb-3">Urgente nem sempre é importante. Classifique para decidir o que fazer agora.</p>
+    <div class="matrix-grid">
+      {% for quadrant in ['do', 'schedule', 'delegate', 'eliminate'] %}
+      <div class="matrix-cell q-{{ quadrant }}">
+        <div class="matrix-head">
+          <span>{{ matrix_labels[quadrant] }}</span>
+          <a href="{{ url_for('tasks.index', quadrante=quadrant) }}">{{ matrix[quadrant]|length }}</a>
+        </div>
+        <span class="matrix-hint">{{ matrix_hints[quadrant] }}</span>
+        {% for task in matrix[quadrant][:2] %}
+        <a class="matrix-task" href="{{ url_for('tasks.edit', task_id=task.id) }}">{{ task.title }}</a>
+        {% endfor %}
+        {% if not matrix[quadrant] %}
+        <span class="matrix-empty">nada aqui</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% if unclassified %}
+    <div class="unclassified">
+      <span><i class="bi bi-question-circle"></i> Sem quadrante:</span>
+      {% for task in unclassified[:4] %}
+      <a href="{{ url_for('tasks.edit', task_id=task.id) }}">{{ task.title }}</a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </section>
+
+  <section class="bento-card plan-day">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-clock-history"></i> Blocos de hoje</h2>
+      <span class="card-link">{{ day_tasks|length }} para hoje</span>
+    </div>
+    <p class="page-sub mb-3">Reserve um horário para cada bloco. Uma coisa de cada vez.</p>
+    {% if day_tasks %}
+    <div class="plan-list">
+      {% for task in day_tasks %}
+      <div class="plan-item">
+        <span class="plan-time">{{ task.estimate_pomodoros or 1 }}×</span>
+        <span class="plan-item-main">
+          <a class="plan-item-title" href="{{ url_for('tasks.edit', task_id=task.id) }}">{{ task.title }}</a>
+          <span class="plan-item-meta">
+            <i class="bi {{ task.category_icon }}"></i> {{ task.category_label }}
+            <span class="sep">·</span> {{ task.estimate_label }}
+            {% if task.due_date and task.due_date == today %}<span class="sep">·</span> prazo hoje{% endif %}
+          </span>
+        </span>
+        <a class="icon-btn-sm" href="{{ url_for('pomodoro.focus', tarefa=task.id) }}" title="Começar foco" aria-label="Começar foco">
+          <span class="emoji-icon tomato-glyph" aria-hidden="true"></span>
+        </a>
+        <form method="post" action="{{ url_for('tasks.plan_today', task_id=task.id) }}">
+          {{ csrf() }}
+          <input type="hidden" name="next" value="{{ url_for('planner.plan') }}">
+          <button class="icon-btn-sm" type="submit" title="Remover do plano de hoje" aria-label="Remover do plano de hoje">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-calendar2-plus"></i>
+      <span>Seu dia está livre. Escolha uma tarefa abaixo e adicione ao plano de hoje.</span>
+    </div>
+    {% endif %}
+    <div class="rule-strip">
+      <span>{{ day_tasks|length }} tarefa{{ 's' if day_tasks|length != 1 }} no plano</span>
+      <a class="card-link ms-auto" href="{{ url_for('tasks.index', filtro='hoje') }}">ver hoje <i class="bi bi-arrow-up-right"></i></a>
+    </div>
+  </section>
+
+  <section class="bento-card plan-quick">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-lightning-charge"></i> Tarefas rápidas</h2>
+      <span class="card-link">até 1 sessão</span>
+    </div>
+    <p class="page-sub mb-3">Tarefas com estimativa de até uma sessão de foco. Resolva uma agora se couber no seu dia.</p>
+    {% if quick_wins %}
+    <div class="quick-list">
+      {% for task in quick_wins %}
+      <div class="quick-item">
+        <span class="quick-dot"></span>
+        <a class="quick-title" href="{{ url_for('tasks.edit', task_id=task.id) }}">{{ task.title }}</a>
+        <form method="post" action="{{ url_for('tasks.plan_today', task_id=task.id) }}">
+          {{ csrf() }}
+          <input type="hidden" name="next" value="{{ url_for('planner.plan') }}">
+          <button class="btn btn-ghost btn-xs" type="submit">+ hoje</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-check2-circle"></i>
+      <span>Nenhuma tarefa rápida pendente. Tudo em ordem por aqui.</span>
+    </div>
+    {% endif %}
+  </section>
+
+  <section class="bento-card plan-review">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-journal-check"></i> Fechar o ciclo</h2>
+      <span class="card-link">sexta ou quando quiser</span>
+    </div>
+    <p class="page-sub mb-3">
+      O que funcionou? O que pesou? Uma revisão curta ajuda a planejar a próxima semana sem repetir o mesmo cansaço.
+    </p>
+    <div class="review-summary">
+      <span><strong>{{ metrics.sessions }}</strong> sessões</span>
+      <span><strong>{{ metrics.minutes }}</strong> min</span>
+      <span><strong>{{ metrics.completed_tasks }}</strong> tarefas</span>
+      <span><strong>{{ metrics.mit_done }}/{{ metrics.mit_total }}</strong> prioridades</span>
+    </div>
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('review.weekly') }}">
+      {{ 'Continuar revisão' if review else 'Fazer revisão da semana' }} <i class="bi bi-arrow-right"></i>
+    </a>
+  </section>
+</div>
+{% endblock %}

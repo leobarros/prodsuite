@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field_errors, password_field %}
+{% block title %}Entrar{% endblock %}
+{% block body_class %}auth-body{% endblock %}
+
+{% block content %}
+<div class="auth-shell">
+  <aside class="auth-aside" aria-label="Sobre a suíte">
+    <div class="auth-aside-content">
+      <div class="brand" style="margin-bottom: 48px;">
+        <img class="brand-logo" src="{{ url_for('static', filename='icons/icon.svg') }}" alt="" width="38" height="38">
+        <span>
+          <span class="brand-name">ProdSuite</span>
+          <span class="brand-sub">produtividade pessoal</span>
+        </span>
+      </div>
+      <p class="auth-kicker">simples · leve · no seu ritmo</p>
+      <h2 class="auth-display">
+        <span class="line">Seu dia,</span>
+        <span class="line accent">mais leve.</span>
+        <span class="line outline">no seu ritmo.</span>
+      </h2>
+      <p class="auth-lead">
+        Organize tarefas, estude com foco e guarde suas ideias em um só lugar.
+        Sem excesso de abas, notificações ou complicação.
+      </p>
+      <div class="auth-features">
+        <div class="auth-feature"><span class="emoji-icon tomato-glyph" aria-hidden="true"></span><strong>Pomodoro</strong><span>foco com pausas</span></div>
+        <div class="auth-feature"><i class="bi bi-briefcase"></i><strong>Trabalho</strong><span>tarefas e prazos</span></div>
+        <div class="auth-feature"><i class="bi bi-mortarboard"></i><strong>Estudos</strong><span>notas e revisão</span></div>
+        <div class="auth-feature"><i class="bi bi-lightbulb"></i><strong>Ideias</strong><span>capture em segundos</span></div>
+      </div>
+    </div>
+    <div class="auth-aside-foot">
+      <span>ProdSuite v1.0</span>
+      <span>feito para o dia a dia</span>
+    </div>
+  </aside>
+
+  <div class="auth-main">
+    <button class="icon-btn auth-theme-toggle" type="button" data-theme-toggle aria-label="Alternar tema" title="Alternar tema">
+      <i class="bi bi-moon-stars"></i>
+    </button>
+    <div class="auth-card">
+      <a class="brand auth-mobile-brand" href="{{ url_for('auth.login') }}">
+        <img class="brand-logo" src="{{ url_for('static', filename='icons/icon.svg') }}" alt="" width="38" height="38">
+        <span>
+          <span class="brand-name">ProdSuite</span>
+          <span class="brand-sub">produtividade pessoal</span>
+        </span>
+      </a>
+
+      <p class="eyebrow"><i class="bi bi-hand-wave"></i> que bom te ver</p>
+      <h1 class="auth-title">Bem-vindo de volta</h1>
+      <p class="auth-sub">Entre para continuar o seu dia.</p>
+
+      <form class="auth-form" method="post" action="{{ url_for('auth.login') }}">
+        {{ form.hidden_tag() }}
+        <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
+
+        <div class="mb-3">
+          {{ form.identifier.label(class="form-label") }}
+          {{ form.identifier(class="form-control" + (" is-invalid" if form.identifier.errors else "")) }}
+          {{ field_errors(form.identifier) }}
+        </div>
+
+        <div class="mb-3">
+          {{ form.password.label(class="form-label") }}
+          {{ password_field(form.password) }}
+        </div>
+
+        <button class="btn btn-neon w-100" type="submit">
+          <i class="bi bi-arrow-right-circle"></i> Entrar
+        </button>
+      </form>
+
+      {% if allow_registration %}
+      <p class="auth-alt">Ainda não tem conta? <a href="{{ url_for('auth.register') }}">Criar conta</a></p>
+      {% else %}
+      <p class="auth-alt">Registro fechado. Peça acesso a quem administra o ProdSuite.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

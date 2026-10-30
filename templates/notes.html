@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Notas{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow"><i class="bi bi-journal-bookmark"></i> notas e estudos <span class="sep">·</span> {{ notes|length }} nota{{ 's' if notes|length != 1 }}</p>
+    <h1 class="page-title">Notas</h1>
+    <p class="page-sub">Escreva com calma, conecte ideias com <span class="mono">[[links]]</span> e encontre tudo depois.</p>
+  </div>
+  <a class="btn btn-neon btn-sm" href="{{ url_for('notes.create') }}"><i class="bi bi-journal-plus"></i> Nova nota</a>
+</div>
+
+<form class="search-box" method="get" action="{{ url_for('notes.index') }}" role="search">
+  <label class="visually-hidden" for="notesSearch">Buscar notas</label>
+  <input class="form-control" type="search" id="notesSearch" name="q" value="{{ query }}"
+         placeholder="Buscar nas suas notas…" autocomplete="off">
+  <button class="btn btn-ghost" type="submit"><i class="bi bi-search"></i></button>
+  {% if query %}<a class="btn btn-ghost" href="{{ url_for('notes.index') }}" aria-label="Limpar filtro"><i class="bi bi-x-lg"></i></a>{% endif %}
+</form>
+
+{% if notes %}
+<div class="notes-grid">
+  {% for note in notes %}
+  <a class="note-card" href="{{ url_for('notes.view', note_id=note.id) }}">
+    <div class="d-flex justify-content-between align-items-start gap-2">
+      <h2>{{ note.title }}</h2>
+      <i class="bi bi-arrow-up-right text-dim"></i>
+    </div>
+    {% if note.excerpt %}<p>{{ note.excerpt }}</p>{% endif %}
+    {% if note.tag_list %}
+    <div class="task-tags mb-2">
+      {% for tag in note.tag_list[:3] %}<span class="tag">#{{ tag }}</span>{% endfor %}
+    </div>
+    {% endif %}
+    <div class="note-card-foot">
+      <span>{{ note.updated_at|localtime('%d/%m/%Y') }}</span>
+      <span class="ms-auto mono">{{ (note.body or '')|length }} chars</span>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state" style="min-height: 220px;">
+  <i class="bi bi-journal-text"></i>
+  <span>{% if query %}Nenhuma nota para «{{ query }}».{% else %}Nenhuma nota ainda. Comece com uma ideia solta.{% endif %}</span>
+  <a class="btn btn-ghost btn-xs" href="{{ url_for('notes.create') }}">Criar nota</a>
+</div>
+{% endif %}
+{% endblock %}

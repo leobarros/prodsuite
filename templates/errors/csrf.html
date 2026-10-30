@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Página expirada{% endblock %}
+{% block content %}
+<div class="error-page">
+  <div>
+    <p class="error-code">OOPS</p>
+    <h1>Sua página expirou</h1>
+    <p>Por segurança, recarregue a página e tente de novo.</p>
+    <a class="btn btn-neon btn-sm" href="{{ request.path }}"><i class="bi bi-arrow-clockwise"></i> Recarregar</a>
+  </div>
+</div>
+{% endblock %}

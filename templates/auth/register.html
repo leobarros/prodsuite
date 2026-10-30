@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field_errors, password_field %}
+{% block title %}Criar conta{% endblock %}
+{% block body_class %}auth-body{% endblock %}
+
+{% block content %}
+<div class="auth-shell">
+  <aside class="auth-aside" aria-label="Sobre a suíte">
+    <div class="auth-aside-content">
+      <div class="brand" style="margin-bottom: 48px;">
+        <img class="brand-logo" src="{{ url_for('static', filename='icons/icon.svg') }}" alt="" width="38" height="38">
+        <span>
+          <span class="brand-name">ProdSuite</span>
+          <span class="brand-sub">produtividade pessoal</span>
+        </span>
+      </div>
+      <p class="auth-kicker">comece por aqui</p>
+      <h2 class="auth-display">
+        <span class="line">Um lugar para</span>
+        <span class="line accent">trabalho,</span>
+        <span class="line outline">estudos e ideias.</span>
+      </h2>
+      <p class="auth-lead">
+        Tarefas, foco e anotações no mesmo lugar. Simples de usar
+        e do seu jeito.
+      </p>
+      <div class="auth-features">
+        <div class="auth-feature"><span class="emoji-icon tomato-glyph" aria-hidden="true"></span><strong>Pomodoro</strong><span>25 · 5 · 20 min</span></div>
+        <div class="auth-feature"><i class="bi bi-briefcase"></i><strong>Trabalho</strong><span>tarefas e prazos</span></div>
+        <div class="auth-feature"><i class="bi bi-mortarboard"></i><strong>Estudos</strong><span>foco e revisão</span></div>
+        <div class="auth-feature"><i class="bi bi-journal-bookmark"></i><strong>Notas</strong><span>ideias conectadas</span></div>
+      </div>
+    </div>
+    <div class="auth-aside-foot">
+      <span>ProdSuite v1.0</span>
+      <span>feito para o seu dia a dia</span>
+    </div>
+  </aside>
+
+  <div class="auth-main">
+    <button class="icon-btn auth-theme-toggle" type="button" data-theme-toggle aria-label="Alternar tema" title="Alternar tema">
+      <i class="bi bi-moon-stars"></i>
+    </button>
+    <div class="auth-card">
+      <a class="brand auth-mobile-brand" href="{{ url_for('auth.register') }}">
+        <img class="brand-logo" src="{{ url_for('static', filename='icons/icon.svg') }}" alt="" width="38" height="38">
+        <span>
+          <span class="brand-name">ProdSuite</span>
+          <span class="brand-sub">produtividade pessoal</span>
+        </span>
+      </a>
+
+      <p class="eyebrow"><i class="bi bi-person-plus"></i> criar conta</p>
+      <h1 class="auth-title">Crie sua conta</h1>
+      <p class="auth-sub">Leva menos de um minuto. A senha precisa ter no mínimo 4 caracteres.</p>
+
+      <form class="auth-form" method="post" action="{{ url_for('auth.register') }}">
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+          {{ form.display_name.label(class="form-label") }}
+          {{ form.display_name(class="form-control" + (" is-invalid" if form.display_name.errors else "")) }}
+          {{ field_errors(form.display_name) }}
+        </div>
+
+        <div class="mb-3">
+          {{ form.username.label(class="form-label") }}
+          {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else "")) }}
+          {{ field_errors(form.username) }}
+          <p class="form-hint mb-0">É o nome curto que você usa para entrar. Não aparece nas saudações.</p>
+        </div>
+
+        <div class="mb-3">
+          {{ form.email.label(class="form-label") }}
+          {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+          {{ field_errors(form.email) }}
+        </div>
+
+        <div class="mb-3">
+          {{ form.password.label(class="form-label") }}
+          {{ password_field(form.password, autocomplete="new-password") }}
+        </div>
+
+        <div class="mb-3">
+          {{ form.confirm.label(class="form-label") }}
+          {{ password_field(form.confirm, autocomplete="new-password") }}
+        </div>
+
+        <button class="btn btn-neon w-100" type="submit">
+          <i class="bi bi-person-plus"></i> Criar minha conta
+        </button>
+      </form>
+
+      <p class="auth-alt">Já tem conta? <a href="{{ url_for('auth.login') }}">Entrar</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}
