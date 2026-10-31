@@ -3525,3 +3525,167 @@ body.has-completion-alert .toast-stack {
 .review-empty {
   min-height: 150px;
 }
+
+@media (max-width: 767.98px) {
+  /* A camada de tema carrega depois do app.css; reaplica o posicionamento
+     da pílula acima da navegação inferior no mobile. */
+  .pomodoro-hud {
+    right: 10px;
+    bottom: calc(var(--bottom-nav-h) + var(--safe-bottom) + 8px);
+    left: auto;
+    z-index: 65;
+    width: auto;
+    min-width: 170px;
+    max-width: calc(100vw - 20px);
+    padding: 7px 10px 6px;
+    border-radius: 13px;
+  }
+
+  .hud-head,
+  .hud-foot,
+  .hud-reset {
+    display: none;
+  }
+
+  .hud-time {
+    font-size: 1.38rem;
+  }
+
+  .hud-toggle {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
+
+  .hud-progress {
+    margin: 5px 0 0;
+  }
+}
+
+@media (max-width: 767.98px) {
+  /* Escala de leitura para iPhone/Android: o layout base usa muitos
+     tamanhos de 9–12 px; no celular eles precisam de mais respiro. */
+  body {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  .page-sub {
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .eyebrow {
+    font-size: 0.68rem;
+  }
+
+  .card-title {
+    font-size: 1rem;
+  }
+
+  .card-link {
+    font-size: 0.8rem;
+  }
+
+  .task-title {
+    font-size: 1.02rem;
+    line-height: 1.35;
+  }
+
+  .task-desc {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .task-flag,
+  .tag {
+    font-size: 0.78rem;
+  }
+
+  .task-foot,
+  .due,
+  .pomo,
+  .list-meta,
+  .history-meta,
+  .history-duration {
+    font-size: 0.8rem;
+  }
+
+  .kanban-head {
+    font-size: 0.8rem;
+  }
+
+  .kanban-count {
+    font-size: 0.7rem;
+  }
+
+  .filter-chip {
+    font-size: 0.8rem;
+  }
+
+  .chip {
+    font-size: 0.78rem;
+  }
+
+  .bottom-link {
+    font-size: 0.7rem;
+  }
+
+  .bottom-link i {
+    font-size: 1.25rem;
+  }
+
+  .mobile-topbar .brand-name {
+    font-size: 0.9rem;
+  }
+
+  .form-label,
+  .form-check-label {
+    font-size: 0.86rem;
+  }
+
+  .form-control,
+  .form-select,
+  .form-control-sm,
+  .form-select-sm {
+    min-height: 44px;
+    font-size: 1rem;
+  }
+
+  .form-hint,
+  .char-count,
+  .invalid-feedback {
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+
+  .btn-sm {
+    font-size: 0.82rem;
+  }
+
+  .btn-xs {
+    font-size: 0.76rem;
+  }
+
+  .review-note p {
+    font-size: 0.92rem;
+  }
+
+  .review-metric > span:last-child {
+    font-size: 0.68rem;
+  }
+
+  .matrix-head {
+    font-size: 0.8rem;
+  }
+
+  .matrix-hint,
+  .matrix-task,
+  .matrix-empty {
+    font-size: 0.78rem;
+  }
+
+  .hud-time {
+    font-size: 1.45rem;
+  }
+}
