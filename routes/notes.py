@@ -19,7 +19,7 @@ from sqlalchemy.exc import IntegrityError
 from extensions import db
 from forms import NoteForm
 from models import Note, normalize_tags
-from services.notes import render_note_markdown
+from services.notes import render_note_excerpt, render_note_markdown
 
 notes_bp = Blueprint("notes", __name__)
 
@@ -64,7 +64,10 @@ def index():
             or_(Note.title.ilike(pattern), Note.body.ilike(pattern))
         )
     notes = notes_query.order_by(Note.updated_at.desc()).limit(200).all()
-    return render_template("notes.html", notes=notes, query=query)
+    excerpts = {note.id: render_note_excerpt(note.body) for note in notes}
+    return render_template(
+        "notes.html", notes=notes, query=query, note_excerpts=excerpts
+    )
 
 
 @notes_bp.route("/notas/nova", methods=["GET", "POST"])

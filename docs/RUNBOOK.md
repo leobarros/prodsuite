@@ -19,7 +19,7 @@ Para a apresentação do app, o tour visual e o guia de uso, volte ao **[README]
 | Banco | `/data/prodsuite.db` |
 | Limite de memória | 512 MB |
 | Healthcheck | `GET /healthz` |
-| Testes | 98 Pytest |
+| Testes | 104 Pytest |
 | Dados no Git | nenhum (banco, `.env` e backups são ignorados) |
 
 ---
@@ -93,7 +93,15 @@ curl http://127.0.0.1:8090/healthz
 docker compose logs -f app
 ```
 
-O log deve mostrar `Banco inicializado`, o Gunicorn escutando em `0.0.0.0:5000` e os workers iniciando. `Ctrl+C` sai do acompanhamento sem parar o container.
+O log deve mostrar `startup app=ProdSuite ... db_backend=sqlite`, o Gunicorn escutando em `0.0.0.0:5000` e os workers iniciando. `Ctrl+C` sai do acompanhamento sem parar o container.
+
+As requisições dinâmicas aparecem em uma linha com contexto útil e sem corpo, query string ou credenciais:
+
+```text
+2026-10-31 15:50:57 INFO  app [99d93fc5b0308dac] GET /tarefas user=1 ip=127.0.0.1 | request_complete status=200 duration_ms=100.6 endpoint=tasks.index bytes=32637
+```
+
+Use o código entre colchetes para correlacionar um erro mostrado ao usuário com o stack trace. O access log duplicado do Werkzeug, o `/healthz` bem-sucedido e assets estáticos não poluem o log; healthcheck com falha e respostas 4xx/5xx aparecem.
 
 ---
 
@@ -255,6 +263,8 @@ curl http://127.0.0.1:8090/healthz
 ```bash
 docker compose logs -f --tail=100 app
 ```
+
+Eventos de autenticação, CSRF, rate limit e expiração de sessão têm prefixos como `auth.login.success`, `auth.login.failure`, `security.csrf_failure` e `security.session_revoked`. Senhas, tokens CSRF, corpo de requisição, query string e e-mail não são registrados.
 
 ### Memória e CPU
 
@@ -446,7 +456,7 @@ source .venv/bin/activate
 pytest -q
 ```
 
-Resultado esperado: **98 testes passando**.
+Resultado esperado: **104 testes passando**.
 
 Cobertura:
 
@@ -553,7 +563,7 @@ prodsuite/
 ├── templates/              # Jinja
 ├── static/                 # CSS, JS, ícones, áudio, Bootstrap local
 ├── docs/images/            # imagens do README
-├── tests/test_app.py       # 98 testes
+├── tests/test_app.py       # 104 testes
 ├── Dockerfile
 ├── docker-compose.yml
 ├── gunicorn.conf.py

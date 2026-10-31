@@ -23,7 +23,10 @@ max_requests = int(os.environ.get("GUNICORN_MAX_REQUESTS", "2000"))
 max_requests_jitter = 200
 
 preload_app = False
-accesslog = "-"
+# O app registra requisições dinâmicas com request_id, usuário, status e
+# duração. O access log do Gunicorn é redundante e inclui assets/healthchecks
+# a cada 30 s; mantenha o stdout/stderr para eventos de worker e erros.
+accesslog = None
 errorlog = "-"
 loglevel = os.environ.get("LOG_LEVEL", "info")
 capture_output = True

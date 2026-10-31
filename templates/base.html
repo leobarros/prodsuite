@@ -94,9 +94,6 @@
       <a class="side-link {{ 'active' if ep.startswith('export.') }}" href="{{ url_for('export.index') }}">
         <i class="bi bi-person-lines-fill"></i><span>Meus dados</span>
       </a>
-      <a class="side-link {{ 'active' if ep == 'auth.profile' }}" href="{{ url_for('auth.profile') }}">
-        <i class="bi bi-person"></i><span>Perfil</span>
-      </a>
     </nav>
 
     <div class="sidebar-footer">
@@ -127,6 +124,7 @@
           </button>
         </form>
       </div>
+      <div class="sidebar-version">{{ app_name }} · v{{ app_version }}</div>
     </div>
   </aside>
   {% endif %}
@@ -189,7 +187,6 @@
 
     {% if current_user.is_authenticated %}
     <footer class="app-foot">
-      <span>ProdSuite · v1.0</span>
       <span><a href="{{ url_for('help.help_page') }}">ajuda</a> · feito para o seu dia a dia · {{ today_local.strftime('%d.%m.%Y') }}</span>
     </footer>
     {% endif %}

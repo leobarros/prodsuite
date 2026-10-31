@@ -89,7 +89,7 @@
       <div class="card-head">
         <h2 class="card-title"><i class="bi bi-key"></i> Trocar senha</h2>
       </div>
-      <form method="post" action="{{ url_for('auth.profile') }}">
+      <form class="password-form" method="post" action="{{ url_for('auth.profile') }}">
         {{ form.hidden_tag() }}
         <div class="mb-3">
           {{ form.current_password.label(class="form-label") }}
@@ -126,7 +126,7 @@
 
     <section class="bento-card">
       <div class="card-head"><h2 class="card-title"><i class="bi bi-heart"></i> Sobre</h2></div>
-      <p class="page-sub mb-2"><strong>ProdSuite v1.0</strong></p>
+      <p class="page-sub mb-2"><strong>{{ app_name }} v{{ app_version }}</strong></p>
       <p class="page-sub mb-0">Uma ferramenta simples para organizar tarefas, estudos e ideias — sem complicação e do seu jeito.</p>
     </section>
   </div>

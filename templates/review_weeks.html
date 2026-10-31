@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Semanas encerradas{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow"><i class="bi bi-calendar3"></i> revisão · histórico</p>
+    <h1 class="page-title">Semanas encerradas</h1>
+    <p class="page-sub">Veja o que progrediu em cada semana, mesmo quando o quadro já foi limpo.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('review.weekly') }}"><i class="bi bi-calendar-week"></i> Semana atual</a>
+    <a class="btn btn-neon btn-sm" href="{{ url_for('review.weekly', semana=previous_week_start.isoformat()) }}"><i class="bi bi-journal-check"></i> Revisar anterior</a>
+  </div>
+</div>
+
+{% if entries %}
+<div class="week-history">
+  {% for entry in entries %}
+  <a class="week-history-row" href="{{ url_for('review.weekly', semana=entry.week_start.isoformat()) }}">
+    <span class="week-history-period">
+      <strong>{{ entry.week_start|datebr }} – {{ entry.week_end|datebr }}</strong>
+      <span>{{ entry.week_start.year }}</span>
+    </span>
+    <span class="week-history-metric"><strong>{{ entry.metrics.sessions }}</strong> sessões</span>
+    <span class="week-history-metric"><strong>{{ entry.metrics.minutes }}</strong> min</span>
+    <span class="week-history-metric"><strong>{{ entry.metrics.completed_tasks }}</strong> tarefas</span>
+    <span class="week-history-metric"><strong>{{ entry.archived }}</strong> arquivadas</span>
+    <span class="chip {{ 'is-done' if entry.review else '' }}">
+      {% if entry.review %}<i class="bi bi-check2"></i> revisada{% else %}<i class="bi bi-pencil"></i> revisar{% endif %}
+    </span>
+    <i class="bi bi-arrow-right week-history-arrow"></i>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="bento-card">
+  <div class="empty-state" style="min-height: 180px;">
+    <i class="bi bi-calendar3"></i>
+    <span>Nenhuma semana encerrada ainda. Quando a semana terminar, ela aparece aqui.</span>
+    <a class="btn btn-ghost btn-xs" href="{{ url_for('review.weekly') }}">Abrir semana atual</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

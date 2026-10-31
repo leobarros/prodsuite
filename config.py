@@ -41,6 +41,7 @@ def _default_database_uri() -> str:
 class Config:
     # ------------------------------------------------------------------ core
     APP_NAME = "ProdSuite"
+    APP_VERSION = os.environ.get("APP_VERSION", "1.0")
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-insecure-change-me")
     ENV = os.environ.get("FLASK_ENV", "production")
 

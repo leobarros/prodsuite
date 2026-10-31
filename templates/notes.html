@@ -22,12 +22,14 @@
 {% if notes %}
 <div class="notes-grid">
   {% for note in notes %}
-  <a class="note-card" href="{{ url_for('notes.view', note_id=note.id) }}">
+  <article class="note-card" data-note-url="{{ url_for('notes.view', note_id=note.id) }}">
     <div class="d-flex justify-content-between align-items-start gap-2">
-      <h2>{{ note.title }}</h2>
-      <i class="bi bi-arrow-up-right text-dim"></i>
+      <h2><a class="note-card-title" href="{{ url_for('notes.view', note_id=note.id) }}">{{ note.title }}</a></h2>
+      <a class="note-card-open" href="{{ url_for('notes.view', note_id=note.id) }}" aria-label="Abrir nota {{ note.title }}">
+        <i class="bi bi-arrow-up-right text-dim"></i>
+      </a>
     </div>
-    {% if note.excerpt %}<p>{{ note.excerpt }}</p>{% endif %}
+    {% if note_excerpts[note.id] %}<p>{{ note_excerpts[note.id] }}</p>{% endif %}
     {% if note.tag_list %}
     <div class="task-tags mb-2">
       {% for tag in note.tag_list[:3] %}<span class="tag">#{{ tag }}</span>{% endfor %}
@@ -37,7 +39,7 @@
       <span>{{ note.updated_at|localtime('%d/%m/%Y') }}</span>
       <span class="ms-auto mono">{{ (note.body or '')|length }} chars</span>
     </div>
-  </a>
+  </article>
   {% endfor %}
 </div>
 {% else %}

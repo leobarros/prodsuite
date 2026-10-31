@@ -17,8 +17,8 @@ from sqlalchemy import func, text
 from sqlalchemy.exc import SQLAlchemyError
 
 from extensions import db
-from models import Note, Scratchpad, Task
-from services.planning import weekly_metrics
+from models import Note, Scratchpad, Task, WeeklyReview
+from services.planning import week_start_for, weekly_metrics
 from services.pomodoro import focus_stats
 from services.search import global_search
 from services.timeutils import day_start_utc, local_today
@@ -63,13 +63,24 @@ def dashboard():
         else next((t for t in open_tasks if t.status == "doing"), None)
     )
     focus_task = focus_task or (open_tasks[0] if open_tasks else None)
+    current_week_start = week_start_for(local_today())
+    previous_week_start = current_week_start - timedelta(days=7)
+    previous_metrics = weekly_metrics(current_user, previous_week_start)
+    previous_review = WeeklyReview.query.filter_by(
+        user_id=uid, week_start=previous_week_start
+    ).first()
+    review_prompt = previous_review is None and bool(
+        previous_metrics["sessions"]
+        or previous_metrics["completed_tasks"]
+        or previous_metrics["mit_total"]
+    )
     week_metrics = weekly_metrics(current_user, local_today())
 
     upcoming = [
         t
         for t in open_tasks
         if t.due_date and t.due_date <= local_today() + timedelta(days=7)
-    ][:5]
+    ][:20]
     overdue = [
         t for t in open_tasks if t.due_date and t.due_date < local_today()
     ]
@@ -83,13 +94,13 @@ def dashboard():
     recent_notes = (
         Note.query.filter_by(user_id=uid)
         .order_by(Note.updated_at.desc())
-        .limit(3)
+        .limit(20)
         .all()
     )
     recent_scratch = (
         Scratchpad.query.filter_by(user_id=uid)
         .order_by(Scratchpad.created_at.desc())
-        .limit(4)
+        .limit(20)
         .all()
     )
 
@@ -117,6 +128,9 @@ def dashboard():
         recent_scratch=recent_scratch,
         stats=stats,
         week_metrics=week_metrics,
+        review_prompt=review_prompt,
+        previous_metrics=previous_metrics,
+        previous_week_start=previous_week_start,
     )
 
 

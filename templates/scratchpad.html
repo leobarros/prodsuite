@@ -30,7 +30,7 @@
 {% if items %}
 <div class="scratch-grid">
   {% for item in items %}
-  <article class="scratch-card">
+  <article class="scratch-card" id="rascunho-{{ item.id }}">
     <div class="d-flex align-items-start justify-content-between gap-2">
       <span class="eyebrow mb-0"><i class="bi bi-sticky"></i> {{ item.created_at|localtime('%d/%m · %H:%M') }}</span>
       {% if item.is_converted %}

@@ -169,18 +169,26 @@
       <h2 class="card-title"><i class="bi bi-lightning-charge"></i> Tarefas rápidas</h2>
       <span class="card-link">até 1 sessão</span>
     </div>
-    <p class="page-sub mb-3">Tarefas com estimativa de até uma sessão de foco. Resolva uma agora se couber no seu dia.</p>
+    <p class="page-sub mb-3">Tarefas abertas com estimativa de até uma sessão de foco. Resolva uma agora ou adicione ao plano.</p>
     {% if quick_wins %}
     <div class="quick-list">
       {% for task in quick_wins %}
       <div class="quick-item">
         <span class="quick-dot"></span>
         <a class="quick-title" href="{{ url_for('tasks.edit', task_id=task.id) }}">{{ task.title }}</a>
+        {% if task.planned_for == today %}
+        <span class="quick-state">no plano</span>
+        {% elif task.due_date == today %}
+        <span class="quick-state">hoje</span>
+        {% elif task.is_mit %}
+        <span class="quick-state">prioridade</span>
+        {% else %}
         <form method="post" action="{{ url_for('tasks.plan_today', task_id=task.id) }}">
           {{ csrf() }}
           <input type="hidden" name="next" value="{{ url_for('planner.plan') }}">
           <button class="btn btn-ghost btn-xs" type="submit">+ hoje</button>
         </form>
+        {% endif %}
       </div>
       {% endfor %}
     </div>

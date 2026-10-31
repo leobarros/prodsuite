@@ -21,3 +21,51 @@
   </div>
   {{ field_errors(field) }}
 {%- endmacro -%}
+
+{%- macro weekly_chart(stats, aria_label="Minutos de foco nos últimos sete dias") -%}
+{%- set chart_max = ([(((stats.max_minutes or 0) + 14) // 15) * 15, 30]|max) -%}
+{%- set left = 44 -%}
+{%- set right = 16 -%}
+{%- set top = 18 -%}
+{%- set baseline = 218 -%}
+{%- set plot_w = 720 - left - right -%}
+{%- set plot_h = baseline - top -%}
+{%- set slot = plot_w / (stats.daily|length) -%}
+{%- set bar_w = 38 -%}
+{%- set points = [] -%}
+<svg class="weekly-chart" viewBox="0 0 720 250" role="img" aria-label="{{ aria_label }}">
+  <g class="weekly-chart-grid">
+    {%- for tick in range(4) -%}
+    {%- set y = baseline - (tick / 3 * plot_h) -%}
+    <line x1="{{ left }}" y1="{{ y }}" x2="{{ 720 - right }}" y2="{{ y }}"></line>
+    <text class="weekly-chart-axis" x="{{ left - 8 }}" y="{{ y + 4 }}" text-anchor="end">{{ ((chart_max * tick / 3)|round|int) }}</text>
+    {%- endfor -%}
+  </g>
+  {%- for day in stats.daily -%}
+  {%- set x_center = left + loop.index0 * slot + slot / 2 -%}
+  {%- set bar_h = [2, (day.minutes / chart_max * plot_h)]|max -%}
+  {%- set y_top = baseline - bar_h -%}
+  {%- set points = points + [x_center|string + ',' + y_top|string] -%}
+  <rect class="weekly-chart-bar {{ 'is-today' if loop.last }}" x="{{ x_center - bar_w / 2 }}" y="{{ y_top }}" width="{{ bar_w }}" height="{{ bar_h }}" rx="4">
+    <title>{{ day.label }}: {{ day.minutes }} min</title>
+  </rect>
+  {%- if day.minutes -%}
+  <text class="weekly-chart-value" x="{{ x_center }}" y="{{ y_top - 7 }}" text-anchor="middle">{{ day.minutes }}</text>
+  {%- endif -%}
+  <text class="weekly-chart-day {{ 'is-today' if loop.last }}" x="{{ x_center }}" y="{{ baseline + 24 }}" text-anchor="middle">{{ day.label }}</text>
+  {%- endfor -%}
+  <polyline class="weekly-chart-line" points="{{ points|join(' ') }}"></polyline>
+  {%- for day in stats.daily -%}
+  {%- set x_center = left + loop.index0 * slot + slot / 2 -%}
+  {%- set y_top = baseline - [2, (day.minutes / chart_max * plot_h)]|max -%}
+  <circle class="weekly-chart-dot {{ 'is-today' if loop.last }}" cx="{{ x_center }}" cy="{{ y_top }}" r="3.5">
+    <title>{{ day.label }}: {{ day.minutes }} min</title>
+  </circle>
+  {%- endfor -%}
+</svg>
+<div class="weekly-chart-legend">
+  <span><i class="weekly-chart-swatch-bar"></i> minutos</span>
+  <span><i class="weekly-chart-swatch-line"></i> tendência</span>
+  <span class="weekly-chart-scale">eixo: minutos</span>
+</div>
+{%- endmacro -%}

@@ -48,6 +48,7 @@ from services.categories import (
     ensure_categories,
     new_category_key,
 )
+from services.planning import week_start_for
 from services.timeutils import local_today
 
 tasks_bp = Blueprint("tasks", __name__)
@@ -219,6 +220,8 @@ def index():
     _prepare_category_form(
         form, categories, reset_default=request.method == "GET"
     )
+    if request.method == "GET" and not form.due_date.data:
+        form.due_date.data = local_today()
     open_modal = request.args.get("nova") == "1"
 
     if form.validate_on_submit():
@@ -249,7 +252,7 @@ def index():
             column_entered_at=utcnow(),
             project_id=project.id,
             estimate_pomodoros=form.estimate_pomodoros.data or 0,
-            due_date=form.due_date.data,
+            due_date=form.due_date.data or local_today(),
             category=form.category.data or categories[0].key,
             quadrant=form.quadrant.data or None,
             is_mit=wants_mit,
@@ -280,6 +283,7 @@ def index():
         filters["filtro"] = ""
 
     tasks_query = Task.query.filter_by(user_id=current_user.id)
+    tasks_query = tasks_query.filter(Task.archived_at.is_(None))
     tasks_query = (
         tasks_query.filter(Task.project_id == project.id)
         if project
@@ -469,6 +473,10 @@ def update_status(task_id: int):
                 "status_label": TASK_STATUS_LABELS[task.status],
                 "column_id": task.column_id,
                 "is_done": task.is_done,
+                "is_archived": task.is_archived,
+                "archived_at": task.archived_at.isoformat()
+                if task.archived_at
+                else None,
                 "completed_at": task.completed_at.isoformat()
                 if task.completed_at
                 else None,
@@ -889,12 +897,19 @@ def move_to_column(task_id: int):
                 "status_label": TASK_STATUS_LABELS[task.status],
                 "column_id": task.column_id,
                 "is_done": task.is_done,
+                "is_archived": task.is_archived,
+                "archived_at": task.archived_at.isoformat()
+                if task.archived_at
+                else None,
                 "completed_at": task.completed_at.isoformat()
                 if task.completed_at
                 else None,
             },
             column_counts=_board_column_counts(
-                columns, Task.query.filter_by(user_id=current_user.id).all()
+                columns,
+                Task.query.filter_by(
+                    user_id=current_user.id, archived_at=None
+                ).all(),
             ),
         )
 
@@ -949,3 +964,41 @@ def delete(task_id: int):
     db.session.commit()
     flash("Tarefa excluída.", "info")
     return redirect(url_for("tasks.index"))
+
+@tasks_bp.get("/tarefas/arquivadas")
+@login_required
+def archived():
+    """Consulta de tarefas concluídas que saíram do quadro semanal."""
+    tasks = (
+        Task.query.filter(
+            Task.user_id == current_user.id, Task.archived_at.isnot(None)
+        )
+        .order_by(Task.archived_at.desc(), Task.completed_at.desc())
+        .all()
+    )
+    groups = []
+    for task in tasks:
+        week = task.archived_week
+        if not groups or groups[-1]["week"] != week:
+            groups.append({"week": week, "tasks": []})
+        groups[-1]["tasks"].append(task)
+    return render_template(
+        "tasks_archive.html",
+        groups=groups,
+        total=len(tasks),
+    )
+
+
+@tasks_bp.post("/tarefas/<int:task_id>/restaurar")
+@login_required
+def restore(task_id: int):
+    task = _get_task(task_id)
+    if not task.is_archived:
+        flash("Esta tarefa não está arquivada.", "warning")
+        return redirect(url_for("tasks.archived"))
+    task.archived_at = None
+    task.archived_week = None
+    db.session.commit()
+    flash("Tarefa restaurada para o quadro.", "success")
+    return redirect(url_for("tasks.archived"))
+

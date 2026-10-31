@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import click
-from flask import Flask, flash, jsonify, redirect, request, url_for
+from flask import Flask, flash, g, jsonify, redirect, request, url_for
 from flask_login import current_user
 from sqlalchemy import event, inspect, text
 from sqlalchemy.engine import Engine
@@ -25,6 +25,11 @@ from security import (
     init_error_handlers,
     init_security_headers,
     init_session_guard,
+)
+from services.observability import (
+    configure_app_logging,
+    init_request_logging,
+    log_startup,
 )
 from services.timeutils import app_timezone, format_minutes, local_today, to_local
 
@@ -87,9 +92,13 @@ def ensure_schema() -> None:
             "column_id": "INTEGER",
             "column_entered_at": "DATETIME",
             "project_id": "INTEGER",
+            "archived_at": "DATETIME",
+            "archived_week": "DATE",
         },
         "board_columns": {
             "project_id": "INTEGER",
+            "archived_at": "DATETIME",
+            "archived_week": "DATE",
         },
         "users": {
             "weekly_focus_goal": "INTEGER NOT NULL DEFAULT 12",
@@ -210,6 +219,10 @@ def create_app(config_override: dict | None = None) -> Flask:
 
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
     _ensure_sqlite_directory(app)
+    configure_app_logging(app)
+    # Registre o request_id antes do CSRF: erros de CSRF também precisam
+    # carregar o mesmo identificador no log.
+    init_request_logging(app)
 
     secret_key = str(app.config.get("SECRET_KEY") or "")
     if not app.config.get("TESTING") and (
@@ -273,7 +286,8 @@ def create_app(config_override: dict | None = None) -> Flask:
     app.register_blueprint(notes_bp)
     app.register_blueprint(export_bp)
 
-    # ----------------------------------------------------- segurança/erros
+    # ------------------------------------------------ logs e segurança
+    log_startup(app)
     init_security_headers(app)
     init_session_guard(app)
     init_error_handlers(app)
@@ -302,11 +316,13 @@ def create_app(config_override: dict | None = None) -> Flask:
     def _inject_globals():
         data = {
             "app_name": app.config.get("APP_NAME", "PRD//SUITE"),
+            "app_version": app.config.get("APP_VERSION", "1.0"),
             "current_year": datetime.now(timezone.utc).year,
             "today_local": local_today(),
             "greeting": _greeting(),
             "allow_registration": app.config.get("ALLOW_REGISTRATION", True),
             "show_onboarding": False,
+            "request_id": getattr(g, "request_id", ""),
         }
         if current_user.is_authenticated:
             from forms import ScratchpadForm, SearchForm

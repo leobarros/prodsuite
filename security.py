@@ -48,6 +48,7 @@ def init_session_guard(app: Flask) -> None:
         lifetime = app.permanent_session_lifetime.total_seconds()
 
         if last is not None and now - float(last) > lifetime:
+            logger.info("security.session_expired user_id=%s", current_user.id)
             logout_user()
             session.clear()
             flash("Sessão expirada por inatividade. Entre novamente.", "warning")
@@ -57,6 +58,7 @@ def init_session_guard(app: Flask) -> None:
         # invalida sessões emitidas antes da rotação.
         nonce = session.get("user_nonce")
         if not nonce or nonce != current_user.session_nonce:
+            logger.warning("security.session_revoked user_id=%s", current_user.id)
             logout_user()
             session.clear()
             flash("Por segurança, entre novamente.", "warning")
@@ -183,6 +185,7 @@ def _wants_json() -> bool:
 def init_error_handlers(app: Flask) -> None:
     @app.errorhandler(CSRFError)
     def _csrf_error(error: CSRFError):
+        logger.warning("security.csrf_failure")
         if _wants_json():
             return jsonify(ok=False, error="Sua página expirou. Recarregue e tente novamente."), 400
         return render_template("errors/csrf.html", reason=error.description), 400
@@ -214,6 +217,7 @@ def init_error_handlers(app: Flask) -> None:
 
     @app.errorhandler(429)
     def _rate_limited(error):
+        logger.warning("security.rate_limited")
         if _wants_json():
             return jsonify(ok=False, error="Muitas tentativas. Aguarde."), 429
         return render_template("errors/429.html"), 429

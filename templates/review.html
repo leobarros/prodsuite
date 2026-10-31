@@ -1,15 +1,19 @@
 {% extends "base.html" %}
-{% from "_macros.html" import field_errors %}
+{% from "_macros.html" import csrf, field_errors %}
 {% block title %}Revisão da semana{% endblock %}
 
 {% block content %}
 <div class="page-head">
   <div>
-    <p class="eyebrow"><i class="bi bi-journal-check"></i> revisão semanal <span class="sep">·</span> {{ metrics.week_start.strftime('%d/%m') }} a {{ metrics.week_end.strftime('%d/%m') }}</p>
+    <p class="eyebrow"><i class="bi bi-journal-check"></i> revisão semanal <span class="sep">·</span> {{ metrics.week_start.strftime('%d/%m') }} a {{ metrics.week_end.strftime('%d/%m') }} {% if not is_current_week %}<span class="chip">semana encerrada</span>{% endif %}</p>
     <h1 class="page-title">Sua semana</h1>
     <p class="page-sub">Olhe para trás com gentileza e escolha o foco da próxima semana.</p>
   </div>
   <div class="d-flex gap-2">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('review.weeks') }}"><i class="bi bi-calendar3"></i> Semanas</a>
+    {% if not is_current_week %}
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('review.weekly', semana=current_week_start.isoformat()) }}"><i class="bi bi-calendar-week"></i> Semana atual</a>
+    {% endif %}
     <a class="btn btn-ghost btn-sm" href="{{ url_for('planner.plan') }}"><i class="bi bi-calendar2-check"></i> Planejar</a>
     <a class="btn btn-neon btn-sm" href="{{ url_for('tasks.index', nova=1) }}"><i class="bi bi-plus-lg"></i> Nova tarefa</a>
   </div>
@@ -86,7 +90,7 @@
     </div>
 
     {% if editing %}
-    <form method="post" action="{{ url_for('review.weekly', editar=1) }}">
+    <form method="post" action="{{ url_for('review.weekly', editar=1, semana=week_start.isoformat()) }}">
       {{ form.hidden_tag() }}
       <div class="mb-3">
         {{ form.wins.label(class="form-label") }}
@@ -105,7 +109,7 @@
       </div>
       <div class="d-flex gap-2">
         <button class="btn btn-neon btn-sm" type="submit"><i class="bi bi-check-lg"></i> Salvar revisão</button>
-        <a class="btn btn-ghost btn-sm" href="{{ url_for('review.weekly') }}">Cancelar</a>
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('review.weekly', semana=week_start.isoformat()) }}">Cancelar</a>
       </div>
     </form>
     {% elif review %}
@@ -155,6 +159,21 @@
       <span>Ainda não há tarefas concluídas nesta semana. Pequenos passos também contam.</span>
     </div>
     {% endif %}
+    <div class="d-flex flex-wrap gap-2 mt-3">
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('tasks.archived') }}">
+        <i class="bi bi-archive"></i> Ver arquivo
+      </a>
+      {% if unarchived_completed %}
+      <form method="post" action="{{ url_for('review.archive_completed') }}"
+            data-confirm="Fechar a semana e arquivar as tarefas concluídas que ainda estão no quadro? Elas poderão ser restauradas no Arquivo.">
+        {{ csrf() }}
+        <input type="hidden" name="week_start" value="{{ week_start.isoformat() }}">
+        <button class="btn btn-neon btn-sm" type="submit">
+          <i class="bi bi-archive"></i> Fechar semana e arquivar concluídas
+        </button>
+      </form>
+      {% endif %}
+    </div>
     <div class="divider"></div>
     <p class="page-sub mb-0">“Produtividade não é fazer mais. É fazer o que importa e ainda sobrar energia para você.”</p>
   </section>

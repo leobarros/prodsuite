@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import csrf %}
+{% from "_macros.html" import csrf, weekly_chart %}
 {% block title %}Meu dia{% endblock %}
 
 {% block content %}
@@ -18,6 +18,19 @@
     </a>
   </div>
 </div>
+
+{% if review_prompt %}
+<section class="week-review-prompt" data-week-review-prompt data-week="{{ previous_week_start.isoformat() }}">
+  <span class="week-review-icon" aria-hidden="true"><i class="bi bi-calendar-check"></i></span>
+  <div class="week-review-copy">
+    <strong>A semana passada terminou.</strong>
+    <p>De {{ previous_metrics.week_start|datebr }} a {{ previous_metrics.week_end|datebr }}, você concluiu {{ previous_metrics.completed_tasks }} tarefa{{ 's' if previous_metrics.completed_tasks != 1 }} e fez {{ previous_metrics.sessions }} sessão{{ 'ões' if previous_metrics.sessions != 1 }} de foco. Vale revisar o que progrediu.</p>
+  </div>
+  <a class="btn btn-neon btn-sm" href="{{ url_for('review.weekly', semana=previous_week_start.isoformat()) }}">
+    <i class="bi bi-journal-check"></i> Revisar semana
+  </a>
+</section>
+{% endif %}
 
 <div class="bento-grid">
   <!-- HERO -->
@@ -126,7 +139,7 @@
       <a class="card-link" href="{{ url_for('planner.plan') }}">planejar <i class="bi bi-arrow-up-right"></i></a>
     </div>
     {% if mit_tasks %}
-    <div class="dashboard-mit-list">
+    <div class="dashboard-mit-list dashboard-scroll-list">
       {% for task in mit_tasks %}
       <a class="dashboard-mit-item" href="{{ url_for('tasks.edit', task_id=task.id) }}">
         <span class="mit-number">{{ loop.index }}</span>
@@ -169,12 +182,12 @@
       </div>
     </form>
     {% if recent_scratch %}
-    <div class="recent-scratch" data-scratch-preview>
+    <div class="recent-scratch dashboard-scratch-list" data-scratch-preview data-scratch-base="{{ url_for('scratchpad.index') }}">
       {% for item in recent_scratch %}
-      <div class="recent-scratch-item">
+      <a class="recent-scratch-item" href="{{ url_for('scratchpad.index') }}#rascunho-{{ item.id }}" title="Abrir rascunho">
         <i class="bi bi-{{ 'check2' if item.is_converted else 'dash' }}"></i>
         <span>{{ item.preview }}</span>
-      </div>
+      </a>
       {% endfor %}
     </div>
     {% endif %}
@@ -187,7 +200,7 @@
       <a class="card-link" href="{{ url_for('notes.index') }}">todas <i class="bi bi-arrow-up-right"></i></a>
     </div>
     {% if recent_notes %}
-    <div class="list-stack">
+    <div class="list-stack dashboard-note-list">
       {% for note in recent_notes %}
       <a class="list-row" href="{{ url_for('notes.view', note_id=note.id) }}">
         <span class="list-main">
@@ -213,18 +226,7 @@
       <h2 class="card-title"><i class="bi bi-graph-up"></i> Foco na semana</h2>
       <span class="card-link">{{ stats.week.label }} · {{ stats.week.cycles }} sessões</span>
     </div>
-    <div class="chart" role="img" aria-label="Minutos de foco por dia nos últimos sete dias">
-      {% for day in stats.daily %}
-      {% set h = (day.minutes / stats.max_minutes * 100)|round|int %}
-      <div class="chart-col {{ 'is-today' if day.date == today_local.isoformat() }}">
-        <span class="chart-value">{{ day.minutes }}</span>
-        <div class="chart-bar-wrap">
-          <span class="chart-bar" style="height: {{ [h, 3]|max }}%" title="{{ day.label }}: {{ day.minutes }} min"></span>
-        </div>
-        <span class="chart-label">{{ day.label }}</span>
-      </div>
-      {% endfor %}
-    </div>
+    {{ weekly_chart(stats) }}
     <div class="stat-foot mt-3">
       <a class="card-link" href="{{ url_for('review.weekly') }}">revisão da semana <i class="bi bi-arrow-up-right"></i></a>
       <strong class="text-emerald">{{ week_metrics.sessions }}/{{ week_metrics.goal }} sessões</strong>
@@ -238,7 +240,7 @@
       <a class="card-link" href="{{ url_for('tasks.index') }}">ver tudo <i class="bi bi-arrow-up-right"></i></a>
     </div>
     {% if upcoming %}
-    <div class="list-stack">
+    <div class="list-stack dashboard-upcoming-list">
       {% for task in upcoming %}
       <div class="due-row">
         <span class="due-dot {{ 'is-overdue' if task.is_overdue }}"></span>

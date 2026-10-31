@@ -86,6 +86,7 @@ def register():
             return render_template("auth/register.html", form=form), 409
 
         _complete_login(user)
+        current_app.logger.info("auth.register.success user_id=%s", user.id)
         flash("Conta criada. Vamos começar?", "success")
         return redirect(url_for("main.dashboard"))
 
@@ -102,6 +103,9 @@ def login():
         identifier = form.identifier.data.strip()
         retry_after = login_retry_after(identifier)
         if retry_after:
+            current_app.logger.warning(
+                "auth.login.rate_limited retry_after_s=%s", retry_after
+            )
             flash(
                 f"Muitas tentativas. Tente novamente em {retry_after}s.",
                 "danger",
@@ -130,9 +134,14 @@ def login():
         if user is not None and valid:
             clear_login_failures(identifier)
             _complete_login(user)
+            current_app.logger.info("auth.login.success user_id=%s", user.id)
             flash("Que bom ter você de volta!", "success")
             return redirect(_safe_next(request.form.get("next") or request.args.get("next")))
 
+        current_app.logger.warning(
+            "auth.login.failure user_id=%s",
+            user.id if user is not None else "-",
+        )
         register_login_failure(identifier)
         flash("Usuário/e-mail ou senha inválidos.", "danger")
 
@@ -142,8 +151,10 @@ def login():
 @auth_bp.post("/sair")
 @login_required
 def logout():
+    user_id = current_user.id
     logout_user()
     session.clear()
+    current_app.logger.info("auth.logout user_id=%s", user_id)
     flash("Você saiu. Até logo!", "info")
     return redirect(url_for("auth.login"))
 
@@ -163,6 +174,9 @@ def profile():
             db.session.commit()
             session["user_nonce"] = nonce
             session["last_activity"] = time.time()
+            current_app.logger.info(
+                "auth.password_changed user_id=%s", current_user.id
+            )
             flash("Senha atualizada. Os outros aparelhos foram desconectados.", "success")
             return redirect(url_for("auth.profile"))
 

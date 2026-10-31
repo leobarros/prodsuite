@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_macros.html" import weekly_chart %}
 {% block title %}Pomodoro{% endblock %}
 {% block body_class %}focus-page{% endblock %}
 
@@ -34,8 +35,11 @@
       </div>
     </div>
 
-    <div class="session-dots" data-session-dots data-cycles="{{ stats.focus_cycles_today }}" data-filled="{{ stats.focus_cycles_today % 4 }}" aria-label="Sessões até a pausa longa">
-      {% for _ in range(4) %}<span class="session-dot"></span>{% endfor %}
+    <div class="session-progress">
+      <div class="session-dots" data-session-dots data-cycles="{{ stats.focus_cycles_today }}" data-filled="{{ stats.focus_cycles_today % 4 }}" aria-label="Sessões até a pausa longa">
+        {% for _ in range(4) %}<span class="session-dot"></span>{% endfor %}
+      </div>
+      <span class="session-caption" data-session-caption aria-live="polite">A pausa longa vem após 4 sessões</span>
     </div>
 
     <div class="timer-actions">
@@ -85,14 +89,8 @@
           <span>dias seguidos</span>
         </div>
       </div>
-      <div class="chart mt-3" role="img" aria-label="Minutos de foco nos últimos sete dias">
-        {% for day in stats.daily %}
-        {% set h = (day.minutes / stats.max_minutes * 100)|round|int %}
-        <div class="chart-col {{ 'is-today' if day.date == today_local.isoformat() }}">
-          <div class="chart-bar-wrap"><span class="chart-bar" style="height: {{ [h, 3]|max }}%" title="{{ day.label }}: {{ day.minutes }} min"></span></div>
-          <span class="chart-label">{{ day.label }}</span>
-        </div>
-        {% endfor %}
+      <div class="mt-3">
+        {{ weekly_chart(stats) }}
       </div>
       <div class="stat-foot">
         <span>total na semana</span>
@@ -106,7 +104,7 @@
         <span class="card-link">últimas 30</span>
       </div>
       {% if history %}
-      <div class="history">
+      <div class="history" tabindex="0" aria-label="Histórico de sessões recentes, role para ver mais">
         {% for cycle in history %}
         <div class="history-row">
           <span class="history-icon {{ 'break' if cycle.mode != 'focus' }}" aria-hidden="true">{% if cycle.mode == 'focus' %}<span class="tomato-glyph"></span>{% elif cycle.mode == 'short_break' %}<i class="bi bi-cup-hot"></i>{% else %}<i class="bi bi-moon-stars"></i>{% endif %}</span>

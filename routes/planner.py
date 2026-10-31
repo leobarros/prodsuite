@@ -70,11 +70,9 @@ def plan():
     unclassified = [
         task for task in open_tasks if task.quadrant not in TASK_QUADRANTS
     ][:5]
-    quick_wins = [
-        task
-        for task in open_tasks
-        if task.is_quick_win and task not in day_tasks and not task.is_mit
-    ][:5]
+    # A lista é um atalho para todas as tarefas curtas abertas. O template
+    # indica quando uma delas já está no plano/prioridade; não some daqui.
+    quick_wins = [task for task in open_tasks if task.is_quick_win][:5]
 
     goal_form = WeeklyGoalForm(
         weekly_focus_goal=current_user.weekly_focus_goal or 12

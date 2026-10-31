@@ -16,6 +16,9 @@
         <p class="error-code">500</p>
         <h1>Algo deu errado</h1>
         <p>Não foi possível abrir esta página. Tente novamente em alguns instantes.</p>
+        {% if request_id %}
+        <p class="form-hint">Se precisar de suporte, informe o código <strong>{{ request_id }}</strong>.</p>
+        {% endif %}
         <a class="btn btn-neon btn-sm" href="{{ url_for('main.dashboard') }}"><i class="bi bi-arrow-clockwise"></i> Recarregar</a>
       </div>
     </div>

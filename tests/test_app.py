@@ -615,6 +615,23 @@ class TestTasks:
         assert "Reabra a tarefa para voltar a focar nela." in html
         assert "Começar foco nesta tarefa" not in html
 
+    def test_create_task_defaults_deadline_to_creation_date(
+        self, client, app, make_user
+    ):
+        make_user()
+        login(client)
+        client.post(
+            "/tarefas",
+            data={
+                "title": "Prazo de criação",
+                "estimate_pomodoros": "1",
+            },
+            follow_redirects=True,
+        )
+        with app.app_context():
+            task = Task.query.filter_by(title="Prazo de criação").one()
+            assert task.due_date == date.today()
+
     def test_create_task_validation_error_keeps_modal(self, client, app, make_user):
         make_user()
         login(client)
@@ -1464,7 +1481,7 @@ class TestNotes:
             "/notas/nova",
             data={
                 "title": "Nota A",
-                "body": "# Título\n\nVeja [[Nota B]] e **negrito**.",
+                "body": "# Título\n\nVeja [[Nota B]], **negrito** e [globo](https://globo.com).",
                 "tags": "pkm",
             },
             follow_redirects=True,
@@ -1474,6 +1491,9 @@ class TestNotes:
         assert "<h1>Título</h1>" in html
         assert "<strong>negrito</strong>" in html
         assert f'href="/notas/{note_b_id}"' in html
+        assert 'href="https://globo.com"' in html
+        assert 'target="_blank"' in html
+        assert 'rel="noopener noreferrer"' in html
 
     def test_markdown_sanitizes_xss(self, client, app, make_user):
         make_user()
@@ -1671,6 +1691,148 @@ class TestPlanning:
             assert task.quadrant == "schedule"
             assert task.is_mit is True
             assert task.planned_for is None
+
+    def test_moving_to_completion_column_does_not_archive_immediately(
+        self, client, app, make_user
+    ):
+        make_user()
+        login(client)
+        client.get("/tarefas")
+        with app.app_context():
+            done_column = BoardColumn.query.filter_by(kind="done").first()
+            done_id = done_column.id
+            todo = BoardColumn.query.filter_by(kind="todo").first()
+            todo_id = todo.id
+        client.post(
+            "/tarefas",
+            data={
+                "title": "Arquivar ao concluir",
+                "estimate_pomodoros": "1",
+                "column_id": str(todo_id),
+            },
+        )
+        with app.app_context():
+            task = Task.query.filter_by(title="Arquivar ao concluir").one()
+            task_id = task.id
+        response = client.post(
+            f"/tarefas/{task_id}/coluna",
+            json={"column_id": done_id},
+            headers={"X-Requested-With": "fetch", "Accept": "application/json"},
+        )
+        assert response.status_code == 200
+        payload = response.get_json()["task"]
+        assert payload["status"] == "done"
+        assert payload["is_archived"] is False
+        with app.app_context():
+            task = db.session.get(Task, task_id)
+            assert task.archived_at is None
+            assert task.archived_week is None
+        board = client.get("/tarefas").get_data(as_text=True)
+        assert "Arquivar ao concluir" in board
+        archive = client.get("/tarefas/arquivadas").get_data(as_text=True)
+        assert "Arquivar ao concluir" not in archive
+
+    def test_completed_week_can_be_archived_and_restored(
+        self, client, app, make_user
+    ):
+        user_id = make_user()
+        login(client)
+        with app.app_context():
+            project = Project.query.filter_by(name="Projeto de teste").one()
+            column = BoardColumn.query.filter_by(
+                project_id=project.id, kind="done"
+            ).first()
+            task = Task(
+                user_id=user_id,
+                project_id=project.id,
+                column_id=column.id,
+                title="Concluída para arquivar",
+                status="done",
+                completed_at=utcnow(),
+                estimate_pomodoros=1,
+            )
+            db.session.add(task)
+            db.session.commit()
+            task_id = task.id
+
+        response = client.post("/revisao/arquivar", follow_redirects=True)
+        assert response.status_code == 200
+        assert "arquivada" in response.get_data(as_text=True)
+        with app.app_context():
+            task = db.session.get(Task, task_id)
+            assert task.archived_at is not None
+            assert task.archived_week is not None
+
+        board = client.get("/tarefas").get_data(as_text=True)
+        assert "Concluída para arquivar" not in board
+        archive = client.get("/tarefas/arquivadas").get_data(as_text=True)
+        assert "Concluída para arquivar" in archive
+        assert "Restaurar" in archive
+
+        restored = client.post(
+            f"/tarefas/{task_id}/restaurar", follow_redirects=True
+        )
+        assert restored.status_code == 200
+        with app.app_context():
+            task = db.session.get(Task, task_id)
+            assert task.archived_at is None
+            assert task.archived_week is None
+
+    def test_review_lists_ended_weeks(self, client, make_user):
+        make_user()
+        login(client)
+        response = client.get("/revisao/semanas")
+        assert response.status_code == 200
+        html = response.get_data(as_text=True)
+        assert "Semanas encerradas" in html
+        assert "/revisao?semana=" in html
+
+    def test_dashboard_prompts_for_previous_week_review(
+        self, client, app, make_user
+    ):
+        from services.planning import week_start_for
+        from services.timeutils import day_start_utc
+
+        user_id = make_user()
+        login(client)
+        previous_start = week_start_for(date.today()) - timedelta(days=7)
+        with app.app_context():
+            project = Project.query.filter_by(name="Projeto de teste").one()
+            column = BoardColumn.query.filter_by(
+                project_id=project.id, kind="done"
+            ).first()
+            task = Task(
+                user_id=user_id,
+                project_id=project.id,
+                column_id=column.id,
+                title="Progresso da semana passada",
+                status="done",
+                completed_at=day_start_utc(previous_start + timedelta(days=1)),
+                estimate_pomodoros=1,
+            )
+            db.session.add(task)
+            db.session.commit()
+
+        dashboard = client.get("/").get_data(as_text=True)
+        assert "A semana passada terminou" in dashboard
+        assert f"semana={previous_start.isoformat()}" in dashboard
+
+        review = client.get(
+            f"/revisao?semana={previous_start.isoformat()}"
+        ).get_data(as_text=True)
+        assert "semana encerrada" in review
+        assert "Progresso da semana passada" in review
+
+        client.post(
+            f"/revisao?semana={previous_start.isoformat()}",
+            data={
+                "wins": "Aprendi algo",
+                "challenges": "Foi corrido",
+                "next_steps": "Proteger a manhã",
+            },
+        )
+        dashboard_after = client.get("/").get_data(as_text=True)
+        assert "A semana passada terminou" not in dashboard_after
 
     def test_weekly_review_is_read_only_until_edit_is_requested(
         self, client, app, make_user
@@ -2132,6 +2294,20 @@ class TestPWA:
         assert "pbkdf2" not in html.lower()
         assert "Expiração de sessão" not in html
 
+    def test_request_id_is_echoed_and_invalid_values_are_replaced(self, client):
+        valid = client.get(
+            "/healthz", headers={"X-Request-ID": "request-1234"}
+        )
+        assert valid.status_code == 200
+        assert valid.headers["X-Request-ID"] == "request-1234"
+
+        invalid = client.get(
+            "/healthz", headers={"X-Request-ID": "not valid!"}
+        )
+        generated = invalid.headers["X-Request-ID"]
+        assert generated != "not valid!"
+        assert re.fullmatch(r"[0-9a-f]{16}", generated)
+
     def test_healthcheck_and_favicon(self, client):
         response = client.get("/healthz")
         assert response.status_code == 200
@@ -2203,4 +2379,7 @@ class TestPages:
         assert "bento-grid" in html
         assert "bento-hero" in html
         assert "data-timer-toggle" in html
+        assert "weekly-chart" in html
+        assert "weekly-chart-line" in html
+        assert "weekly-chart-grid" in html
         assert "/sw.js" not in html  # registro fica no app.js

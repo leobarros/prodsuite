@@ -56,8 +56,21 @@
   let completionAlertVisible = false;
   let lastRenderedSecond = null;
   let transitioning = false;
+  // Evita anunciar um ciclo que só foi percebido depois de uma navegação,
+  // restauração do bfcache ou retorno do background no iOS.
+  let pageInteractiveAt = Date.now();
+  let audioSessionRestoreTimer = null;
 
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+  function localDateKey() {
+    const now = new Date();
+    return [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, "0"),
+      String(now.getDate()).padStart(2, "0"),
+    ].join("-");
+  }
 
   function defaultState() {
     return {
@@ -70,6 +83,7 @@
       focusCyclesToday: Number(
         sessionContainers[0]?.dataset.cycles || sessionContainers[0]?.dataset.filled || 0
       ),
+      focusDate: localDateKey(),
     };
   }
 
@@ -87,7 +101,17 @@
         endsAt: Number(parsed.endsAt) || null,
         running: Boolean(parsed.running),
         taskId: parsed.taskId ? String(parsed.taskId) : null,
-        focusCyclesToday: Number(parsed.focusCyclesToday) || 0,
+        // O contador de ciclos é diário. Estado antigo (ou de ontem) não
+        // pode disparar uma pausa longa hoje.
+        focusCyclesToday:
+          parsed.focusDate === localDateKey()
+            ? Number(parsed.focusCyclesToday) || 0
+            : Number(
+                sessionContainers[0]?.dataset.cycles ||
+                  sessionContainers[0]?.dataset.filled ||
+                  0
+              ),
+        focusDate: localDateKey(),
       };
     } catch (_error) {
       return null;
@@ -132,6 +156,23 @@
       container.querySelectorAll(".session-dot").forEach((dot, index) => {
         dot.classList.toggle("filled", index < filled);
       });
+      const caption = container.parentElement?.querySelector("[data-session-caption]");
+      if (caption) {
+        caption.textContent =
+          filled === 0
+            ? "A pausa longa vem após 4 sessões"
+            : `${filled} de 4 sessões para a pausa longa`;
+      }
+      container.setAttribute(
+        "aria-label",
+        filled === 0
+          ? "Nenhuma sessão concluída no ciclo atual; a pausa longa vem após 4 sessões"
+          : `${filled} de 4 sessões concluídas para a pausa longa`
+      );
+      container.title =
+        filled === 0
+          ? "A pausa longa vem após 4 sessões de foco"
+          : `${filled} de 4 sessões para a pausa longa`;
     });
   }
 
@@ -404,7 +445,30 @@
     }
   }
 
+  function useNotificationAudioSession() {
+    const session = window.navigator?.audioSession;
+    if (!session) return;
+    try {
+      if (audioSessionRestoreTimer) {
+        window.clearTimeout(audioSessionRestoreTimer);
+      }
+      // "transient" é o tipo de aviso sonoro: toca por cima do áudio de
+      // outros apps e pode abaixá-lo, mas não encerra podcast/YouTube.
+      session.type = "transient";
+      audioSessionRestoreTimer = window.setTimeout(() => {
+        try {
+          session.type = "auto";
+        } catch (_error) {
+          /* Safari antigo sem suporte completo */
+        }
+      }, 6500);
+    } catch (_error) {
+      /* API experimental indisponível */
+    }
+  }
+
   function playChime() {
+    useNotificationAudioSession();
     primeAudio();
     if (soundEl) {
       try {
@@ -620,7 +684,7 @@
     }
   }
 
-  async function completeCycle({ reload = false } = {}) {
+  async function completeCycle({ reload = false, silent = false } = {}) {
     if (transitioning) return;
     const finishedMode = state.mode;
     const finishedInfo = modeInfo(finishedMode);
@@ -631,6 +695,11 @@
     state.endsAt = null;
     state.remaining = 0;
     if (finishedMode === "focus") {
+      const todayKey = localDateKey();
+      if (state.focusDate !== todayKey) {
+        state.focusCyclesToday = 0;
+        state.focusDate = todayKey;
+      }
       state.focusCyclesToday = (Number(state.focusCyclesToday) || 0) + 1;
     }
     save();
@@ -638,7 +707,13 @@
 
     let nextMode = laterMode(finishedMode);
 
-    if (!reload) {
+    const shouldAnnounce =
+      !reload &&
+      !silent &&
+      document.visibilityState === "visible" &&
+      Date.now() - pageInteractiveAt > 1200;
+
+    if (shouldAnnounce) {
       playChime();
       showCompletionAlert(finishedMode, nextMode);
       if (navigator.vibrate && navigator.userActivation?.hasBeenActive) {
@@ -668,6 +743,7 @@
       const data = await postCycle(payload);
       if (data?.stats) {
         state.focusCyclesToday = Number(data.stats.focus_cycles_today) || 0;
+        state.focusDate = localDateKey();
         updateStatsDom(data.stats);
         updateSessionDots();
       }
@@ -773,7 +849,28 @@
   });
 
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") tick();
+    if (document.visibilityState !== "visible") return;
+    pageInteractiveAt = Date.now();
+    // Se o ciclo venceu enquanto o app estava em background, registra o
+    // ciclo sem tocar o som atrasado.
+    if (state.running && state.endsAt && state.endsAt <= Date.now()) {
+      completeCycle({ reload: true });
+    } else {
+      tick();
+    }
+  });
+
+  window.addEventListener("pageshow", (event) => {
+    pageInteractiveAt = Date.now();
+    if (!event.persisted) return;
+    // iOS/Safari pode restaurar a página do bfcache; não trate o tempo
+    // decorrido como uma conclusão "ao vivo".
+    if (state.running && state.endsAt && state.endsAt <= Date.now()) {
+      completeCycle({ reload: true });
+    } else {
+      render();
+      tick();
+    }
   });
   window.addEventListener("online", flushPending);
   window.addEventListener("offline", () => {

@@ -146,8 +146,10 @@
         toast("Captura registrada em Rascunhos.");
         const preview = document.querySelector("[data-scratch-preview]");
         if (preview && data.scratchpad) {
-          const row = document.createElement("div");
+          const row = document.createElement("a");
           row.className = "recent-scratch-item";
+          row.href = `${preview.dataset.scratchBase || "/rascunhos"}#rascunho-${data.scratchpad.id}`;
+          row.title = "Abrir rascunho";
           const icon = document.createElement("i");
           icon.className = "bi bi-dash";
           const text = document.createElement("span");
@@ -368,6 +370,35 @@
     });
   }
 
+  // ------------------------------------------------ abrir nota pelo card
+  document.querySelectorAll("[data-note-url]").forEach((card) => {
+    card.addEventListener("click", (event) => {
+      if (event.target.closest("a, button, input, select, textarea")) return;
+      window.location.assign(card.dataset.noteUrl);
+    });
+  });
+
+  // ------------------------------------------------ aviso de semana encerrada
+  document.querySelectorAll("[data-week-review-prompt]").forEach((prompt) => {
+    const key = `prodsuite.weekReviewDismissed.${prompt.dataset.week}`;
+    try {
+      if (localStorage.getItem(key) === "1") {
+        prompt.remove();
+        return;
+      }
+    } catch (_error) {
+      /* armazenamento indisponível: mantém o aviso */
+    }
+    prompt.querySelector("a")?.addEventListener("click", () => {
+      try {
+        localStorage.setItem(key, "1");
+      } catch (_error) {
+        /* armazenamento indisponível: o aviso volta na próxima visita */
+      }
+      prompt.remove();
+    });
+  });
+
   // ---------------------------------------------------- kanban drag/drop
   const board = document.querySelector("[data-kanban]");
   if (board) {
@@ -428,11 +459,15 @@
           }
           const targetList = column.querySelector(".kanban-list");
           const addButton = targetList?.querySelector(".kanban-add");
-          targetList?.insertBefore(card, addButton || null);
-          card.dataset.columnId = String(data.task.column_id);
-          card.classList.toggle("is-done", Boolean(data.task.is_done));
-          const select = card.querySelector("[data-column-select]");
-          if (select) select.value = String(data.task.column_id);
+          if (data.task.is_archived) {
+            card.remove();
+          } else {
+            targetList?.insertBefore(card, addButton || null);
+            card.dataset.columnId = String(data.task.column_id);
+            card.classList.toggle("is-done", Boolean(data.task.is_done));
+            const select = card.querySelector("[data-column-select]");
+            if (select) select.value = String(data.task.column_id);
+          }
 
           const sourceCounter = sourceColumn?.querySelector("[data-count-for]");
           const targetCounter = column.querySelector("[data-count-for]");
@@ -440,17 +475,70 @@
             sourceCounter.textContent = String(
               Math.max(0, Number(sourceCounter.textContent || 0) - 1)
             );
-            targetCounter.textContent = String(
-              Number(targetCounter.textContent || 0) + 1
-            );
+            if (!data.task.is_archived) {
+              targetCounter.textContent = String(
+                Number(targetCounter.textContent || 0) + 1
+              );
+            }
           }
-          toast("Tarefa movida.");
+          toast(
+            data.task.is_archived
+              ? "Tarefa concluída e arquivada."
+              : "Tarefa movida."
+          );
         } catch (_error) {
           toast("Não conseguimos conectar. Tente novamente.", "error");
         }
       });
     });
   }
+
+  // Duplo clique (mouse) e duplo toque (iOS/Android) abrem a tarefa,
+  // exceto quando o gesto começa em um controle do próprio card.
+  function isTaskControl(target) {
+    return (
+      target instanceof Element &&
+      Boolean(
+        target.closest(
+          "a, button, input, select, textarea, label, form, [role='button'], [contenteditable='true']"
+        )
+      )
+    );
+  }
+
+  document.querySelectorAll("[data-task-url]").forEach((card) => {
+    let touchStart = null;
+    let lastTapAt = 0;
+
+    card.addEventListener("dblclick", (event) => {
+      if (isTaskControl(event.target)) return;
+      event.preventDefault();
+      window.location.assign(card.dataset.taskUrl);
+    });
+
+    card.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "mouse") return;
+      touchStart = { x: event.clientX, y: event.clientY, at: Date.now() };
+    });
+
+    card.addEventListener("pointerup", (event) => {
+      if (event.pointerType === "mouse" || !touchStart) return;
+      const moved =
+        Math.abs(event.clientX - touchStart.x) > 12 ||
+        Math.abs(event.clientY - touchStart.y) > 12;
+      const duration = Date.now() - touchStart.at;
+      touchStart = null;
+      if (moved || duration > 600 || isTaskControl(event.target)) return;
+
+      const now = Date.now();
+      if (now - lastTapAt < 360) {
+        lastTapAt = 0;
+        window.location.assign(card.dataset.taskUrl);
+        return;
+      }
+      lastTapAt = now;
+    });
+  });
 
   document.querySelectorAll("[data-add-task-column]").forEach((button) => {
     button.addEventListener("click", () => {

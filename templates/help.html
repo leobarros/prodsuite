@@ -135,28 +135,57 @@
     <h2 class="help-section-title"><i class="bi bi-question-circle"></i> Dúvidas frequentes</h2>
     <div class="help-faq">
       <details>
-        <summary>Preciso preencher tudo?</summary>
-        <p>Não. Comece com uma tarefa e o Pomodoro. As prioridades, a matriz e a revisão são apoio para quando você quiser mais estrutura.</p>
+        <summary>Preciso preencher tudo para criar uma tarefa?</summary>
+        <p>Não. O essencial é um título e uma coluna. O prazo já vem preenchido com a data de hoje, mas você pode alterá-lo ou removê-lo na edição. Descrição, etiquetas, categoria, quadrante e estimativa de foco são opcionais.</p>
+        <p>Comece simples: uma tarefa, uma coluna e uma sessão de foco. Os outros recursos fazem mais sentido quando você já tem algumas tarefas e quer comparar prioridades, prazos ou tempo gasto.</p>
       </details>
+
       <details>
         <summary>O que acontece se eu fechar o app durante o foco?</summary>
-        <p>O cronômetro usa o horário real. Ao voltar, ele ajusta o tempo decorrido. No celular, o sistema pode pausar o app em segundo plano; mantenha-o aberto para receber o aviso sonoro.</p>
+        <p>O cronômetro é calculado pelo horário real, não por um contador que só funciona com a tela ligada. Se você fechar a aba e voltar depois, o app desconta o tempo que passou e retoma o ciclo no ponto correto.</p>
+        <p>Se o ciclo terminar enquanto o app estiver fechado ou em segundo plano, a sessão é registrada quando você voltar, mas o aviso sonoro atrasado não é tocado. Para ouvir o som no momento exato da conclusão, mantenha o app aberto e use <strong>Testar som</strong> uma vez para liberar o áudio no navegador.</p>
       </details>
+
       <details>
-        <summary>Como faço uma cópia?</summary>
-        <p>Abra <a href="{{ url_for('export.index') }}">Meus dados</a> e baixe uma cópia das suas tarefas, notas e rascunhos quando quiser.</p>
+        <summary>Como faço uma cópia dos meus dados?</summary>
+        <p>Abra <a href="{{ url_for('export.index') }}">Meus dados</a>. Você pode baixar uma cópia organizada, com tarefas, notas, rascunhos e revisões em um formato legível, ou uma cópia completa para guardar como backup.</p>
+        <p>A cópia completa não inclui sua senha e deve ser guardada em um lugar seguro. Restaurar uma cópia substitui os dados atuais, então guarde também uma cópia antes de qualquer restauração.</p>
       </details>
+
       <details>
         <summary>Como instalar no celular?</summary>
-        <p>Abra o app no navegador do celular e procure <strong>Adicionar à Tela de Início</strong> no menu. Para usar sem internet, peça o endereço seguro a quem administra o app.</p>
+        <p>No celular, abra o app no navegador. No Safari, toque em <strong>Compartilhar</strong> e escolha <strong>Adicionar à Tela de Início</strong>. No Chrome, use o menu de três pontos para <strong>Instalar app</strong> ou <strong>Adicionar à tela inicial</strong>.</p>
+        <p>A instalação cria um atalho com aparência de aplicativo e mantém o acesso pelo mesmo endereço. Se o endereço não tiver conexão segura, o app continua funcionando no navegador, mas o uso offline pode ficar limitado.</p>
       </details>
+
       <details>
         <summary>Como troco o tema?</summary>
-        <p>Use o botão de lua/sol no topo ou no menu lateral, ou abra <a href="{{ url_for('auth.profile') }}">Perfil → Aparência</a>. O tema claro é o padrão; o escuro é uma escolha sua.</p>
+        <p>Use o botão de sol/lua no topo ou na parte inferior da sidebar. Também é possível escolher em <a href="{{ url_for('auth.profile') }}">Perfil → Aparência</a>. O tema claro é o padrão; o escuro fica salvo para a próxima visita.</p>
+        <p>A preferência vale para este navegador e aparelho. Se você limpar os dados do navegador ou entrar em outro dispositivo, pode ser necessário escolher o tema novamente.</p>
       </details>
+
+      <details>
+        <summary>Como faço uma tarefa ser concluída?</summary>
+        <p>Marque uma coluna como <strong>coluna de conclusão</strong>, normalmente a última do quadro. Ao mover o card para ela, a tarefa é marcada como concluída e o horário de conclusão é registrado. Ao mover o card para fora, ela é reaberta.</p>
+        <p>Não existe um botão separado de “concluir” no card: a passagem pela coluna é o próprio fluxo. O tempo que a tarefa permaneceu em cada coluna aparece nos detalhes dela.</p>
+      </details>
+
+      <details>
+        <summary>Qual é a diferença entre prazo, prioridade do dia e matriz?</summary>
+        <p>O <strong>prazo final</strong> é a data-limite da tarefa. A <strong>prioridade do dia</strong> é a estrela que marca até três tarefas mais importantes para hoje. A <strong>matriz</strong> classifica a tarefa conforme urgência e importância, independentemente da data.</p>
+        <p>Uma tarefa pode ter prazo para daqui a uma semana, estar na matriz como “agendar” e ainda não ser uma prioridade de hoje. São dimensões diferentes para você decidir o que fazer agora sem perder o que precisa ser entregue depois.</p>
+      </details>
+
+      <details>
+        <summary>Posso usar a mesma conta em mais de um aparelho?</summary>
+        <p>Sim. Ao entrar com a mesma conta, tarefas, notas, rascunhos, revisões e histórico de sessões ficam disponíveis nos outros aparelhos. As alterações feitas em um deles aparecem ao atualizar o outro.</p>
+        <p>O cronômetro em andamento e o tema escolhido ficam no aparelho onde foram configurados. Se você iniciar um foco no computador, ele não aparece automaticamente rodando no celular.</p>
+      </details>
+
       <details>
         <summary>Como rever os primeiros passos?</summary>
-        <p>Abra <a href="{{ url_for('onboarding.welcome') }}">Bem-vindo</a> a qualquer momento. Nada é apagado ao rever.</p>
+        <p>Abra <a href="{{ url_for('onboarding.welcome') }}">Bem-vindo</a> a qualquer momento. O tutorial mostra o fluxo básico de tarefas, foco e planejamento sem apagar nada do que você já criou.</p>
+        <p>Se o lembrete inicial já foi dispensado, rever o tutorial não altera suas tarefas nem reativa cobranças. É só uma revisão.</p>
       </details>
     </div>
   </section>

@@ -18,6 +18,9 @@
     <button class="btn btn-ghost btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#categoriesModal">
       <i class="bi bi-tags"></i> Categorias
     </button>
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('tasks.archived') }}">
+      <i class="bi bi-archive"></i> Arquivo
+    </a>
     {% if board_columns %}
     <button class="btn btn-neon btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#taskModal">
       <i class="bi bi-plus-lg"></i> Nova tarefa
@@ -145,8 +148,10 @@
     </header>
     <div class="kanban-list" data-dropzone-list="{{ column.id }}">
       {% for task in column_tasks[column.id] %}
-      <article class="task-card quadrant-{{ task.quadrant or 'none' }} {{ 'is-done' if task.is_done }}"
-               draggable="true" data-task-id="{{ task.id }}" data-column-id="{{ task.column_id }}">
+      <article class="task-card quadrant-{{ task.quadrant or 'none' }} {{ 'is-done' if task.is_done }} {{ 'is-overdue' if task.is_overdue }}"
+               draggable="true" data-task-id="{{ task.id }}" data-column-id="{{ task.column_id }}"
+               data-task-url="{{ url_for('tasks.edit', task_id=task.id) }}"
+               title="Clique duas vezes para abrir a tarefa">
         <div class="task-top">
           <div class="d-flex flex-wrap gap-1 justify-content-end">
             {% if not task.is_done %}
@@ -183,6 +188,9 @@
           <span class="task-flag"><i class="bi {{ task.category_icon }}"></i> {{ task.category_label }}</span>
           {% if task.quadrant %}
           <span class="task-flag" title="{{ task.quadrant_hint }}">{{ task.quadrant_label }}</span>
+          {% endif %}
+          {% if task.is_overdue %}
+          <span class="task-flag task-flag-overdue"><i class="bi bi-exclamation-circle"></i> prazo vencido</span>
           {% endif %}
           {% if task.is_mit %}
           <span class="task-flag task-flag-mit"><i class="bi bi-star-fill"></i> prioridade</span>

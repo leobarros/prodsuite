@@ -384,6 +384,8 @@ class Task(db.Model):
         db.DateTime, nullable=False, default=utcnow, onupdate=utcnow
     )
     completed_at = db.Column(db.DateTime, nullable=True)
+    archived_at = db.Column(db.DateTime, nullable=True, index=True)
+    archived_week = db.Column(db.Date, nullable=True, index=True)
 
     owner = db.relationship("User", back_populates="tasks")
     column = db.relationship("BoardColumn", back_populates="tasks")
@@ -430,6 +432,10 @@ class Task(db.Model):
     @property
     def is_done(self) -> bool:
         return self.status == "done"
+
+    @property
+    def is_archived(self) -> bool:
+        return self.archived_at is not None
 
     @property
     def status_label(self) -> str:
@@ -516,6 +522,10 @@ class Task(db.Model):
                 self.column_entered_at.isoformat()
                 if self.column_entered_at
                 else None
+            ),
+            "archived_at": self.archived_at.isoformat() if self.archived_at else None,
+            "archived_week": (
+                self.archived_week.isoformat() if self.archived_week else None
             ),
             "priority": self.priority,
             "priority_label": TASK_PRIORITY_LABELS[self.priority],

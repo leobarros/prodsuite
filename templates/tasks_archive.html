@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Tarefas arquivadas{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow"><i class="bi bi-archive"></i> tarefas · arquivo</p>
+    <h1 class="page-title">Tarefas arquivadas</h1>
+    <p class="page-sub">Concluídas que já saíram do quadro. Você pode consultar o histórico ou restaurar uma tarefa.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('review.weekly') }}"><i class="bi bi-journal-check"></i> Revisão</a>
+    <a class="btn btn-neon btn-sm" href="{{ url_for('tasks.index') }}"><i class="bi bi-kanban"></i> Voltar ao quadro</a>
+  </div>
+</div>
+
+{% if groups %}
+<div class="archive-summary mb-3">
+  <span><strong>{{ total }}</strong> tarefa{{ 's' if total != 1 }} no arquivo</span>
+  <span class="text-dim">agrupadas por semana de fechamento</span>
+</div>
+{% for group in groups %}
+<section class="bento-card mb-3">
+  <div class="card-head">
+    <h2 class="card-title"><i class="bi bi-calendar-week"></i> Semana de {{ group.week|datebr }}</h2>
+    <span class="card-link">{{ group.tasks|length }} tarefa{{ 's' if group.tasks|length != 1 }}</span>
+  </div>
+  <div class="archive-list">
+    {% for task in group.tasks %}
+    <div class="archive-row">
+      <div class="archive-main">
+        <a class="archive-title" href="{{ url_for('tasks.edit', task_id=task.id) }}">{{ task.title }}</a>
+        <span class="archive-meta">
+          <i class="bi {{ task.category_icon }}"></i> {{ task.category_label }}
+          {% if task.project %}<span class="sep">·</span> {{ task.project.name }}{% endif %}
+          <span class="sep">·</span> concluída {{ task.completed_at|localtime('%d/%m/%Y %H:%M') }}
+        </span>
+      </div>
+      <form method="post" action="{{ url_for('tasks.restore', task_id=task.id) }}">
+        {{ csrf() }}
+        <button class="btn btn-ghost btn-sm" type="submit">
+          <i class="bi bi-arrow-counterclockwise"></i> Restaurar
+        </button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endfor %}
+{% else %}
+<div class="bento-card">
+  <div class="empty-state" style="min-height: 180px;">
+    <i class="bi bi-archive"></i>
+    <span>Nenhuma tarefa arquivada ainda. Ao fechar a semana, você pode arquivar as concluídas.</span>
+    <a class="btn btn-ghost btn-xs" href="{{ url_for('review.weekly') }}">Abrir revisão da semana</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
