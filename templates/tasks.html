@@ -8,7 +8,7 @@
   <div>
     <p class="eyebrow"><i class="bi bi-briefcase"></i> {% if project %}{{ project.name }} <span class="sep">·</span> {% endif %}{{ counts.open }} aberta{{ 's' if counts.open != 1 }} <span class="sep">·</span> {{ counts.done }} concluída{{ 's' if counts.done != 1 }}</p>
     <h1 class="page-title">Tarefas</h1>
-    <p class="page-sub">Crie projetos e colunas do seu jeito. Arraste no computador ou mova pelo seletor no celular.</p>
+    <p class="page-sub">Crie projetos e colunas do seu jeito. Arraste os cards para ordenar; o primeiro card em <strong>Doing</strong> vira o foco padrão do Pomodoro.</p>
   </div>
   <div class="d-flex flex-wrap gap-2">
     {% if project %}

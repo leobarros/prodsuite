@@ -18,6 +18,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from extensions import db
 from models import Note, Scratchpad, Task, WeeklyReview
+from services.boards import first_task_in_focus_column
 from services.planning import week_start_for, weekly_metrics
 from services.pomodoro import focus_stats
 from services.search import global_search
@@ -57,11 +58,18 @@ def dashboard():
     planned_today = [
         task for task in open_tasks if task.planned_for == local_today()
     ]
-    focus_task = (
-        mit_tasks[0]
-        if mit_tasks
-        else next((t for t in open_tasks if t.status == "doing"), None)
-    )
+    first_doing = first_task_in_focus_column(current_user)
+    if first_doing is None:
+        first_doing = (
+            Task.query.filter(
+                Task.user_id == uid,
+                Task.status == "doing",
+                Task.archived_at.is_(None),
+            )
+            .order_by(Task.position.asc(), Task.id.asc())
+            .first()
+        )
+    focus_task = first_doing or (mit_tasks[0] if mit_tasks else None)
     focus_task = focus_task or (open_tasks[0] if open_tasks else None)
     current_week_start = week_start_for(local_today())
     previous_week_start = current_week_start - timedelta(days=7)

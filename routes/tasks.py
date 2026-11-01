@@ -107,6 +107,18 @@ def _set_task_column(task: Task, column: BoardColumn, now=None) -> None:
         task.column_id = column.id
         task.project_id = column.project_id
         task.column_entered_at = now
+        max_position = (
+            db.session.query(func.max(Task.position))
+            .filter(
+                Task.user_id == task.user_id,
+                Task.column_id == column.id,
+                Task.archived_at.is_(None),
+                Task.id != task.id,
+            )
+            .scalar()
+            or 0
+        )
+        task.position = max_position + 1
     if column.kind == "done":
         if not task.is_done:
             task.move_to("done")
@@ -181,6 +193,7 @@ def _sort_tasks(tasks: list[Task]) -> list[Task]:
     return sorted(
         tasks,
         key=lambda t: (
+            t.position or 0,
             not t.is_mit,
             t.quadrant_rank,
             t.due_date or date.max,
@@ -834,6 +847,78 @@ def delete_column(column_id: int):
     db.session.commit()
     flash("Coluna removida. As tarefas foram movidas para outra coluna.", "info")
     return redirect(url_for("tasks.index", projeto=column.project_id))
+
+
+@tasks_bp.post("/tarefas/<int:task_id>/ordenar")
+@login_required
+def reorder_task(task_id: int):
+    """Move/reordena um card antes ou depois de outro na mesma coluna."""
+    task = _get_task(task_id)
+    if task.project is None:
+        return jsonify(ok=False, error="Crie um projeto primeiro."), 400
+    payload = request.get_json(silent=True) or request.form
+    column = _column_by_id(payload.get("column_id"))
+    if column is None or column.project_id != task.project_id:
+        return jsonify(ok=False, error="Coluna inválida."), 400
+
+    old_column_id = task.column_id
+    _set_task_column(task, column)
+
+    def _siblings(column_id):
+        return (
+            Task.query.filter(
+                Task.user_id == current_user.id,
+                Task.column_id == column_id,
+                Task.archived_at.is_(None),
+                Task.id != task.id,
+            )
+            .order_by(Task.position.asc(), Task.id.asc())
+            .all()
+        )
+
+    siblings = _siblings(column.id)
+    before_id = str(payload.get("before_id") or "")
+    after_id = str(payload.get("after_id") or "")
+    insert_at = len(siblings)
+    if before_id.isdigit():
+        found = next(
+            (index for index, item in enumerate(siblings) if item.id == int(before_id)),
+            None,
+        )
+        if found is not None:
+            insert_at = found
+    elif after_id.isdigit():
+        found = next(
+            (index for index, item in enumerate(siblings) if item.id == int(after_id)),
+            None,
+        )
+        if found is not None:
+            insert_at = found + 1
+
+    ordered = siblings[:insert_at] + [task] + siblings[insert_at:]
+    for position, item in enumerate(ordered):
+        item.position = position
+
+    if old_column_id and old_column_id != column.id:
+        for position, item in enumerate(_siblings(old_column_id)):
+            item.position = position
+
+    db.session.commit()
+    return jsonify(
+        ok=True,
+        task={
+            "id": task.id,
+            "column_id": task.column_id,
+            "position": task.position,
+            "is_done": task.is_done,
+        },
+        column_counts=_board_column_counts(
+            project_columns(task.project),
+            Task.query.filter_by(
+                user_id=current_user.id, archived_at=None
+            ).all(),
+        ),
+    )
 
 
 @tasks_bp.post("/tarefas/<int:task_id>/coluna")

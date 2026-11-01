@@ -11,6 +11,7 @@ from models import (
     PomodoroCycle,
     Task,
 )
+from services.boards import first_task_in_focus_column
 from services.pomodoro import (
     InvalidCycle,
     TaskNotFound,
@@ -32,6 +33,18 @@ def focus():
         .limit(50)
         .all()
     )
+    tasks.sort(key=lambda task: (task.status != "doing", task.position, task.id))
+    first_doing = first_task_in_focus_column(current_user)
+    if first_doing is None:
+        first_doing = (
+            Task.query.filter(
+                Task.user_id == uid,
+                Task.status == "doing",
+                Task.archived_at.is_(None),
+            )
+            .order_by(Task.position.asc(), Task.id.asc())
+            .first()
+        )
     stats = focus_stats(current_user, days=7)
     history = (
         PomodoroCycle.query.filter_by(user_id=uid)
@@ -40,6 +53,8 @@ def focus():
         .all()
     )
     selected_task_id = request.args.get("tarefa", type=int)
+    if selected_task_id is None and first_doing is not None:
+        selected_task_id = first_doing.id
 
     return render_template(
         "focus.html",

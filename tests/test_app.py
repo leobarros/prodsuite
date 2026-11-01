@@ -1719,6 +1719,87 @@ class TestPlanning:
             assert task.is_mit is True
             assert task.planned_for is None
 
+    def test_task_reorder_persists_inside_column(self, client, app, make_user):
+        user_id = make_user()
+        login(client)
+        client.get("/tarefas")
+        with app.app_context():
+            project = Project.query.filter_by(name="Projeto de teste").one()
+            column = BoardColumn.query.filter_by(
+                project_id=project.id, kind="todo"
+            ).first()
+            first = Task(
+                user_id=user_id,
+                project_id=project.id,
+                column_id=column.id,
+                title="Primeiro card",
+                status="todo",
+                position=1,
+                estimate_pomodoros=1,
+            )
+            second = Task(
+                user_id=user_id,
+                project_id=project.id,
+                column_id=column.id,
+                title="Segundo card",
+                status="todo",
+                position=2,
+                estimate_pomodoros=1,
+            )
+            db.session.add_all([first, second])
+            db.session.commit()
+            first_id, second_id, column_id = first.id, second.id, column.id
+
+        response = client.post(
+            f"/tarefas/{second_id}/ordenar",
+            json={"column_id": column_id, "before_id": first_id},
+            headers={"X-Requested-With": "fetch", "Accept": "application/json"},
+        )
+        assert response.status_code == 200
+        assert response.get_json()["task"]["position"] == 0
+        with app.app_context():
+            assert db.session.get(Task, second_id).position == 0
+            assert db.session.get(Task, first_id).position == 1
+
+        board = client.get("/tarefas").get_data(as_text=True)
+        assert board.index("Segundo card") < board.index("Primeiro card")
+
+    def test_focus_defaults_to_first_doing_card(self, client, app, make_user):
+        user_id = make_user()
+        login(client)
+        with app.app_context():
+            project = Project.query.filter_by(name="Projeto de teste").one()
+            column = BoardColumn.query.filter_by(
+                project_id=project.id, kind="todo"
+            ).first()
+            first = Task(
+                user_id=user_id,
+                project_id=project.id,
+                column_id=column.id,
+                title="Foco principal",
+                status="doing",
+                position=1,
+                estimate_pomodoros=1,
+            )
+            second = Task(
+                user_id=user_id,
+                project_id=project.id,
+                column_id=column.id,
+                title="Foco secundário",
+                status="doing",
+                position=2,
+                estimate_pomodoros=1,
+            )
+            db.session.add_all([first, second])
+            db.session.commit()
+            first_id = first.id
+
+        focus = client.get("/foco").get_data(as_text=True)
+        selected = f'<option value="{first_id}" selected>'
+        assert selected in focus
+        dashboard = client.get("/").get_data(as_text=True)
+        assert "Foco principal" in dashboard
+
     def test_moving_to_completion_column_does_not_archive_immediately(
         self, client, app, make_user
     ):
@@ -2298,6 +2379,9 @@ class TestPWA:
         assert "css/theme.css" in html
         assert "data-theme-toggle" in html
         assert 'rel="preload"' in html
+        assert 'id="shortcutsModal"' in html
+        assert 'data-open-shortcuts' in html
+        assert 'aria-keyshortcuts="Alt+M"' in html
         assert "icons/icon.svg" in html
         static_asset = client.get("/static/icons/icon.svg")
         assert static_asset.status_code == 200

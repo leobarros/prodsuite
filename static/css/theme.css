@@ -4733,3 +4733,48 @@ a.recent-scratch-item:focus-visible {
     min-height: 0;
   }
 }
+
+/* Central de atalhos */
+.shortcut-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+}
+
+.shortcut-list > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.shortcut-list > div:last-child {
+  border-bottom: 0;
+}
+
+.shortcut-list span {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.shortcut-list kbd {
+  min-width: 28px;
+  padding: 3px 7px;
+  border: 1px solid var(--line-strong);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--surface-soft);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-align: center;
+}
+
+@media (min-width: 576px) {
+  .shortcut-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 24px;
+  }
+}

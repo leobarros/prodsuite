@@ -363,6 +363,7 @@ class Task(db.Model):
         index=True,
     )
     column_entered_at = db.Column(db.DateTime, nullable=True)
+    position = db.Column(db.Integer, nullable=False, default=0, index=True)
     project_id = db.Column(
         db.Integer,
         db.ForeignKey("projects.id", ondelete="SET NULL"),
@@ -523,6 +524,7 @@ class Task(db.Model):
                 if self.column_entered_at
                 else None
             ),
+            "position": self.position,
             "archived_at": self.archived_at.isoformat() if self.archived_at else None,
             "archived_week": (
                 self.archived_week.isoformat() if self.archived_week else None

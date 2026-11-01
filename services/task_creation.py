@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from flask import flash
 
+from sqlalchemy import func
+
 from extensions import db
 from models import Task, normalize_tags, utcnow
 from services.timeutils import local_today
@@ -46,6 +48,16 @@ def create_task_from_form(
     if selected is None:
         selected = columns[0]
 
+    max_position = (
+        db.session.query(func.max(Task.position))
+        .filter(
+            Task.user_id == user.id,
+            Task.column_id == selected.id,
+            Task.archived_at.is_(None),
+        )
+        .scalar()
+        or 0
+    )
     task = Task(
         user_id=user.id,
         title=form.title.data,
@@ -53,6 +65,7 @@ def create_task_from_form(
         status="done" if selected.kind == "done" else "todo",
         column_id=selected.id,
         column_entered_at=utcnow(),
+        position=max_position + 1,
         project_id=project.id,
         estimate_pomodoros=form.estimate_pomodoros.data or 0,
         due_date=form.due_date.data or local_today(),

@@ -10,7 +10,7 @@
  *
  * Ao alterar assets, incremente CACHE_VERSION para promover a limpeza.
  */
-const CACHE_VERSION = "v2.83.0";
+const CACHE_VERSION = "v2.86.0";
 const PRECACHE = `prodsuite-precache-${CACHE_VERSION}`;
 const RUNTIME = `prodsuite-runtime-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline";

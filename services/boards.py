@@ -156,3 +156,34 @@ def project_columns(project) -> list[BoardColumn]:
         .order_by(BoardColumn.position.asc(), BoardColumn.id.asc())
         .all()
     )
+
+
+def first_task_in_focus_column(user):
+    """Primeiro card da coluna de andamento (Doing), pela ordem manual."""
+    columns = (
+        BoardColumn.query.join(Project, BoardColumn.project_id == Project.id)
+        .filter(BoardColumn.user_id == user.id)
+        .order_by(Project.position.asc(), BoardColumn.position.asc())
+        .all()
+    )
+    focus_titles = {"doing", "em andamento", "em progresso", "fazendo"}
+    focus_column = next(
+        (
+            column
+            for column in columns
+            if column.kind == "doing"
+            or column.title.strip().casefold() in focus_titles
+        ),
+        None,
+    )
+    if focus_column is None:
+        return None
+    return (
+        Task.query.filter(
+            Task.user_id == user.id,
+            Task.column_id == focus_column.id,
+            Task.archived_at.is_(None),
+        )
+        .order_by(Task.position.asc(), Task.id.asc())
+        .first()
+    )

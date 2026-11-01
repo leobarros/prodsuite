@@ -60,33 +60,33 @@
 
     <nav class="side-section" aria-label="Workspace">
       <span class="side-label">meu dia</span>
-      <a class="side-link {{ 'active' if ep == 'main.dashboard' }}" href="{{ url_for('main.dashboard') }}">
+      <a class="side-link {{ 'active' if ep == 'main.dashboard' }}" href="{{ url_for('main.dashboard') }}" aria-keyshortcuts="Alt+M">
         <i class="bi bi-house-door"></i><span>Meu dia</span>
       </a>
       <a class="side-link {{ 'active' if ep == 'planner.plan' }}" href="{{ url_for('planner.plan') }}">
         <i class="bi bi-calendar2-check"></i><span>Planejar</span>
       </a>
-      <a class="side-link {{ 'active' if ep.startswith('tasks.') }}" href="{{ url_for('tasks.index') }}">
+      <a class="side-link {{ 'active' if ep.startswith('tasks.') }}" href="{{ url_for('tasks.index') }}" aria-keyshortcuts="Alt+T">
         <i class="bi bi-check2-square"></i><span>Tarefas</span>
         {% if nav_pending %}<span class="side-badge">{{ nav_pending }}</span>{% endif %}
       </a>
-      <a class="side-link {{ 'active' if ep.startswith('pomodoro.') }}" href="{{ url_for('pomodoro.focus') }}">
+      <a class="side-link {{ 'active' if ep.startswith('pomodoro.') }}" href="{{ url_for('pomodoro.focus') }}" aria-keyshortcuts="Alt+P">
         <span class="emoji-icon tomato-glyph" aria-hidden="true"></span><span>Pomodoro</span>
       </a>
-      <a class="side-link {{ 'active' if ep.startswith('scratchpad.') }}" href="{{ url_for('scratchpad.index') }}">
+      <a class="side-link {{ 'active' if ep.startswith('scratchpad.') }}" href="{{ url_for('scratchpad.index') }}" aria-keyshortcuts="Alt+R">
         <i class="bi bi-lightbulb"></i><span>Rascunhos</span>
       </a>
-      <a class="side-link {{ 'active' if ep.startswith('notes.') }}" href="{{ url_for('notes.index') }}">
+      <a class="side-link {{ 'active' if ep.startswith('notes.') }}" href="{{ url_for('notes.index') }}" aria-keyshortcuts="Alt+O">
         <i class="bi bi-journal-bookmark"></i><span>Notas</span>
       </a>
     </nav>
 
     <nav class="side-section" aria-label="Sistema">
       <span class="side-label">ferramentas</span>
-      <a class="side-link {{ 'active' if ep == 'main.search' }}" href="{{ url_for('main.search') }}">
+      <a class="side-link {{ 'active' if ep == 'main.search' }}" href="{{ url_for('main.search') }}" aria-keyshortcuts="Alt+F">
         <i class="bi bi-search"></i><span>Buscar</span>
       </a>
-      <a class="side-link {{ 'active' if ep == 'review.weekly' }}" href="{{ url_for('review.weekly') }}">
+      <a class="side-link {{ 'active' if ep == 'review.weekly' }}" href="{{ url_for('review.weekly') }}" aria-keyshortcuts="Alt+E">
         <i class="bi bi-journal-check"></i><span>Revisão</span>
       </a>
       <a class="side-link {{ 'active' if ep == 'help.help_page' }}" href="{{ url_for('help.help_page') }}">
@@ -114,6 +114,9 @@
         </button>
         <button class="icon-btn" type="button" data-theme-toggle aria-label="Alternar tema" title="Alternar tema">
           <i class="bi bi-moon-stars"></i>
+        </button>
+        <button class="icon-btn" type="button" data-open-shortcuts aria-keyshortcuts="?" aria-label="Atalhos de teclado" title="Atalhos de teclado">
+          <i class="bi bi-keyboard"></i>
         </button>
         <a class="icon-btn" href="{{ url_for('help.help_page') }}" aria-label="Ajuda" title="Ajuda">
           <i class="bi bi-question-circle"></i>
@@ -188,7 +191,7 @@
 
     {% if current_user.is_authenticated %}
     <footer class="app-foot">
-      <span><a href="{{ url_for('help.help_page') }}">ajuda</a> · feito para o seu dia a dia · {{ today_local.strftime('%d.%m.%Y') }}</span>
+      <span><a href="{{ url_for('help.help_page') }}">ajuda</a> · <a href="#" data-open-shortcuts>atalhos</a> · feito para o seu dia a dia · {{ today_local.strftime('%d.%m.%Y') }}</span>
     </footer>
     {% endif %}
   </main>
@@ -214,6 +217,47 @@
       <i class="bi bi-x-lg"></i>
     </button>
   </div>
+  <div class="modal fade" id="shortcutsModal" tabindex="-1" aria-labelledby="shortcutsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title" id="shortcutsModalLabel"><i class="bi bi-keyboard text-emerald"></i> Atalhos de teclado</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p class="page-sub mb-3">Use o teclado para navegar sem tirar as mãos do fluxo.</p>
+          <div class="shortcut-list">
+            <div><kbd>Alt</kbd> + <kbd>M</kbd><span>Meu dia</span></div>
+            <div><kbd>Alt</kbd> + <kbd>T</kbd><span>Tarefas</span></div>
+            <div><kbd>Alt</kbd> + <kbd>P</kbd><span>Pomodoro</span></div>
+            <div><kbd>Alt</kbd> + <kbd>R</kbd><span>Rascunhos</span></div>
+            <div><kbd>Alt</kbd> + <kbd>O</kbd><span>Notas</span></div>
+            <div><kbd>Alt</kbd> + <kbd>E</kbd><span>Revisão</span></div>
+            <div><kbd>Alt</kbd> + <kbd>F</kbd><span>Buscar</span></div>
+            <div><kbd>Alt</kbd> + <kbd>N</kbd><span>Nova tarefa</span></div>
+            <div><kbd>Alt</kbd> + <kbd>C</kbd><span>Captura rápida</span></div>
+            <div><kbd>Espaço</kbd><span>Iniciar/pausar Pomodoro</span></div>
+            <div><kbd>?</kbd><span>Abrir esta lista</span></div>
+          </div>
+          <p class="form-hint mb-0 mt-3">Os atalhos de digitação das notas: Ctrl/⌘ + B, I, K e S.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div hidden data-shortcut-urls
+       data-dashboard="{{ url_for('main.dashboard') }}"
+       data-tasks="{{ url_for('tasks.index') }}"
+       data-new-task="{{ url_for('tasks.index', nova=1) }}"
+       data-pomodoro="{{ url_for('pomodoro.focus') }}"
+       data-scratchpad="{{ url_for('scratchpad.index') }}"
+       data-notes="{{ url_for('notes.index') }}"
+       data-review="{{ url_for('review.weekly') }}"
+       data-search="{{ url_for('main.search') }}"></div>
+
   {% include "_bottom_nav.html" %}
   {% include "_capture_modal.html" %}
 {% endif %}

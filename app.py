@@ -91,6 +91,7 @@ def ensure_schema() -> None:
             "is_mit": "BOOLEAN NOT NULL DEFAULT 0",
             "column_id": "INTEGER",
             "column_entered_at": "DATETIME",
+            "position": "INTEGER NOT NULL DEFAULT 0",
             "project_id": "INTEGER",
             "archived_at": "DATETIME",
             "archived_week": "DATE",

@@ -551,10 +551,24 @@
         if (!card) return;
         const columnId = column.dataset.columnId;
         const taskId = card.dataset.taskId;
-        if (!columnId || card.dataset.columnId === columnId) return;
+        if (!columnId) return;
+
+        const targetCard = event.target.closest(".task-card");
+        if (targetCard === card) return;
+        let beforeId = null;
+        let afterId = null;
+        if (targetCard && column.contains(targetCard)) {
+          const rect = targetCard.getBoundingClientRect();
+          if (event.clientY > rect.top + rect.height / 2) {
+            afterId = targetCard.dataset.taskId;
+          } else {
+            beforeId = targetCard.dataset.taskId;
+          }
+        }
+
         const sourceColumn = card.closest(".kanban-col");
         try {
-          const response = await fetch(`/tarefas/${taskId}/coluna`, {
+          const response = await fetch(`/tarefas/${taskId}/ordenar`, {
             method: "POST",
             credentials: "same-origin",
             headers: {
@@ -563,18 +577,32 @@
               "X-Requested-With": "fetch",
               Accept: "application/json",
             },
-            body: JSON.stringify({ column_id: Number(columnId) }),
+            body: JSON.stringify({
+              column_id: Number(columnId),
+              before_id: beforeId ? Number(beforeId) : null,
+              after_id: afterId ? Number(afterId) : null,
+            }),
           });
           const data = await parseJson(response);
           if (!response.ok || !data?.ok) {
-            toast(data?.error || "Não foi possível mover a tarefa.", "error");
+            toast(data?.error || "Não foi possível reordenar a tarefa.", "error");
             return;
           }
           const targetList = column.querySelector(".kanban-list");
-          const addButton = targetList?.querySelector(".kanban-add");
           if (data.task.is_archived) {
             card.remove();
+          } else if (targetCard && targetCard !== card) {
+            if (beforeId) {
+              targetList?.insertBefore(card, targetCard);
+            } else {
+              targetList?.insertBefore(card, targetCard.nextSibling);
+            }
+            card.dataset.columnId = String(data.task.column_id);
+            card.classList.toggle("is-done", Boolean(data.task.is_done));
+            const select = card.querySelector("[data-column-select]");
+            if (select) select.value = String(data.task.column_id);
           } else {
+            const addButton = targetList?.querySelector(".kanban-add");
             targetList?.insertBefore(card, addButton || null);
             card.dataset.columnId = String(data.task.column_id);
             card.classList.toggle("is-done", Boolean(data.task.is_done));
@@ -597,7 +625,9 @@
           toast(
             data.task.is_archived
               ? "Tarefa concluída e arquivada."
-              : "Tarefa movida."
+              : sourceColumn === column
+                ? "Ordem atualizada."
+                : "Tarefa movida."
           );
         } catch (_error) {
           toast("Não conseguimos conectar. Tente novamente.", "error");
@@ -726,5 +756,89 @@
     csrfToken,
     toast,
     parseJson,
+  });
+
+
+  // ------------------------------------------------- atalhos de teclado
+  const shortcutsModal = document.getElementById("shortcutsModal");
+  const shortcutSources = document.querySelector("[data-shortcut-urls]");
+  const shortcutUrls = shortcutSources?.dataset || {};
+  const timerToggle = document.querySelector("[data-timer-toggle]");
+
+  const isEditingText = (target) =>
+    Boolean(
+      target?.closest?.(
+        "input, textarea, select, [contenteditable='true'], [contenteditable='']"
+      )
+    );
+
+  const openShortcuts = () => {
+    if (!shortcutsModal || !window.bootstrap) return;
+    window.bootstrap.Modal.getOrCreateInstance(shortcutsModal).show();
+  };
+
+  document.querySelectorAll("[data-open-shortcuts]").forEach((trigger) => {
+    trigger.addEventListener("click", (event) => {
+      event.preventDefault();
+      openShortcuts();
+    });
+  });
+
+  const focusCapture = () => {
+    const trigger = document.querySelector('[data-bs-target="#captureModal"]');
+    if (trigger && window.bootstrap) trigger.click();
+  };
+
+  document.addEventListener("shown.bs.modal", (event) => {
+    if (event.target.id === "captureModal") {
+      document.getElementById("captureModalText")?.focus();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    const typing = isEditingText(event.target);
+    const modalOpen = Boolean(document.querySelector(".modal.show"));
+
+    if (typing || modalOpen) return;
+
+    if (event.altKey && !event.ctrlKey && !event.metaKey) {
+      const routes = {
+        KeyM: shortcutUrls.dashboard,
+        KeyT: shortcutUrls.tasks,
+        KeyP: shortcutUrls.pomodoro,
+        KeyR: shortcutUrls.scratchpad,
+        KeyO: shortcutUrls.notes,
+        KeyE: shortcutUrls.review,
+        KeyF: shortcutUrls.search,
+        KeyN: shortcutUrls.newTask,
+      };
+      if (event.code === "KeyC") {
+        event.preventDefault();
+        focusCapture();
+        return;
+      }
+      const target = routes[event.code];
+      if (target) {
+        event.preventDefault();
+        window.location.assign(target);
+      }
+      return;
+    }
+
+    if (event.key === "?") {
+      event.preventDefault();
+      openShortcuts();
+      return;
+    }
+
+    if (
+      event.code === "Space" &&
+      timerToggle &&
+      !event.repeat &&
+      !event.target.closest("button, a, input, select, textarea")
+    ) {
+      event.preventDefault();
+      timerToggle.click();
+    }
   });
 })();
