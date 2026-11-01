@@ -96,3 +96,6 @@ class Config:
     JSON_SORT_KEYS = False
     TEMPLATES_AUTO_RELOAD = _as_bool("TEMPLATES_AUTO_RELOAD", False)
     PREFERRED_URL_SCHEME = os.environ.get("PREFERRED_URL_SCHEME", "http")
+    # Estáticos sem fingerprint: cache curto o suficiente para evitar
+    # revalidação a cada navegação, sem deixar CSS/JS antigos por muito tempo.
+    SEND_FILE_MAX_AGE_DEFAULT = timedelta(hours=1)

@@ -2297,6 +2297,11 @@ class TestPWA:
         assert "theme-init.js" in html
         assert "css/theme.css" in html
         assert "data-theme-toggle" in html
+        assert 'rel="preload"' in html
+        assert "icons/icon.svg" in html
+        static_asset = client.get("/static/icons/icon.svg")
+        assert static_asset.status_code == 200
+        assert "max-age=3600" in static_asset.headers.get("Cache-Control", "")
         assert 'id="pomodoro-sound"' in html
         assert "/static/audio/pomodoro-alert.wav" in html
 
