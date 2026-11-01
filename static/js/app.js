@@ -148,7 +148,8 @@
         if (preview && data.scratchpad) {
           const row = document.createElement("a");
           row.className = "recent-scratch-item";
-          row.href = `${preview.dataset.scratchBase || "/rascunhos"}#rascunho-${data.scratchpad.id}`;
+          const scratchBase = (preview.dataset.scratchBase || "/rascunhos").replace(/\/$/, "");
+          row.href = `${scratchBase}/${data.scratchpad.id}`;
           row.title = "Abrir rascunho";
           const icon = document.createElement("i");
           icon.className = "bi bi-dash";
@@ -309,10 +310,15 @@
   if (editor) {
     const body = editor.querySelector("#noteBody");
     const preview = editor.querySelector("[data-note-preview]");
+    const previewEmpty = editor.querySelector("[data-note-preview-empty]");
     const counter = editor.querySelector("[data-note-count]");
     const previewUrl = editor.dataset.previewUrl;
+    const linkBox = editor.querySelector("[data-md-link-box]");
+    const linkInput = editor.querySelector("[data-md-link-url]");
+    const linkError = editor.querySelector("[data-md-link-error]");
     let debounce = null;
     let lastRequest = 0;
+    let linkSelection = null;
 
     const refreshPreview = async () => {
       if (!body || !preview || !previewUrl) return;
@@ -332,20 +338,117 @@
         const data = await parseJson(response);
         if (requestId === lastRequest && response.ok && data?.ok) {
           preview.innerHTML = data.html;
+          if (previewEmpty) previewEmpty.hidden = body.value.trim().length > 0;
         }
       } catch (_error) {
         /* preview silencioso: o conteúdo principal continua no textarea */
       }
     };
 
+    const updateCount = () => {
+      if (!body || !counter) return;
+      const text = body.value;
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      counter.textContent = `${words} ${words === 1 ? "palavra" : "palavras"} · ${text.length} / 40000`;
+      if (previewEmpty) previewEmpty.hidden = text.trim().length > 0;
+    };
+
     const schedulePreview = () => {
-      if (counter) counter.textContent = `${body.value.length} / 40000`;
+      updateCount();
       window.clearTimeout(debounce);
       debounce = window.setTimeout(refreshPreview, 380);
     };
 
+    const wrapSelection = (before, after) => {
+      if (!body) return;
+      const start = body.selectionStart;
+      const end = body.selectionEnd;
+      const selected = body.value.slice(start, end);
+      body.setRangeText(`${before}${selected}${after}`, start, end, "end");
+      if (!selected) {
+        const cursor = start + before.length;
+        body.setSelectionRange(cursor, cursor);
+      }
+      body.focus();
+      schedulePreview();
+    };
+
+    const openLinkBox = () => {
+      if (!body || !linkBox || !linkInput) return;
+      linkSelection = {
+        start: body.selectionStart,
+        end: body.selectionEnd,
+        text: body.value.slice(body.selectionStart, body.selectionEnd),
+      };
+      linkInput.value = "";
+      linkBox.hidden = false;
+      if (linkError) linkError.hidden = true;
+      linkInput.focus();
+    };
+
+    const closeLinkBox = () => {
+      if (linkBox) linkBox.hidden = true;
+      linkSelection = null;
+      body?.focus();
+    };
+
+    const applyLink = () => {
+      if (!body || !linkInput) return;
+      let url = linkInput.value.trim();
+      if (!url) {
+        if (linkError) linkError.hidden = false;
+        linkInput.focus();
+        return;
+      }
+      if (!/^(https?:\/\/|mailto:|\/)/i.test(url)) {
+        if (/^[\w.-]+\.[a-z]{2,}(?:\/|$)/i.test(url)) {
+          url = `https://${url}`;
+        } else {
+          if (linkError) linkError.hidden = false;
+          linkInput.focus();
+          return;
+        }
+      }
+      const selection = linkSelection || {
+        start: body.selectionStart,
+        end: body.selectionEnd,
+        text: body.value.slice(body.selectionStart, body.selectionEnd),
+      };
+      const label = (selection.text || "texto").replace(/([\[\]])/g, "\\$1");
+      body.setRangeText(`[${label}](${url})`, selection.start, selection.end, "end");
+      if (!selection.text) {
+        body.setSelectionRange(
+          selection.start + 1,
+          selection.start + 1 + label.length
+        );
+      }
+      closeLinkBox();
+      schedulePreview();
+    };
+
     if (body) {
       body.addEventListener("input", schedulePreview);
+      body.addEventListener("keydown", (event) => {
+        const modifier = event.metaKey || event.ctrlKey;
+        const key = event.key.toLowerCase();
+        if (modifier && key === "b") {
+          event.preventDefault();
+          wrapSelection("**", "**");
+        } else if (modifier && key === "i") {
+          event.preventDefault();
+          wrapSelection("*", "*");
+        } else if (modifier && key === "k") {
+          event.preventDefault();
+          openLinkBox();
+        } else if (modifier && key === "s") {
+          event.preventDefault();
+          editor.requestSubmit();
+        } else if (event.key === "Tab" && !event.shiftKey) {
+          event.preventDefault();
+          body.setRangeText("  ", body.selectionStart, body.selectionEnd, "end");
+          schedulePreview();
+        }
+      });
       schedulePreview();
     }
 
@@ -356,17 +459,27 @@
         const pipe = template.indexOf("|");
         const before = pipe >= 0 ? template.slice(0, pipe) : template;
         const after = pipe >= 0 ? template.slice(pipe + 1) : "";
-        const start = body.selectionStart;
-        const end = body.selectionEnd;
-        const selected = body.value.slice(start, end);
-        body.setRangeText(`${before}${selected}${after}`, start, end, "end");
-        if (!selected) {
-          const cursor = start + before.length;
-          body.setSelectionRange(cursor, cursor);
-        }
-        body.focus();
-        schedulePreview();
+        wrapSelection(before, after);
       });
+    });
+
+    editor.querySelector("[data-md-link]")?.addEventListener("click", openLinkBox);
+    editor.querySelector("[data-md-link-apply]")?.addEventListener("click", applyLink);
+    editor.querySelector("[data-md-link-cancel]")?.addEventListener("click", closeLinkBox);
+    linkInput?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        applyLink();
+      } else if (event.key === "Escape") {
+        event.preventDefault();
+        closeLinkBox();
+      }
+    });
+    linkBox?.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeLinkBox();
+      }
     });
   }
 

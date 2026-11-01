@@ -98,7 +98,10 @@ def dashboard():
         .all()
     )
     recent_scratch = (
-        Scratchpad.query.filter_by(user_id=uid)
+        Scratchpad.query.filter(
+            Scratchpad.user_id == uid,
+            Scratchpad.converted_task_id.is_(None),
+        )
         .order_by(Scratchpad.created_at.desc())
         .limit(20)
         .all()

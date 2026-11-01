@@ -1415,6 +1415,35 @@ class TestScratchpad:
         assert response.status_code == 400
         assert response.get_json()["ok"] is False
 
+    def test_scratchpad_detail_can_be_edited_and_uses_task_form(
+        self, client, app, make_user
+    ):
+        make_user()
+        login(client)
+        client.post("/rascunhos", data={"content": "Texto original"})
+        with app.app_context():
+            item_id = Scratchpad.query.one().id
+
+        detail = client.get(f"/rascunhos/{item_id}")
+        assert detail.status_code == 200
+        html = detail.get_data(as_text=True)
+        assert "Texto original" in html
+        assert "Transformar em tarefa" in html
+        assert "Quadrante da matriz" in html
+        assert "Prazo final" in html
+        assert "Sessões de foco (estimativa)" in html
+        assert "Etiquetas" in html
+
+        saved = client.post(
+            f"/rascunhos/{item_id}/editar",
+            data={"content": "Texto revisado"},
+            follow_redirects=True,
+        )
+        assert saved.status_code == 200
+        assert "Texto revisado" in saved.get_data(as_text=True)
+        with app.app_context():
+            assert db.session.get(Scratchpad, item_id).content == "Texto revisado"
+
     def test_convert_scratchpad_to_task(self, client, app, make_user):
         make_user()
         login(client)
@@ -1434,17 +1463,15 @@ class TestScratchpad:
         )
         assert response.status_code == 302
         with app.app_context():
-            item = db.session.get(Scratchpad, item_id)
+            assert db.session.get(Scratchpad, item_id) is None
             task = Task.query.filter_by(title="Comprar café").one()
-            assert item.converted_task_id == task.id
             assert task.description == "Comprar cafe"
 
         again = client.post(
             f"/rascunhos/{item_id}/converter",
             data={"title": "Outra", "priority": "low", "estimate_pomodoros": "1"},
-            follow_redirects=True,
         )
-        assert "já foi convertido" in again.get_data(as_text=True)
+        assert again.status_code == 404
 
     def test_other_user_cannot_convert_scratchpad(self, client, app, make_user):
         make_user("alice")
@@ -1822,17 +1849,22 @@ class TestPlanning:
         ).get_data(as_text=True)
         assert "semana encerrada" in review
         assert "Progresso da semana passada" in review
+        assert "somente para leitura" in review
+        assert "Escrever revisão" not in review
+        assert "Editar" not in review
 
         client.post(
             f"/revisao?semana={previous_start.isoformat()}",
             data={
-                "wins": "Aprendi algo",
-                "challenges": "Foi corrido",
+                "wins": "Tentativa indevida",
+                "challenges": "Foi corrida",
                 "next_steps": "Proteger a manhã",
             },
         )
+        with app.app_context():
+            assert WeeklyReview.query.count() == 0
         dashboard_after = client.get("/").get_data(as_text=True)
-        assert "A semana passada terminou" not in dashboard_after
+        assert "A semana passada terminou" in dashboard_after
 
     def test_weekly_review_is_read_only_until_edit_is_requested(
         self, client, app, make_user
@@ -2261,7 +2293,7 @@ class TestPWA:
         assert 'apple-touch-icon' in html
         assert "viewport-fit=cover" in html
         assert "bottom-nav" in html
-        assert "pomodoro-hud" in html
+        assert "pomodoro-hud" not in html
         assert "theme-init.js" in html
         assert "css/theme.css" in html
         assert "data-theme-toggle" in html
@@ -2372,13 +2404,13 @@ class TestPages:
             for term in forbidden:
                 assert term not in visible, f"{term!r} appears in {path}"
 
-    def test_dashboard_contains_bento_and_timer_hud(self, client, make_user):
+    def test_dashboard_contains_bento_and_weekly_chart(self, client, make_user):
         make_user()
         login(client)
         html = client.get("/").get_data(as_text=True)
         assert "bento-grid" in html
         assert "bento-hero" in html
-        assert "data-timer-toggle" in html
+        assert "data-timer-toggle" not in html
         assert "weekly-chart" in html
         assert "weekly-chart-line" in html
         assert "weekly-chart-grid" in html

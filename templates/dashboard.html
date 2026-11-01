@@ -24,7 +24,7 @@
   <span class="week-review-icon" aria-hidden="true"><i class="bi bi-calendar-check"></i></span>
   <div class="week-review-copy">
     <strong>A semana passada terminou.</strong>
-    <p>De {{ previous_metrics.week_start|datebr }} a {{ previous_metrics.week_end|datebr }}, você concluiu {{ previous_metrics.completed_tasks }} tarefa{{ 's' if previous_metrics.completed_tasks != 1 }} e fez {{ previous_metrics.sessions }} sessão{{ 'ões' if previous_metrics.sessions != 1 }} de foco. Vale revisar o que progrediu.</p>
+    <p>De {{ previous_metrics.week_start|datebr }} a {{ previous_metrics.week_end|datebr }}, você concluiu {{ previous_metrics.completed_tasks }} tarefa{{ 's' if previous_metrics.completed_tasks != 1 }} e fez {{ previous_metrics.sessions }} sessão{{ 'ões' if previous_metrics.sessions != 1 }} de foco. Vale consultar o que progrediu.</p>
   </div>
   <a class="btn btn-neon btn-sm" href="{{ url_for('review.weekly', semana=previous_week_start.isoformat()) }}">
     <i class="bi bi-journal-check"></i> Revisar semana
@@ -184,7 +184,7 @@
     {% if recent_scratch %}
     <div class="recent-scratch dashboard-scratch-list" data-scratch-preview data-scratch-base="{{ url_for('scratchpad.index') }}">
       {% for item in recent_scratch %}
-      <a class="recent-scratch-item" href="{{ url_for('scratchpad.index') }}#rascunho-{{ item.id }}" title="Abrir rascunho">
+      <a class="recent-scratch-item" href="{{ url_for('scratchpad.detail', item_id=item.id) }}" title="Abrir rascunho">
         <i class="bi bi-{{ 'check2' if item.is_converted else 'dash' }}"></i>
         <span>{{ item.preview }}</span>
       </a>

@@ -12,7 +12,7 @@ O ProdSuite é um app pessoal de produtividade. Ele junta um quadro de tarefas c
 
 ![Python](https://img.shields.io/badge/Python-3.11%2B-7c6aa3)
 ![Flask](https://img.shields.io/badge/Flask-3.0-9e8ab8)
-![Testes](https://img.shields.io/badge/testes-104%20passando-b98aa4)
+![Testes](https://img.shields.io/badge/testes-105%20passando-b98aa4)
 ![Memória](https://img.shields.io/badge/memória-512%20MB-d99a8b)
 
 ---
@@ -308,7 +308,7 @@ Testes:
 
 ```bash
 pytest -q
-# 104 testes
+# 105 testes
 ```
 
 A suíte cobre autenticação, sessões, CSRF, persistência da conta, tarefas, colunas personalizadas, rascunhos, notas, busca, Pomodoro, planejamento, revisão, onboarding, ajuda, exportação e PWA.

@@ -49,6 +49,7 @@ from services.categories import (
     new_category_key,
 )
 from services.planning import week_start_for
+from services.task_creation import create_task_from_form
 from services.timeutils import local_today
 
 tasks_bp = Blueprint("tasks", __name__)
@@ -225,42 +226,16 @@ def index():
     open_modal = request.args.get("nova") == "1"
 
     if form.validate_on_submit():
-        if project is None:
-            flash("Crie um projeto antes de adicionar tarefas.", "warning")
-            return redirect(url_for("tasks.index"))
-        wants_mit = bool(form.is_mit.data)
-        if wants_mit and _mit_count() >= 3:
-            flash(
-                "Você já tem 3 prioridades do dia. Remova uma antes de adicionar outra.",
-                "warning",
-            )
-            wants_mit = False
-
-        selected_column = _column_by_id(request.form.get("column_id"))
-        if selected_column is None or selected_column.project_id != project.id:
-            if not columns:
-                flash("Crie uma coluna antes de adicionar tarefas.", "warning")
-                return redirect(url_for("tasks.index", projeto=project.id))
-            selected_column = columns[0]
-
-        task = Task(
-            user_id=current_user.id,
-            title=form.title.data,
-            description=form.description.data or "",
-            status="done" if selected_column.kind == "done" else "todo",
-            column_id=selected_column.id,
-            column_entered_at=utcnow(),
-            project_id=project.id,
-            estimate_pomodoros=form.estimate_pomodoros.data or 0,
-            due_date=form.due_date.data or local_today(),
-            category=form.category.data or categories[0].key,
-            quadrant=form.quadrant.data or None,
-            is_mit=wants_mit,
-            tags=normalize_tags(form.tags.data),
+        task = create_task_from_form(
+            current_user,
+            form,
+            project,
+            columns,
+            categories,
+            request.form.get("column_id"),
         )
-        if task.status == "done":
-            task.completed_at = utcnow()
-        db.session.add(task)
+        if task is None:
+            return redirect(url_for("tasks.index", projeto=project.id) if project else url_for("tasks.index"))
         db.session.commit()
         flash("Tarefa criada.", "success")
         return _redirect_back()

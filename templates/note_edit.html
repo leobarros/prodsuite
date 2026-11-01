@@ -7,7 +7,7 @@
   <div>
     <p class="eyebrow"><a href="{{ url_for('notes.index') }}">notas</a> <span class="sep">/</span> {{ 'editar' if note else 'nova' }}</p>
     <h1 class="page-title">{{ note.title if note else 'Nova nota' }}</h1>
-    <p class="page-sub">Escreva com formatação simples e veja a visualização ao lado. Use <span class="mono">[[Título]]</span> para conectar notas.</p>
+    <p class="page-sub">Um bloco de notas simples para registrar a ideia antes que ela passe. Use <span class="mono">[[Título]]</span> para conectar notas.</p>
   </div>
   <div class="d-flex gap-2">
     <a class="btn btn-ghost btn-sm" href="{{ url_for('notes.index') }}"><i class="bi bi-arrow-left"></i> Voltar</a>
@@ -36,26 +36,45 @@
   </div>
 
   <div class="editor-grid">
-    <div class="editor-pane">
-      <div class="d-flex justify-content-between align-items-center mb-1">
-        <label class="form-label mb-0" for="noteBody">Conteúdo</label>
-        <span class="char-count" data-note-count>0 / 40000</span>
+    <div class="notepad-pane editor-pane">
+      <div class="notepad-head">
+        <div>
+          <span class="eyebrow">bloco de notas</span>
+          <h2>Escrever</h2>
+        </div>
+        <span class="note-count" data-note-count>0 palavras · 0 / 40000</span>
       </div>
-      <div class="markdown-toolbar" aria-label="Atalhos de formatação">
-        <button class="md-btn" type="button" data-md-insert="**|**" title="Negrito">B</button>
-        <button class="md-btn" type="button" data-md-insert="*|*" title="Itálico"><em>I</em></button>
-        <button class="md-btn" type="button" data-md-insert="# |" title="Título">H1</button>
-        <button class="md-btn" type="button" data-md-insert="## |" title="Subtítulo">H2</button>
-        <button class="md-btn" type="button" data-md-insert="- |" title="Lista">•</button>
-        <button class="md-btn" type="button" data-md-insert="> |" title="Citação">”</button>
-        <button class="md-btn" type="button" data-md-insert="`|`" title="Código">&lt;/&gt;</button>
-        <button class="md-btn" type="button" data-md-insert="[texto](https://)|" title="Link">link</button>
-        <button class="md-btn" type="button" data-md-insert="[[|]]" title="Link interno">[[ ]]</button>
+
+      <div class="markdown-toolbar" aria-label="Ferramentas de formatação">
+        <button class="md-btn" type="button" data-md-insert="**|**" title="Negrito (Ctrl+B)" aria-label="Negrito"><strong>B</strong></button>
+        <button class="md-btn" type="button" data-md-insert="*|*" title="Itálico (Ctrl+I)" aria-label="Itálico"><em>I</em></button>
+        <button class="md-btn" type="button" data-md-insert="# |" title="Título" aria-label="Título">H1</button>
+        <button class="md-btn" type="button" data-md-insert="## |" title="Subtítulo" aria-label="Subtítulo">H2</button>
+        <button class="md-btn" type="button" data-md-insert="- |" title="Lista com marcadores" aria-label="Lista"><i class="bi bi-list-ul"></i></button>
+        <button class="md-btn" type="button" data-md-insert="1. |" title="Lista numerada" aria-label="Lista numerada"><i class="bi bi-list-ol"></i></button>
+        <button class="md-btn" type="button" data-md-insert="> |" title="Citação" aria-label="Citação"><i class="bi bi-quote"></i></button>
+        <button class="md-btn" type="button" data-md-insert="`|`" title="Código" aria-label="Código"><i class="bi bi-code"></i></button>
+        <button class="md-btn md-btn-wide" type="button" data-md-link title="Inserir link (Ctrl+K)" aria-label="Inserir link"><i class="bi bi-link-45deg"></i> link</button>
+        <button class="md-btn md-btn-wide" type="button" data-md-insert="[[|]]" title="Link para outra nota" aria-label="Link para outra nota"><i class="bi bi-journal-bookmark"></i> nota</button>
       </div>
-      {{ form.body(class="form-control" + (" is-invalid" if form.body.errors else ""), id="noteBody") }}
+
+      <div class="md-link-box" data-md-link-box hidden>
+        <div class="md-link-field">
+          <label class="form-label" for="mdLinkUrl">Endereço do link</label>
+          <input class="form-control" id="mdLinkUrl" type="text" inputmode="url" placeholder="https://exemplo.com" data-md-link-url>
+        </div>
+        <div class="md-link-actions">
+          <button class="btn btn-neon btn-xs" type="button" data-md-link-apply><i class="bi bi-check-lg"></i> Inserir</button>
+          <button class="btn btn-ghost btn-xs" type="button" data-md-link-cancel>Cancelar</button>
+        </div>
+        <span class="md-link-error" data-md-link-error hidden>Use um endereço http(s), mailto ou um caminho interno.</span>
+      </div>
+
+      {{ form.body(class="form-control" + (" is-invalid" if form.body.errors else ""), id="noteBody", rows=24) }}
       {{ field_errors(form.body) }}
-      <div class="d-flex flex-wrap justify-content-between align-items-center mt-2 gap-2">
-        <span class="form-hint">Salve quando terminar. A visualização é atualizada automaticamente.</span>
+
+      <div class="notepad-foot">
+        <span class="form-hint">Ctrl+B negrito · Ctrl+I itálico · Ctrl+K link · Ctrl+S salvar</span>
         <div class="d-flex gap-2">
           {% if note %}
           <a class="btn btn-ghost btn-sm" href="{{ url_for('notes.view', note_id=note.id) }}">Ver nota</a>
@@ -67,8 +86,10 @@
 
     <div class="preview-pane">
       <div class="preview-label"><i class="bi bi-eye"></i> Visualizar</div>
-      <div class="prose" data-note-preview>
-        {{ rendered }}
+      <div class="prose" data-note-preview>{{ rendered }}</div>
+      <div class="preview-empty" data-note-preview-empty {% if rendered %}hidden{% endif %}>
+        <i class="bi bi-journal-text"></i>
+        <span>A prévia formatada aparece aqui enquanto você escreve.</span>
       </div>
     </div>
   </div>

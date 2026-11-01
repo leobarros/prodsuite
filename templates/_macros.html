@@ -69,3 +69,84 @@
   <span class="weekly-chart-scale">eixo: minutos</span>
 </div>
 {%- endmacro -%}
+
+{%- macro task_form_modal(form, board_columns, selected_column_id, action, modal_title="Nova tarefa", submit_label="Criar tarefa", scratchpad_id=None) -%}
+<div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="taskModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <form method="post" action="{{ action }}">
+        {{ form.hidden_tag() }}
+        {% if scratchpad_id %}<input type="hidden" name="scratchpad_id" value="{{ scratchpad_id }}">{% endif %}
+        <div class="modal-header">
+          <h2 class="modal-title" id="taskModalLabel"><i class="bi bi-briefcase text-emerald"></i> {{ modal_title }}</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          {% if form.errors %}
+          <div class="flash flash-danger mb-3">
+            <i class="bi bi-exclamation-octagon"></i>
+            <span>Revise os campos destacados.</span>
+          </div>
+          {% endif %}
+          <div class="mb-3">
+            {{ form.title.label(class="form-label") }}
+            {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else ""), autofocus=true) }}
+            {{ field_errors(form.title) }}
+          </div>
+          <div class="mb-3">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else "")) }}
+            {{ field_errors(form.description) }}
+          </div>
+          <div class="row g-3">
+            <div class="col-6 col-md-4">
+              <label class="form-label" for="taskColumnSelect">Coluna</label>
+              <select class="form-select" id="taskColumnSelect" name="column_id">
+                {% for column in board_columns %}
+                <option value="{{ column.id }}" {{ 'selected' if selected_column_id == column.id }}>{{ column.title }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-6 col-md-4">
+              {{ form.estimate_pomodoros.label(class="form-label") }}
+              {{ form.estimate_pomodoros(class="form-control") }}
+              {{ field_errors(form.estimate_pomodoros) }}
+            </div>
+            <div class="col-6 col-md-4">
+              {{ form.due_date.label(class="form-label") }}
+              {{ form.due_date(class="form-control") }}
+              {{ field_errors(form.due_date) }}
+            </div>
+          </div>
+          <div class="row g-3 mt-1">
+            <div class="col-6 col-md-3">
+              {{ form.category.label(class="form-label") }}
+              {{ form.category(class="form-select") }}
+            </div>
+            <div class="col-6 col-md-3">
+              {{ form.quadrant.label(class="form-label") }}
+              {{ form.quadrant(class="form-select") }}
+            </div>
+            <div class="col-6 col-md-3 d-flex align-items-end pb-1">
+              <div class="form-check">
+                {{ form.is_mit(class="form-check-input") }}
+                {{ form.is_mit.label(class="form-check-label") }}
+              </div>
+            </div>
+          </div>
+          <div class="mt-3">
+            {{ form.tags.label(class="form-label") }}
+            {{ form.tags(class="form-control") }}
+            <div class="form-hint">Separe por vírgula: trabalho, estudo, pessoal…</div>
+            {{ field_errors(form.tags) }}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-neon btn-sm"><i class="bi bi-check-lg"></i> {{ submit_label }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{%- endmacro -%}

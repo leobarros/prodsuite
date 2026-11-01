@@ -27,7 +27,7 @@
     <span class="week-history-metric"><strong>{{ entry.metrics.completed_tasks }}</strong> tarefas</span>
     <span class="week-history-metric"><strong>{{ entry.archived }}</strong> arquivadas</span>
     <span class="chip {{ 'is-done' if entry.review else '' }}">
-      {% if entry.review %}<i class="bi bi-check2"></i> revisada{% else %}<i class="bi bi-pencil"></i> revisar{% endif %}
+      {% if entry.review %}<i class="bi bi-check2"></i> revisada{% else %}<i class="bi bi-eye"></i> sem revisão{% endif %}
     </span>
     <i class="bi bi-arrow-right week-history-arrow"></i>
   </a>

@@ -60,6 +60,7 @@ def global_search(user, query: str, limit_per_kind: int = MAX_PER_KIND) -> dict:
     scratchpads = (
         Scratchpad.query.filter(
             Scratchpad.user_id == user.id,
+            Scratchpad.converted_task_id.is_(None),
             Scratchpad.content.ilike(pattern),
         )
         .order_by(Scratchpad.updated_at.desc())

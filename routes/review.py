@@ -40,10 +40,14 @@ def weekly():
     review = WeeklyReview.query.filter_by(
         user_id=current_user.id, week_start=week_start
     ).first()
-    editing = request.args.get("editar") == "1"
+    is_current_week = week_start == current_week_start
+    editing = is_current_week and request.args.get("editar") == "1"
     form = WeeklyReviewForm(obj=review)
 
     if request.method == "POST":
+        if not is_current_week:
+            flash("Semana encerrada é somente para consulta.", "warning")
+            return redirect(url_for("review.weekly", semana=week_start.isoformat()))
         editing = True
 
     if form.validate_on_submit():
@@ -70,7 +74,7 @@ def weekly():
         ),
         week_start=week_start,
         current_week_start=current_week_start,
-        is_current_week=week_start == current_week_start,
+        is_current_week=is_current_week,
         previous_week_start=week_start - timedelta(days=7),
         review_notes=(
             [
@@ -87,6 +91,9 @@ def weekly():
 @login_required
 def archive_completed():
     week_start = _requested_week_start()
+    if week_start != week_start_for(local_today()):
+        flash("Semana encerrada é somente para consulta.", "warning")
+        return redirect(url_for("review.weekly", semana=week_start.isoformat()))
     count = archive_week(current_user, week_start)
     if count:
         flash(

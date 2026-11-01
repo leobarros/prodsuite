@@ -155,6 +155,12 @@ def ensure_schema() -> None:
                     "ON board_columns (project_id)"
                 )
             )
+        if "scratchpads" in existing_tables:
+            # Rascunhos convertidos deixaram de existir como rascunho:
+            # a tarefa é a única representação a partir de agora.
+            connection.execute(
+                text("DELETE FROM scratchpads WHERE converted_task_id IS NOT NULL")
+            )
         if (
             "board_columns" in existing_tables
             and "tasks" in existing_tables

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, field_errors, task_form_modal %}
+{% block title %}Rascunho{% endblock %}
+{% block body_attrs %}{% if open_modal %}data-auto-open="#taskModal"{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow"><a href="{{ url_for('scratchpad.index') }}">rascunhos</a> <span class="sep">/</span> rascunho</p>
+    <h1 class="page-title">Sua anotação</h1>
+    <p class="page-sub">Edite o texto ou transforme em tarefa usando o mesmo formulário do quadro.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('scratchpad.index') }}"><i class="bi bi-arrow-left"></i> Rascunhos</a>
+  </div>
+</div>
+
+<div class="scratch-detail-grid">
+  <section class="bento-card">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-sticky"></i> Anotação</h2>
+      <span class="card-link">{{ item.created_at|localtime('%d/%m/%Y · %H:%M') }}</span>
+    </div>
+    <form method="post" action="{{ url_for('scratchpad.edit', item_id=item.id) }}">
+      {{ form.hidden_tag() }}
+      {{ form.content.label(class="form-label") }}
+      {{ form.content(class="form-control" + (" is-invalid" if form.content.errors else "")) }}
+      {{ field_errors(form.content) }}
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3">
+        <span class="form-hint">A edição fica somente neste rascunho até você salvar.</span>
+        <button class="btn btn-neon btn-sm" type="submit"><i class="bi bi-check-lg"></i> Salvar rascunho</button>
+      </div>
+    </form>
+
+    <div class="divider"></div>
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+      {% if board_columns %}
+      <button class="btn btn-cyan btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#taskModal">
+        <i class="bi bi-arrow-right-circle"></i> Transformar em tarefa
+      </button>
+      <span class="form-hint">Abre o formulário completo, com coluna, prazo, categoria, matriz e etiquetas.</span>
+      {% else %}
+      <span class="chip"><i class="bi bi-exclamation-circle"></i> Crie uma coluna no quadro para converter</span>
+      {% endif %}
+      <form method="post" action="{{ url_for('scratchpad.delete', item_id=item.id) }}" class="ms-auto"
+            data-confirm="Excluir este rascunho?">
+        {{ csrf() }}
+        <button class="btn btn-danger-ghost btn-sm" type="submit"><i class="bi bi-trash3"></i> Excluir</button>
+      </form>
+    </div>
+  </section>
+
+  <aside class="bento-card scratch-detail-help">
+    <h2 class="card-title"><i class="bi bi-info-circle"></i> Como funciona</h2>
+    <ul class="scratch-detail-list">
+      <li>O texto editado é salvo só quando você clica em <strong>Salvar rascunho</strong>.</li>
+      <li>Transformar em tarefa remove este rascunho: a tarefa passa a ser a única representação da ideia.</li>
+      <li>O conteúdo do rascunho entra na descrição; o título começa com a primeira linha.</li>
+      <li>Depois de criada, a tarefa pode ser alterada no quadro como qualquer outra.</li>
+    </ul>
+  </aside>
+</div>
+
+{% if board_columns %}
+{{ task_form_modal(
+  task_form,
+  board_columns,
+  selected_column_id,
+  url_for('scratchpad.convert', item_id=item.id),
+  modal_title="Transformar em tarefa",
+  submit_label="Criar tarefa",
+  scratchpad_id=item.id
+) }}
+{% endif %}
+{% endblock %}

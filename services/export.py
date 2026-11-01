@@ -44,7 +44,10 @@ def build_user_export(user) -> bytes:
         Note.query.filter_by(user_id=user.id).order_by(Note.created_at.asc()).all()
     )
     scratchpads = (
-        Scratchpad.query.filter_by(user_id=user.id)
+        Scratchpad.query.filter(
+            Scratchpad.user_id == user.id,
+            Scratchpad.converted_task_id.is_(None),
+        )
         .order_by(Scratchpad.created_at.asc())
         .all()
     )
@@ -182,7 +185,10 @@ def backup_counts(user) -> dict:
     return {
         "tasks": Task.query.filter_by(user_id=user.id).count(),
         "notes": Note.query.filter_by(user_id=user.id).count(),
-        "scratchpads": Scratchpad.query.filter_by(user_id=user.id).count(),
+        "scratchpads": Scratchpad.query.filter(
+            Scratchpad.user_id == user.id,
+            Scratchpad.converted_task_id.is_(None),
+        ).count(),
         "pomodoro_cycles": PomodoroCycle.query.filter_by(user_id=user.id).count(),
         "weekly_reviews": WeeklyReview.query.filter_by(user_id=user.id).count(),
     }
