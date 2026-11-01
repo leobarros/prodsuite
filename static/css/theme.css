@@ -3438,16 +3438,25 @@ body.confirm-open {
   }
 }
 
-/* Tomate em traço, alinhado aos ícones do Bootstrap. */
+/* Cronômetro do Bootstrap Icons (bi-stopwatch), usado no lugar do tomate. */
 .tomato-glyph {
-  display: inline-block;
+  display: inline-flex;
   width: 1em;
   height: 1em;
   flex: 0 0 auto;
-  background-color: currentColor;
-  -webkit-mask: url("../icons/tomato.png") center / contain no-repeat;
-  mask: url("../icons/tomato.png") center / contain no-repeat;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  color: currentColor;
+  font-family: "bootstrap-icons" !important;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1;
   vertical-align: -0.12em;
+}
+
+.tomato-glyph::before {
+  content: "\f597";
 }
 
 .emoji-icon.tomato-glyph {
