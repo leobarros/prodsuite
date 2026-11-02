@@ -19,6 +19,7 @@ from services.pomodoro import (
     record_cycle,
     suggested_next_mode,
 )
+from services.timer_sync import apply_action, get_timer, serialize_timer
 
 pomodoro_bp = Blueprint("pomodoro", __name__)
 
@@ -67,6 +68,24 @@ def focus():
     )
 
 
+@pomodoro_bp.get("/foco/estado")
+@login_required
+def timer_state():
+    timer = get_timer(current_user)
+    return jsonify(ok=True, state=serialize_timer(timer))
+
+
+@pomodoro_bp.post("/foco/estado")
+@login_required
+def update_timer_state():
+    payload = request.get_json(silent=True) or request.form
+    try:
+        timer = apply_action(current_user, payload)
+    except ValueError as exc:
+        return jsonify(ok=False, error=str(exc)), 400
+    return jsonify(ok=True, state=serialize_timer(timer))
+
+
 @pomodoro_bp.post("/foco/ciclos")
 @login_required
 def create_cycle():
@@ -78,6 +97,7 @@ def create_cycle():
     mode = (payload.get("mode") or "focus").strip()
     task_id = payload.get("task_id") or None
     duration = payload.get("duration_minutes")
+    run_id = payload.get("run_id") or None
 
     try:
         cycle = record_cycle(
@@ -85,6 +105,7 @@ def create_cycle():
             mode=mode,
             task_id=task_id,
             duration_minutes=duration,
+            run_id=run_id,
         )
     except InvalidCycle as exc:
         return jsonify(ok=False, error=str(exc)), 400

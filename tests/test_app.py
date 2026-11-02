@@ -1764,6 +1764,60 @@ class TestPlanning:
         board = client.get("/tarefas").get_data(as_text=True)
         assert board.index("Segundo card") < board.index("Primeiro card")
 
+    def test_shared_pomodoro_state_and_idempotent_cycle(
+        self, client, app, make_user
+    ):
+        user_id = make_user()
+        login(client)
+        started = client.post(
+            "/foco/estado",
+            json={
+                "action": "start",
+                "mode": "focus",
+                "duration": 1500,
+                "remaining": 1500,
+                "task_id": None,
+            },
+            headers={"X-Requested-With": "fetch", "Accept": "application/json"},
+        )
+        assert started.status_code == 200
+        state = started.get_json()["state"]
+        assert state["running"] is True
+        assert state["runId"]
+        assert state["revision"] >= 1
+
+        paused = client.post(
+            "/foco/estado",
+            json={"action": "pause", "remaining": 700},
+            headers={"X-Requested-With": "fetch", "Accept": "application/json"},
+        )
+        assert paused.status_code == 200
+        paused_state = paused.get_json()["state"]
+        assert paused_state["running"] is False
+        assert paused_state["remaining"] == 700
+        assert paused_state["revision"] > state["revision"]
+
+        payload = {
+            "mode": "focus",
+            "duration_minutes": 1,
+            "task_id": None,
+            "run_id": state["runId"],
+        }
+        first = client.post(
+            "/foco/ciclos",
+            json=payload,
+            headers={"X-Requested-With": "fetch", "Accept": "application/json"},
+        )
+        second = client.post(
+            "/foco/ciclos",
+            json=payload,
+            headers={"X-Requested-With": "fetch", "Accept": "application/json"},
+        )
+        assert first.status_code == 201
+        assert second.status_code == 201
+        with app.app_context():
+            assert PomodoroCycle.query.filter_by(run_id=state["runId"]).count() == 1
+
     def test_focus_defaults_to_first_doing_card(self, client, app, make_user):
         user_id = make_user()
         login(client)
@@ -1931,6 +1985,7 @@ class TestPlanning:
         assert "semana encerrada" in review
         assert "Progresso da semana passada" in review
         assert "somente para leitura" in review
+        assert "data-review-prompt-url" in dashboard
         assert "Escrever revisão" not in review
         assert "Editar" not in review
 
@@ -1944,8 +1999,18 @@ class TestPlanning:
         )
         with app.app_context():
             assert WeeklyReview.query.count() == 0
+            db.session.add(
+                WeeklyReview(
+                    user_id=user_id,
+                    week_start=previous_start,
+                    wins="Revisada no desktop",
+                )
+            )
+            db.session.commit()
+
         dashboard_after = client.get("/").get_data(as_text=True)
-        assert "A semana passada terminou" in dashboard_after
+        assert "A semana passada terminou" not in dashboard_after
+        assert client.get("/revisao/pendente").get_json()["prompt"] is None
 
     def test_weekly_review_is_read_only_until_edit_is_requested(
         self, client, app, make_user

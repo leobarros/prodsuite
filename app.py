@@ -96,6 +96,9 @@ def ensure_schema() -> None:
             "archived_at": "DATETIME",
             "archived_week": "DATE",
         },
+        "pomodoro_cycles": {
+            "run_id": "VARCHAR(64)",
+        },
         "board_columns": {
             "project_id": "INTEGER",
             "archived_at": "DATETIME",
@@ -154,6 +157,14 @@ def ensure_schema() -> None:
                 text(
                     "CREATE INDEX IF NOT EXISTS ix_board_columns_project "
                     "ON board_columns (project_id)"
+                )
+            )
+        if "pomodoro_cycles" in existing_tables:
+            connection.execute(
+                text(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS ux_cycles_user_run "
+                    "ON pomodoro_cycles (user_id, run_id) "
+                    "WHERE run_id IS NOT NULL"
                 )
             )
         if "scratchpads" in existing_tables:

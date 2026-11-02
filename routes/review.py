@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from extensions import db
@@ -12,6 +12,7 @@ from forms import WeeklyReviewForm
 from models import PomodoroCycle, Task, WeeklyReview
 from services.archive import archive_week, count_unarchived_week
 from services.planning import week_start_for, weekly_metrics
+from services.review_prompt import pending_week_review
 from services.timeutils import day_start_utc, local_today, to_local
 
 review_bp = Blueprint("review", __name__)
@@ -163,4 +164,22 @@ def weeks():
         entries=entries,
         current_week_start=current_start,
         previous_week_start=current_start - timedelta(days=7),
+    )
+
+@review_bp.get("/revisao/pendente")
+@login_required
+def pending():
+    data = pending_week_review(current_user)
+    return jsonify(
+        ok=True,
+        prompt=(
+            {
+                "week_start": data["week_start"].isoformat(),
+                "week_end": data["week_end"].isoformat(),
+                "sessions": data["sessions"],
+                "completed_tasks": data["completed_tasks"],
+            }
+            if data
+            else None
+        ),
     )

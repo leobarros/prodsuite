@@ -600,6 +600,34 @@ class TaskColumnStay(db.Model):
         }
 
 
+class PomodoroTimer(db.Model):
+    """Estado compartilhado de um único Pomodoro por usuário."""
+
+    __tablename__ = "pomodoro_timers"
+
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    mode = db.Column(db.String(20), nullable=False, default="focus")
+    duration_seconds = db.Column(db.Integer, nullable=False, default=1500)
+    remaining_seconds = db.Column(db.Integer, nullable=False, default=1500)
+    ends_at = db.Column(db.DateTime, nullable=True)
+    running = db.Column(db.Boolean, nullable=False, default=False)
+    task_id = db.Column(
+        db.Integer, db.ForeignKey("tasks.id", ondelete="SET NULL"), nullable=True
+    )
+    run_id = db.Column(db.String(64), nullable=True)
+    revision = db.Column(db.Integer, nullable=False, default=1)
+    updated_at = db.Column(
+        db.DateTime, nullable=False, default=utcnow, onupdate=utcnow
+    )
+
+    task = db.relationship("Task", foreign_keys=[task_id])
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<PomodoroTimer user={self.user_id} {self.mode} running={self.running}>"
+
+
 class PomodoroCycle(db.Model):
     __tablename__ = "pomodoro_cycles"
     __table_args__ = (
@@ -608,6 +636,7 @@ class PomodoroCycle(db.Model):
             name="ck_cycles_mode",
         ),
         db.Index("ix_cycles_user_ended", "user_id", "ended_at"),
+        db.UniqueConstraint("user_id", "run_id", name="uq_cycles_user_run"),
     )
 
     id = db.Column(db.Integer, primary_key=True)
@@ -624,6 +653,7 @@ class PomodoroCycle(db.Model):
     started_at = db.Column(db.DateTime, nullable=False, default=utcnow)
     ended_at = db.Column(db.DateTime, nullable=False, default=utcnow, index=True)
     completed = db.Column(db.Boolean, nullable=False, default=True)
+    run_id = db.Column(db.String(64), nullable=True, index=True)
 
     owner = db.relationship("User", back_populates="cycles")
     task = db.relationship("Task", back_populates="cycles")
@@ -651,6 +681,7 @@ class PomodoroCycle(db.Model):
             "completed": self.completed,
             "task_id": self.task_id,
             "task_title": self.task.title if self.task else None,
+            "run_id": self.run_id,
         }
 
     def __repr__(self) -> str:  # pragma: no cover

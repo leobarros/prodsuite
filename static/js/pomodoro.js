@@ -53,6 +53,7 @@
 
   let audioContext = null;
   let soundUnlocked = false;
+  let scheduledChime = [];
   let completionAlertVisible = false;
   let lastRenderedSecond = null;
   let transitioning = false;
@@ -80,6 +81,8 @@
       endsAt: null,
       running: false,
       taskId: null,
+      runId: null,
+      serverRevision: 0,
       focusCyclesToday: Number(
         sessionContainers[0]?.dataset.cycles || sessionContainers[0]?.dataset.filled || 0
       ),
@@ -101,6 +104,8 @@
         endsAt: Number(parsed.endsAt) || null,
         running: Boolean(parsed.running),
         taskId: parsed.taskId ? String(parsed.taskId) : null,
+        runId: parsed.runId ? String(parsed.runId) : null,
+        serverRevision: Number(parsed.serverRevision) || 0,
         // O contador de ciclos é diário. Estado antigo (ou de ontem) não
         // pode disparar uma pausa longa hoje.
         focusCyclesToday:
@@ -130,6 +135,78 @@
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (_error) {
       /* Safari privado pode bloquear storage: timer ainda funciona na sessão */
+    }
+  }
+
+  let syncPending = 0;
+
+  function applyServerState(remote, { force = false } = {}) {
+    if (!remote) return false;
+    const revision = Number(remote.revision) || 0;
+    if (!force && revision <= (Number(state.serverRevision) || 0)) {
+      return false;
+    }
+    state.mode = remote.mode;
+    state.duration = Number(remote.duration) || MODES.focus.seconds;
+    state.endsAt = remote.endsAt ? Date.parse(remote.endsAt) : null;
+    state.running = Boolean(remote.running && state.endsAt);
+    state.remaining = state.running
+      ? Math.max(0, Math.ceil((state.endsAt - Date.now()) / 1000))
+      : Math.max(0, Number(remote.remaining) || 0);
+    state.taskId = remote.taskId ? String(remote.taskId) : null;
+    state.runId = remote.runId || null;
+    state.serverRevision = revision;
+    save();
+    render();
+    if (isRunning()) {
+      unlockAudio().finally(() => {
+        if (isRunning()) scheduleChimeAt(state.endsAt);
+      });
+    }
+    return true;
+  }
+
+  async function pushTimerState(action, extra = {}) {
+    syncPending += 1;
+    try {
+      const response = await fetch("/foco/estado", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+          "X-Requested-With": "fetch",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ action, ...extra }),
+      });
+      const data = await response.json().catch(() => null);
+      if (response.ok && data?.ok && data.state) {
+        const revision = Number(data.state.revision) || 0;
+        if (revision >= (Number(state.serverRevision) || 0)) {
+          applyServerState(data.state, { force: true });
+        }
+      }
+    } catch (_error) {
+      /* offline: o estado local continua valendo */
+    } finally {
+      syncPending -= 1;
+    }
+  }
+
+  async function pullTimerState() {
+    if (syncPending > 0) return;
+    try {
+      const response = await fetch("/foco/estado", {
+        credentials: "same-origin",
+        headers: { Accept: "application/json", "X-Requested-With": "fetch" },
+      });
+      const data = await response.json().catch(() => null);
+      if (response.ok && data?.ok && data.state) {
+        applyServerState(data.state);
+      }
+    } catch (_error) {
+      /* offline: mantém o timer local */
     }
   }
 
@@ -399,24 +476,33 @@
    */
   async function unlockAudio() {
     primeAudio();
-    if (!soundEl || soundUnlocked) return;
-    try {
-      soundEl.muted = true;
-      await soundEl.play();
-      soundEl.pause();
-      soundEl.currentTime = 0;
-      soundEl.muted = false;
-      soundEl.volume = 0.9;
-      soundUnlocked = true;
-    } catch (_error) {
-      if (audioContext?.state === "suspended") {
-        try {
-          await audioContext.resume();
-          soundUnlocked = true;
-        } catch (_resumeError) {
-          /* o botão Testar som dá uma segunda chance dentro de um gesto */
-        }
+    if (soundUnlocked) return;
+    let contextReady = false;
+    if (audioContext?.state === "suspended") {
+      try {
+        await audioContext.resume();
+      } catch (_resumeError) {
+        /* o botão Testar som dá uma segunda chance dentro de um gesto */
       }
+    }
+    contextReady = audioContext?.state === "running";
+    if (soundEl) {
+      try {
+        // Não use apenas muted: alguns navegadores não consideram a
+        // reprodução silenciosa como desbloqueio para o áudio posterior.
+        soundEl.muted = false;
+        soundEl.volume = 0.01;
+        await soundEl.play();
+        soundEl.pause();
+        soundEl.currentTime = 0;
+        soundEl.volume = 0.9;
+        soundUnlocked = true;
+      } catch (_error) {
+        /* tenta novamente no próximo gesto */
+      }
+    }
+    if (contextReady) {
+      soundUnlocked = true;
     }
   }
 
@@ -465,6 +551,54 @@
     } catch (_error) {
       /* API experimental indisponível */
     }
+  }
+
+  function clearScheduledChime() {
+    scheduledChime.forEach((node) => {
+      try {
+        node.stop();
+      } catch (_error) {
+        /* já terminou */
+      }
+      try {
+        node.disconnect();
+      } catch (_error) {
+        /* já desconectado */
+      }
+    });
+    scheduledChime = [];
+  }
+
+  function scheduleChimeAt(endsAt) {
+    clearScheduledChime();
+    if (
+      !endsAt ||
+      !audioContext ||
+      audioContext.state !== "running" ||
+      endsAt <= Date.now()
+    ) {
+      return;
+    }
+    const start = audioContext.currentTime + (endsAt - Date.now()) / 1000;
+    [880, 1320].forEach((frequency, index) => {
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.value = frequency;
+      gain.gain.setValueAtTime(0.0001, start + index * 0.2);
+      gain.gain.exponentialRampToValueAtTime(
+        0.16,
+        start + index * 0.2 + 0.02
+      );
+      gain.gain.exponentialRampToValueAtTime(
+        0.0001,
+        start + index * 0.2 + 0.35
+      );
+      oscillator.connect(gain).connect(audioContext.destination);
+      oscillator.start(start + index * 0.2);
+      oscillator.stop(start + index * 0.2 + 0.4);
+      scheduledChime.push(oscillator);
+    });
   }
 
   function playChime() {
@@ -560,7 +694,6 @@
 
   function start() {
     if (state.running) return;
-    unlockAudio();
     requestNotificationPermission();
     hideCompletionAlert();
     if (state.remaining <= 0) state.remaining = state.duration;
@@ -568,10 +701,20 @@
     state.running = true;
     save();
     render();
+    unlockAudio().finally(() => {
+      if (isRunning()) scheduleChimeAt(state.endsAt);
+    });
+    pushTimerState("start", {
+      mode: state.mode,
+      duration: state.duration,
+      remaining: state.remaining,
+      task_id: state.taskId,
+    });
   }
 
   function pause() {
     if (!state.running) return;
+    clearScheduledChime();
     state.remaining = Math.max(
       0,
       Math.ceil((state.endsAt - Date.now()) / 1000)
@@ -579,6 +722,7 @@
     state.running = false;
     state.endsAt = null;
     save();
+    pushTimerState("pause", { remaining: state.remaining });
     if (state.remaining <= 0) {
       completeCycle();
     } else {
@@ -587,15 +731,19 @@
   }
 
   function reset() {
+    clearScheduledChime();
     state.running = false;
     state.endsAt = null;
     state.remaining = state.duration;
     save();
     render();
+    pushTimerState("reset", { mode: state.mode });
   }
 
   function setMode(mode, { silent = false } = {}) {
     if (!MODES[mode]) return;
+    // Não cancele um chime já agendado aqui: advanceAfter() troca de modo
+    // logo após a conclusão e isso silenciava o fim do ciclo.
     state.mode = mode;
     state.duration = MODES[mode].seconds;
     state.remaining = state.duration;
@@ -604,12 +752,14 @@
     save();
     if (!silent) primeAudio();
     render();
+    pushTimerState("mode", { mode: state.mode });
   }
 
   function setTask(value) {
     state.taskId = value ? String(value) : null;
     save();
     render();
+    pushTimerState("task", { task_id: state.taskId });
   }
 
   function laterMode(finishedMode) {
@@ -684,7 +834,11 @@
     }
   }
 
-  async function completeCycle({ reload = false, silent = false } = {}) {
+  async function completeCycle({
+    reload = false,
+    silent = false,
+    allowLateSound = false,
+  } = {}) {
     if (transitioning) return;
     const finishedMode = state.mode;
     const finishedInfo = modeInfo(finishedMode);
@@ -708,10 +862,10 @@
     let nextMode = laterMode(finishedMode);
 
     const shouldAnnounce =
-      !reload &&
       !silent &&
       document.visibilityState === "visible" &&
-      Date.now() - pageInteractiveAt > 1200;
+      (allowLateSound ||
+        (!reload && Date.now() - pageInteractiveAt > 1200));
 
     if (shouldAnnounce) {
       playChime();
@@ -737,6 +891,7 @@
       mode: finishedMode,
       duration_minutes: Math.max(1, Math.round(state.duration / 60)),
       task_id: taskId || null,
+      run_id: state.runId || null,
     };
 
     try {
@@ -753,6 +908,7 @@
         nextMode = data.suggested_next;
       }
       await flushPending();
+      await pushTimerState("complete", { run_id: state.runId });
     } catch (error) {
       writePending([...readPending(), { ...payload, queued_at: new Date().toISOString() }]);
       PSuite.toast?.("Sem internet: sua sessão ficou guardada e será salva quando a conexão voltar.", "error");
@@ -825,7 +981,9 @@
   // Qualquer primeiro gesto também desbloqueia o áudio, inclusive quando o
   // usuário inicia o timer por atalho de teclado.
   const unlockOnFirstGesture = () => {
-    unlockAudio();
+    unlockAudio().finally(() => {
+      if (isRunning()) scheduleChimeAt(state.endsAt);
+    });
     document.removeEventListener("pointerdown", unlockOnFirstGesture);
     document.removeEventListener("keydown", unlockOnFirstGesture);
   };
@@ -851,10 +1009,13 @@
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState !== "visible") return;
     pageInteractiveAt = Date.now();
+    if (isRunning() && audioContext?.state === "running") {
+      scheduleChimeAt(state.endsAt);
+    }
     // Se o ciclo venceu enquanto o app estava em background, registra o
     // ciclo sem tocar o som atrasado.
     if (state.running && state.endsAt && state.endsAt <= Date.now()) {
-      completeCycle({ reload: true });
+      completeCycle({ reload: true, allowLateSound: true });
     } else {
       tick();
     }
@@ -866,7 +1027,7 @@
     // iOS/Safari pode restaurar a página do bfcache; não trate o tempo
     // decorrido como uma conclusão "ao vivo".
     if (state.running && state.endsAt && state.endsAt <= Date.now()) {
-      completeCycle({ reload: true });
+      completeCycle({ reload: true, allowLateSound: true });
     } else {
       render();
       tick();
@@ -879,13 +1040,22 @@
 
   // Recalcula ao carregar: se o ciclo terminou com a aba fechada, registra.
   render();
+  if (isRunning() && audioContext?.state === "running") {
+    scheduleChimeAt(state.endsAt);
+  }
   if (state.running && state.endsAt && state.endsAt <= Date.now()) {
-    completeCycle({ reload: true });
+    completeCycle({ reload: true, allowLateSound: true });
   } else if (state.running) {
     tick();
   }
 
   window.setInterval(tick, 400);
+  pullTimerState();
+  window.setInterval(pullTimerState, 5000);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") pullTimerState();
+  });
+  window.addEventListener("focus", pullTimerState);
 
   // Reenvia ciclos pendentes ao abrir o app.
   window.setTimeout(flushPending, 1800);

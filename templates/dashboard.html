@@ -20,7 +20,7 @@
 </div>
 
 {% if review_prompt %}
-<section class="week-review-prompt" data-week-review-prompt data-week="{{ previous_week_start.isoformat() }}">
+<section class="week-review-prompt" data-week-review-prompt data-week="{{ previous_week_start.isoformat() }}" data-review-prompt-url="{{ url_for('review.pending') }}">
   <span class="week-review-icon" aria-hidden="true"><i class="bi bi-calendar-check"></i></span>
   <div class="week-review-copy">
     <strong>A semana passada terminou.</strong>

@@ -17,9 +17,10 @@ from sqlalchemy import func, text
 from sqlalchemy.exc import SQLAlchemyError
 
 from extensions import db
-from models import Note, Scratchpad, Task, WeeklyReview
+from models import Note, Scratchpad, Task
 from services.boards import first_task_in_focus_column
 from services.planning import week_start_for, weekly_metrics
+from services.review_prompt import pending_week_review
 from services.pomodoro import focus_stats
 from services.search import global_search
 from services.timeutils import day_start_utc, local_today
@@ -74,14 +75,8 @@ def dashboard():
     current_week_start = week_start_for(local_today())
     previous_week_start = current_week_start - timedelta(days=7)
     previous_metrics = weekly_metrics(current_user, previous_week_start)
-    previous_review = WeeklyReview.query.filter_by(
-        user_id=uid, week_start=previous_week_start
-    ).first()
-    review_prompt = previous_review is None and bool(
-        previous_metrics["sessions"]
-        or previous_metrics["completed_tasks"]
-        or previous_metrics["mit_total"]
-    )
+    review_prompt_data = pending_week_review(current_user)
+    review_prompt = review_prompt_data is not None
     week_metrics = weekly_metrics(current_user, local_today())
 
     upcoming = [

@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+from sqlalchemy.exc import IntegrityError
+
 from extensions import db
 from models import (
     POMODORO_DURATIONS,
@@ -37,7 +39,14 @@ def record_cycle(
     mode: str,
     task_id: int | None = None,
     duration_minutes: int | None = None,
+    run_id: str | None = None,
 ) -> PomodoroCycle:
+    if run_id:
+        existing = PomodoroCycle.query.filter_by(
+            user_id=user.id, run_id=str(run_id)
+        ).first()
+        if existing is not None:
+            return existing
     if mode not in POMODORO_MODES:
         raise InvalidCycle("Modo de ciclo inválido.")
 
@@ -74,6 +83,7 @@ def record_cycle(
         started_at=ended_at - timedelta(minutes=duration),
         ended_at=ended_at,
         completed=True,
+        run_id=str(run_id) if run_id else None,
     )
     db.session.add(cycle)
 
@@ -83,7 +93,18 @@ def record_cycle(
         task.completed_pomodoros = (task.completed_pomodoros or 0) + 1
         task.updated_at = utcnow()
 
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        # Dois aparelhos podem concluir o mesmo run_id ao mesmo tempo.
+        db.session.rollback()
+        if run_id:
+            existing = PomodoroCycle.query.filter_by(
+                user_id=user.id, run_id=str(run_id)
+            ).first()
+            if existing is not None:
+                return existing
+        raise
     return cycle
 
 

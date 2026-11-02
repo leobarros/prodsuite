@@ -510,6 +510,29 @@
       }
       prompt.remove();
     });
+
+    const refreshWeekPrompt = async () => {
+      if (!prompt.isConnected || !prompt.dataset.reviewPromptUrl) return;
+      try {
+        const response = await fetch(prompt.dataset.reviewPromptUrl, {
+          credentials: "same-origin",
+          cache: "no-store",
+          headers: { Accept: "application/json", "X-Requested-With": "fetch" },
+        });
+        const data = await response.json().catch(() => null);
+        if (response.ok && data?.ok && !data.prompt) {
+          prompt.remove();
+        }
+      } catch (_error) {
+        /* offline: mantém o aviso até a próxima sincronização */
+      }
+    };
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") refreshWeekPrompt();
+    });
+    window.addEventListener("focus", refreshWeekPrompt);
+    window.setInterval(refreshWeekPrompt, 30000);
   });
 
   // ---------------------------------------------------- kanban drag/drop
