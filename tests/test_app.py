@@ -1719,6 +1719,35 @@ class TestPlanning:
             assert task.is_mit is True
             assert task.planned_for is None
 
+    def test_filter_empty_message_does_not_hide_visible_results(
+        self, client, app, make_user
+    ):
+        user_id = make_user()
+        login(client)
+        client.get("/tarefas")
+        with app.app_context():
+            project = Project.query.filter_by(name="Projeto de teste").one()
+            column = BoardColumn.query.filter_by(
+                project_id=project.id, kind="todo"
+            ).first()
+            task = Task(
+                user_id=user_id,
+                project_id=project.id,
+                column_id=column.id,
+                title="Prioridade visível",
+                status="doing",
+                is_mit=True,
+                estimate_pomodoros=1,
+            )
+            db.session.add(task)
+            db.session.commit()
+
+        response = client.get("/tarefas?filtro=mit")
+        html = response.get_data(as_text=True)
+        assert response.status_code == 200
+        assert "Prioridade visível" in html
+        assert "Nenhuma tarefa neste filtro" not in html
+
     def test_task_reorder_persists_inside_column(self, client, app, make_user):
         user_id = make_user()
         login(client)

@@ -339,6 +339,7 @@ def index():
         project=project,
         projects=projects,
         board_columns=columns,
+        tasks_all=tasks_all,
         column_tasks=column_tasks,
         column_counts=column_counts,
         counts=filtered_counts,
