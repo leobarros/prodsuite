@@ -89,7 +89,7 @@
           <span>dias seguidos</span>
         </div>
       </div>
-      <div class="mt-3">
+      <div class="mt-3" data-weekly-chart-host>
         {{ weekly_chart(stats) }}
       </div>
       <div class="stat-foot">
@@ -103,25 +103,9 @@
         <h2 class="card-title"><i class="bi bi-clock-history"></i> Sessões recentes</h2>
         <span class="card-link">últimas 30</span>
       </div>
-      {% if history %}
-      <div class="history" tabindex="0" aria-label="Histórico de sessões recentes, role para ver mais">
-        {% for cycle in history %}
-        <div class="history-row">
-          <span class="history-icon {{ 'break' if cycle.mode != 'focus' }}" aria-hidden="true">{% if cycle.mode == 'focus' %}<span class="tomato-glyph"></span>{% elif cycle.mode == 'short_break' %}<i class="bi bi-cup-hot"></i>{% else %}<i class="bi bi-moon-stars"></i>{% endif %}</span>
-          <span class="history-main">
-            <span class="history-title">{{ cycle.task.title if cycle.task else cycle.mode_label }}</span>
-            <span class="history-meta">{{ cycle.ended_at|localtime('%d/%m %H:%M') }} · {{ cycle.mode_label }}</span>
-          </span>
-          <span class="history-duration">{{ cycle.duration_minutes }}m</span>
-        </div>
-        {% endfor %}
+      <div data-focus-history>
+        {% include "_focus_history.html" %}
       </div>
-      {% else %}
-      <div class="empty-state">
-        <i class="bi bi-hourglass-split"></i>
-        <span>Nenhuma sessão ainda. Comece um foco para criar seu histórico.</span>
-      </div>
-      {% endif %}
     </section>
   </div>
 </div>

@@ -113,6 +113,14 @@ def create_cycle():
         return jsonify(ok=False, error=str(exc)), 404
 
     stats = focus_stats(current_user, days=7)
+    chart_html = render_template("_weekly_chart.html", stats=stats)
+    history = (
+        PomodoroCycle.query.filter_by(user_id=current_user.id)
+        .order_by(PomodoroCycle.ended_at.desc())
+        .limit(30)
+        .all()
+    )
+    history_html = render_template("_focus_history.html", history=history)
     return (
         jsonify(
             ok=True,
@@ -125,6 +133,8 @@ def create_cycle():
                 "ended_at": cycle.ended_at.isoformat(),
             },
             stats=stats,
+            chart_html=chart_html,
+            history_html=history_html,
             suggested_next=suggested_next_mode(stats["focus_cycles_today"]),
         ),
         201,

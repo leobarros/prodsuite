@@ -54,6 +54,7 @@
   let audioContext = null;
   let soundUnlocked = false;
   let scheduledChime = [];
+  let keepAliveOscillator = null;
   let completionAlertVisible = false;
   let lastRenderedSecond = null;
   let transitioning = false;
@@ -160,7 +161,10 @@
     render();
     if (isRunning()) {
       unlockAudio().finally(() => {
-        if (isRunning()) scheduleChimeAt(state.endsAt);
+        if (isRunning()) {
+          startAudioKeepAlive();
+          scheduleChimeAt(state.endsAt);
+        }
       });
     }
     return true;
@@ -262,6 +266,7 @@
     };
     setText("today-cycles", stats.today?.cycles ?? 0);
     setText("today-minutes", stats.today?.minutes ?? 0);
+    setText("week-cycles", stats.week?.cycles ?? 0);
     setText("streak", stats.streak ?? 0);
     setText("week-label", stats.week?.label ?? "0m");
   }
@@ -476,7 +481,17 @@
    */
   async function unlockAudio() {
     primeAudio();
-    if (soundUnlocked) return;
+    if (soundUnlocked) {
+      if (audioContext?.state === "suspended") {
+        try {
+          await audioContext.resume();
+        } catch (_error) {
+          /* tenta novamente no próximo gesto */
+        }
+      }
+      startAudioKeepAlive();
+      return;
+    }
     let contextReady = false;
     if (audioContext?.state === "suspended") {
       try {
@@ -503,6 +518,7 @@
     }
     if (contextReady) {
       soundUnlocked = true;
+      startAudioKeepAlive();
     }
   }
 
@@ -551,6 +567,30 @@
     } catch (_error) {
       /* API experimental indisponível */
     }
+  }
+
+  function startAudioKeepAlive() {
+    if (!audioContext || audioContext.state !== "running" || keepAliveOscillator) {
+      return;
+    }
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    oscillator.frequency.value = 30;
+    gain.gain.value = 0.00001;
+    oscillator.connect(gain).connect(audioContext.destination);
+    oscillator.start();
+    keepAliveOscillator = oscillator;
+  }
+
+  function stopAudioKeepAlive() {
+    if (!keepAliveOscillator) return;
+    try {
+      keepAliveOscillator.stop();
+      keepAliveOscillator.disconnect();
+    } catch (_error) {
+      /* já encerrado */
+    }
+    keepAliveOscillator = null;
   }
 
   function clearScheduledChime() {
@@ -626,6 +666,9 @@
     unlockAudio().finally(() => {
       playChime();
       PSuite.toast?.("Som de teste reproduzido.");
+      if (!isRunning()) {
+        window.setTimeout(stopAudioKeepAlive, 1000);
+      }
     });
   }
 
@@ -702,7 +745,10 @@
     save();
     render();
     unlockAudio().finally(() => {
-      if (isRunning()) scheduleChimeAt(state.endsAt);
+      if (isRunning()) {
+        startAudioKeepAlive();
+        scheduleChimeAt(state.endsAt);
+      }
     });
     pushTimerState("start", {
       mode: state.mode,
@@ -715,6 +761,7 @@
   function pause() {
     if (!state.running) return;
     clearScheduledChime();
+    stopAudioKeepAlive();
     state.remaining = Math.max(
       0,
       Math.ceil((state.endsAt - Date.now()) / 1000)
@@ -732,6 +779,7 @@
 
   function reset() {
     clearScheduledChime();
+    stopAudioKeepAlive();
     state.running = false;
     state.endsAt = null;
     state.remaining = state.duration;
@@ -771,6 +819,7 @@
   function advanceAfter(finishedMode, nextMode) {
     const next = MODES[nextMode] || MODES.focus;
     setMode(nextMode, { silent: true });
+    window.setTimeout(stopAudioKeepAlive, 1200);
     const message =
       finishedMode === "focus"
         ? `Pomodoro concluído! Hora de uma pausa de ${next.minutes} min.`
@@ -901,6 +950,14 @@
         state.focusDate = localDateKey();
         updateStatsDom(data.stats);
         updateSessionDots();
+        const chartHost = document.querySelector("[data-weekly-chart-host]");
+        if (chartHost && data.chart_html) {
+          chartHost.innerHTML = data.chart_html;
+        }
+        const historyHost = document.querySelector("[data-focus-history]");
+        if (historyHost && data.history_html) {
+          historyHost.innerHTML = data.history_html;
+        }
       }
       if (finishedMode === "focus" && data?.suggested_next) {
         // O servidor pode sugerir uma pausa longa; o alerta já usou a
@@ -1010,6 +1067,7 @@
     if (document.visibilityState !== "visible") return;
     pageInteractiveAt = Date.now();
     if (isRunning() && audioContext?.state === "running") {
+      startAudioKeepAlive();
       scheduleChimeAt(state.endsAt);
     }
     // Se o ciclo venceu enquanto o app estava em background, registra o
@@ -1041,6 +1099,7 @@
   // Recalcula ao carregar: se o ciclo terminou com a aba fechada, registra.
   render();
   if (isRunning() && audioContext?.state === "running") {
+    startAudioKeepAlive();
     scheduleChimeAt(state.endsAt);
   }
   if (state.running && state.endsAt && state.endsAt <= Date.now()) {

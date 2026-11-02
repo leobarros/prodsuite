@@ -2226,6 +2226,8 @@ class TestPomodoroAPI:
         assert payload["cycle"]["task_id"] == task_id
         assert payload["stats"]["today"]["cycles"] == 1
         assert payload["suggested_next"] == "short_break"
+        assert "weekly-chart" in payload["chart_html"]
+        assert payload["cycle"]["mode_label"] in payload["history_html"]
         with app.app_context():
             assert db.session.get(Task, task_id).completed_pomodoros == 1
 

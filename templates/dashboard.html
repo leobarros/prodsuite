@@ -224,9 +224,9 @@
   <section class="bento-card bento-chart">
     <div class="card-head">
       <h2 class="card-title"><i class="bi bi-graph-up"></i> Foco na semana</h2>
-      <span class="card-link">{{ stats.week.label }} · {{ stats.week.cycles }} sessões</span>
+      <span class="card-link">{{ stats.week.label }} · <span data-stat="week-cycles">{{ stats.week.cycles }}</span> sessões</span>
     </div>
-    {{ weekly_chart(stats) }}
+    <div data-weekly-chart-host>{{ weekly_chart(stats) }}</div>
     <div class="stat-foot mt-3">
       <a class="card-link" href="{{ url_for('review.weekly') }}">revisão da semana <i class="bi bi-arrow-up-right"></i></a>
       <strong class="text-emerald">{{ week_metrics.sessions }}/{{ week_metrics.goal }} sessões</strong>
