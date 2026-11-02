@@ -100,8 +100,8 @@
       const fallback = MODES[parsed.mode].seconds;
       return {
         mode: parsed.mode,
-        duration: Number(parsed.duration) > 0 ? Number(parsed.duration) : fallback,
-        remaining: clamp(Number(parsed.remaining) || fallback, 0, 60 * 60 * 6),
+        duration: fallback,
+        remaining: clamp(Number(parsed.remaining) || fallback, 0, fallback),
         endsAt: Number(parsed.endsAt) || null,
         running: Boolean(parsed.running),
         taskId: parsed.taskId ? String(parsed.taskId) : null,
@@ -148,12 +148,17 @@
       return false;
     }
     state.mode = remote.mode;
-    state.duration = Number(remote.duration) || MODES.focus.seconds;
+    const canonicalDuration = modeInfo(remote.mode).seconds;
+    state.duration = canonicalDuration;
     state.endsAt = remote.endsAt ? Date.parse(remote.endsAt) : null;
     state.running = Boolean(remote.running && state.endsAt);
     state.remaining = state.running
-      ? Math.max(0, Math.ceil((state.endsAt - Date.now()) / 1000))
-      : Math.max(0, Number(remote.remaining) || 0);
+      ? clamp(
+          Math.ceil((state.endsAt - Date.now()) / 1000),
+          0,
+          canonicalDuration
+        )
+      : clamp(Number(remote.remaining) || 0, 0, canonicalDuration);
     state.taskId = remote.taskId ? String(remote.taskId) : null;
     state.runId = remote.runId || null;
     state.serverRevision = revision;
@@ -207,7 +212,8 @@
       });
       const data = await response.json().catch(() => null);
       if (response.ok && data?.ok && data.state) {
-        applyServerState(data.state);
+        // GET é a fonte da verdade; reconcilia até quando a revisão é igual.
+        applyServerState(data.state, { force: true });
       }
     } catch (_error) {
       /* offline: mantém o timer local */
@@ -739,7 +745,13 @@
     if (state.running) return;
     requestNotificationPermission();
     hideCompletionAlert();
-    if (state.remaining <= 0) state.remaining = state.duration;
+    const canonicalDuration = modeInfo(state.mode).seconds;
+    state.duration = canonicalDuration;
+    state.remaining = clamp(
+      Number(state.remaining) || canonicalDuration,
+      1,
+      canonicalDuration
+    );
     state.endsAt = Date.now() + state.remaining * 1000;
     state.running = true;
     save();

@@ -70,7 +70,8 @@ def apply_action(user, payload: dict) -> PomodoroTimer:
         if mode not in POMODORO_MODES:
             mode = "focus"
         default_seconds = POMODORO_DURATIONS[mode] * 60
-        duration = _mode_duration(mode, payload.get("duration") or default_seconds)[1]
+        # A duração é canônica por modo; nunca aceite uma sobra de outro modo.
+        duration = default_seconds
         try:
             remaining = int(payload.get("remaining") or duration)
         except (TypeError, ValueError):

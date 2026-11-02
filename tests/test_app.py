@@ -1812,18 +1812,53 @@ class TestPlanning:
         assert started.status_code == 200
         state = started.get_json()["state"]
         assert state["running"] is True
+        assert state["mode"] == "focus"
+        assert state["duration"] == 1500
+        assert state["remaining"] == 1500
         assert state["runId"]
         assert state["revision"] >= 1
 
+        long_break = client.post(
+            "/foco/estado",
+            json={
+                "action": "start",
+                "mode": "long_break",
+                "duration": 1500,
+                "remaining": 1582,
+                "task_id": None,
+            },
+            headers={"X-Requested-With": "fetch", "Accept": "application/json"},
+        )
+        long_state = long_break.get_json()["state"]
+        assert long_state["mode"] == "long_break"
+        assert long_state["duration"] == 1200
+        assert long_state["remaining"] == 1200
+
+        short_break = client.post(
+            "/foco/estado",
+            json={
+                "action": "start",
+                "mode": "short_break",
+                "duration": 1500,
+                "remaining": 1582,
+                "task_id": None,
+            },
+            headers={"X-Requested-With": "fetch", "Accept": "application/json"},
+        )
+        short_state = short_break.get_json()["state"]
+        assert short_state["mode"] == "short_break"
+        assert short_state["duration"] == 300
+        assert short_state["remaining"] == 300
+
         paused = client.post(
             "/foco/estado",
-            json={"action": "pause", "remaining": 700},
+            json={"action": "pause", "remaining": 200},
             headers={"X-Requested-With": "fetch", "Accept": "application/json"},
         )
         assert paused.status_code == 200
         paused_state = paused.get_json()["state"]
         assert paused_state["running"] is False
-        assert paused_state["remaining"] == 700
+        assert paused_state["remaining"] == 200
         assert paused_state["revision"] > state["revision"]
 
         payload = {
