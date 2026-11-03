@@ -107,8 +107,11 @@ def undo(log_id: int):
     log = WaterLog.query.filter_by(
         id=log_id, user_id=current_user.id
     ).first_or_404()
+    log_id = log.id
     db.session.delete(log)
     db.session.commit()
+    if _wants_json():
+        return _json_summary({"removed": log_id})
     flash("Registro removido.", "info")
     return redirect(url_for("water.index"))
 

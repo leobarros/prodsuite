@@ -73,14 +73,21 @@
       <a class="side-link {{ 'active' if ep.startswith('pomodoro.') }}" href="{{ url_for('pomodoro.focus') }}" aria-keyshortcuts="Alt+P">
         <span class="emoji-icon tomato-glyph" aria-hidden="true"></span><span>Pomodoro</span>
       </a>
-      <a class="side-link {{ 'active' if ep.startswith('water.') }}" href="{{ url_for('water.index') }}" aria-keyshortcuts="Alt+A">
-        <i class="bi bi-droplet"></i><span>Água</span>
-      </a>
       <a class="side-link {{ 'active' if ep.startswith('scratchpad.') }}" href="{{ url_for('scratchpad.index') }}" aria-keyshortcuts="Alt+R">
         <i class="bi bi-lightbulb"></i><span>Rascunhos</span>
       </a>
       <a class="side-link {{ 'active' if ep.startswith('notes.') }}" href="{{ url_for('notes.index') }}" aria-keyshortcuts="Alt+O">
         <i class="bi bi-journal-bookmark"></i><span>Notas</span>
+      </a>
+    </nav>
+
+    <nav class="side-section side-section-care" aria-label="Cuidado pessoal">
+      <span class="side-label">cuidado pessoal</span>
+      <a class="side-link {{ 'active' if ep.startswith('water.') }}" href="{{ url_for('water.index') }}" aria-keyshortcuts="Alt+A">
+        <i class="bi bi-droplet"></i><span>Água</span>
+      </a>
+      <a class="side-link {{ 'active' if ep.startswith('mood.') }}" href="{{ url_for('mood.index') }}" aria-keyshortcuts="Alt+H">
+        <i class="bi bi-emoji-smile"></i><span>Humor</span>
       </a>
     </nav>
 
@@ -91,9 +98,6 @@
       </a>
       <a class="side-link {{ 'active' if ep == 'review.weekly' }}" href="{{ url_for('review.weekly') }}" aria-keyshortcuts="Alt+E">
         <i class="bi bi-journal-check"></i><span>Revisão</span>
-      </a>
-      <a class="side-link {{ 'active' if ep == 'help.help_page' }}" href="{{ url_for('help.help_page') }}">
-        <i class="bi bi-life-preserver"></i><span>Ajuda</span>
       </a>
       <a class="side-link {{ 'active' if ep.startswith('export.') }}" href="{{ url_for('export.index') }}">
         <i class="bi bi-person-lines-fill"></i><span>Meus dados</span>
@@ -144,7 +148,10 @@
         <span class="brand-name">ProdSuite</span>
       </a>
       <div class="topbar-actions">
-        <a class="icon-btn" href="{{ url_for('water.index') }}" aria-label="Água" title="Água"><i class="bi bi-droplet"></i></a>
+        <div class="topbar-care" role="group" aria-label="Cuidado pessoal">
+          <a class="icon-btn" href="{{ url_for('water.index') }}" aria-label="Água" title="Água"><i class="bi bi-droplet"></i></a>
+          <a class="icon-btn" href="{{ url_for('mood.index') }}" aria-label="Humor" title="Humor"><i class="bi bi-emoji-smile"></i></a>
+        </div>
         <a class="icon-btn" href="{{ url_for('main.search') }}" aria-label="Buscar"><i class="bi bi-search"></i></a>
         <button class="icon-btn" type="button" data-bs-toggle="modal" data-bs-target="#captureModal" aria-label="Nova anotação"><i class="bi bi-plus-lg"></i></button>
         <button class="icon-btn" type="button" data-theme-toggle aria-label="Alternar tema" title="Alternar tema"><i class="bi bi-moon-stars"></i></button>
@@ -234,6 +241,7 @@
             <div><kbd>Alt</kbd> + <kbd>M</kbd><span>Meu dia</span></div>
             <div><kbd>Alt</kbd> + <kbd>T</kbd><span>Tarefas</span></div>
             <div><kbd>Alt</kbd> + <kbd>A</kbd><span>Água</span></div>
+            <div><kbd>Alt</kbd> + <kbd>H</kbd><span>Humor</span></div>
             <div><kbd>Alt</kbd> + <kbd>P</kbd><span>Pomodoro</span></div>
             <div><kbd>Alt</kbd> + <kbd>R</kbd><span>Rascunhos</span></div>
             <div><kbd>Alt</kbd> + <kbd>O</kbd><span>Notas</span></div>
@@ -259,6 +267,7 @@
        data-new-task="{{ url_for('tasks.index', nova=1) }}"
        data-pomodoro="{{ url_for('pomodoro.focus') }}"
        data-water="{{ url_for('water.index') }}"
+       data-mood="{{ url_for('mood.index') }}"
        data-scratchpad="{{ url_for('scratchpad.index') }}"
        data-notes="{{ url_for('notes.index') }}"
        data-review="{{ url_for('review.weekly') }}"

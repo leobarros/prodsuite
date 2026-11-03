@@ -94,6 +94,36 @@
     });
   });
 
+  document.addEventListener("submit", async (event) => {
+    const form = event.target.closest?.("form[data-water-delete]");
+    if (!form || event.defaultPrevented) return;
+    event.preventDefault();
+    const button = form.querySelector("button[type=submit]");
+    if (button) button.disabled = true;
+    try {
+      const response = await fetch(form.action, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "X-Requested-With": "fetch",
+          Accept: "application/json",
+        },
+        body: new FormData(form),
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.ok) {
+        toast?.(data?.error || "Não foi possível remover o registro.", "error");
+        return;
+      }
+      updateWaterUI(data);
+      toast?.("Registro removido.", "success");
+    } catch (_error) {
+      toast?.("Não foi possível conectar. Tente novamente.", "error");
+    } finally {
+      if (button) button.disabled = false;
+    }
+  });
+
   const reminderForm = document.querySelector("[data-water-reminders-form]");
   if (reminderForm) {
     reminderForm.addEventListener("submit", async (event) => {

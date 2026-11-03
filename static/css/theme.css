@@ -18,6 +18,10 @@ html[data-theme="light"] {
   --dim: #9a90a1;
   --emerald: #7c6aa3;
   --emerald-dim: #f0eaf8;
+  --lav: var(--emerald);
+  --lav2: var(--emerald-dim);
+  --coral: var(--tomato);
+  --green: #5d8d68;
   --cyan: #6d91b3;
   --amber: #b7864a;
   --danger: #bd6670;
@@ -52,6 +56,10 @@ html[data-theme="dark"] {
   --dim: #97899f;
   --emerald: #cbb9e8;
   --emerald-dim: #3a3045;
+  --lav: var(--emerald);
+  --lav2: var(--emerald-dim);
+  --coral: var(--tomato);
+  --green: #a7d1b0;
   --cyan: #aac6dc;
   --amber: #e3c18c;
   --danger: #e7a4aa;
@@ -5750,4 +5758,577 @@ a.recent-scratch-item:focus-visible {
 
 .water-glass-rim-v {
   opacity: 1;
+}
+
+/* ---------------------------------------------------------------- humor */
+.mood-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(290px, .85fr);
+  gap: 15px;
+  align-items: stretch;
+}
+
+.mood-checkin {
+  padding: 18px 20px;
+}
+
+.mood-fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.mood-fieldset .form-label,
+.mood-context .form-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.mood-fieldset .form-hint,
+.mood-context .form-hint {
+  font-weight: 400;
+}
+
+.mood-choice {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+  margin: 7px 0 16px;
+}
+
+.mood-option {
+  position: relative;
+  display: flex;
+  min-height: 104px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px 4px 9px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  color: var(--dim);
+  text-align: center;
+  transition: border-color .16s ease, background .16s ease, color .16s ease;
+}
+
+.mood-option:hover {
+  border-color: var(--line-strong);
+  color: var(--muted);
+}
+
+.mood-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.mood-option:has(input:focus-visible) {
+  outline: 2px solid var(--lav);
+  outline-offset: 2px;
+}
+
+.mood-option:has(input:checked) {
+  border-color: var(--lav);
+  background: var(--lav2);
+  color: var(--text);
+}
+
+.mood-face {
+  display: grid;
+  width: 37px;
+  height: 37px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--muted);
+  color: #211d28;
+  font-size: 20px;
+  line-height: 1;
+  opacity: .7;
+  transition: outline .16s ease, opacity .16s ease;
+}
+
+.mood-option:has(input:checked) .mood-face {
+  outline: 3px solid rgba(255, 255, 255, .12);
+  opacity: 1;
+}
+
+.mood-tone-1 .mood-face { background: #9eb2c8; }
+.mood-tone-2 .mood-face { background: #b2c5d4; }
+.mood-tone-3 .mood-face { background: #d1cadb; }
+.mood-tone-4 .mood-face { background: var(--lav); }
+.mood-tone-5 .mood-face { background: var(--amber); }
+
+.mood-name {
+  color: var(--text);
+  font-size: .72rem;
+  font-weight: 650;
+}
+
+.mood-option small {
+  color: var(--dim);
+  font-size: .58rem;
+}
+
+.mood-scales {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.mood-scale-field {
+  padding: 10px 11px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+}
+
+.mood-scale-field .form-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  color: var(--muted);
+}
+
+.mood-scale-field output {
+  color: var(--lav);
+  font-family: var(--font-mono);
+  font-size: .65rem;
+}
+
+.mood-range {
+  width: 100%;
+  height: 6px;
+  margin: 4px 0 6px;
+  appearance: none;
+  border-radius: 99px;
+  background: linear-gradient(
+    90deg,
+    var(--lav) var(--range-progress, 50%),
+    var(--line) var(--range-progress, 50%)
+  );
+}
+
+.mood-range::-webkit-slider-thumb {
+  width: 14px;
+  height: 14px;
+  appearance: none;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--lav);
+  box-shadow: 0 0 0 1px var(--lav);
+}
+
+.mood-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--lav);
+}
+
+.mood-range-tension {
+  background: linear-gradient(
+    90deg,
+    var(--coral) var(--range-progress, 50%),
+    var(--line) var(--range-progress, 50%)
+  );
+}
+
+.mood-range-tension::-webkit-slider-thumb {
+  background: var(--coral);
+  box-shadow: 0 0 0 1px var(--coral);
+}
+
+.mood-range-tension::-moz-range-thumb {
+  background: var(--coral);
+}
+
+.mood-range-labels {
+  display: flex;
+  justify-content: space-between;
+  color: var(--dim);
+  font-size: .54rem;
+}
+
+.mood-context {
+  margin: 13px 0 10px;
+  padding: 0;
+  border: 0;
+}
+
+.mood-contexts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.mood-context-chip {
+  cursor: pointer;
+}
+
+.mood-context-chip input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.mood-context-chip span {
+  display: inline-block;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  color: var(--muted);
+  font-size: .67rem;
+  transition: border-color .15s ease, background .15s ease, color .15s ease;
+}
+
+.mood-context-chip input:checked + span {
+  border-color: color-mix(in srgb, var(--lav) 42%, var(--line));
+  background: var(--lav2);
+  color: var(--text);
+}
+
+.mood-context-chip input:focus-visible + span {
+  outline: 2px solid var(--lav);
+  outline-offset: 2px;
+}
+
+.mood-note {
+  min-height: 68px;
+  resize: vertical;
+  font-size: .78rem;
+}
+
+.mood-form-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 11px;
+}
+
+.mood-form-foot .form-hint i {
+  color: var(--lav);
+}
+
+.mood-recent {
+  padding: 18px;
+}
+
+.mood-recent-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.mood-recent-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 60%, transparent);
+}
+
+.mood-recent-item:last-child {
+  border-bottom: 0;
+}
+
+.mood-recent-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  margin-top: 4px;
+  border-radius: 50%;
+}
+
+.mood-recent-dot.m1 { background: #9eb2c8; }
+.mood-recent-dot.m2 { background: #b2c5d4; }
+.mood-recent-dot.m3 { background: #d1cadb; }
+.mood-recent-dot.m4 { background: var(--lav); }
+.mood-recent-dot.m5 { background: var(--amber); }
+
+.mood-recent-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.mood-recent-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 7px;
+}
+
+.mood-recent-head strong {
+  color: var(--text);
+  font-size: .76rem;
+}
+
+.mood-recent-head time {
+  color: var(--dim);
+  font-family: var(--font-mono);
+  font-size: .57rem;
+  white-space: nowrap;
+}
+
+.mood-recent-meta {
+  display: block;
+  margin-top: 2px;
+  color: var(--dim);
+  font-size: .64rem;
+}
+
+.mood-recent-item p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: .7rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.mood-recent-item > form {
+  margin: 0;
+}
+
+.mood-empty {
+  min-height: 150px;
+}
+
+.mood-privacy-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 11px;
+  border-top: 1px solid var(--line);
+  color: var(--dim);
+  font-size: .62rem;
+  line-height: 1.5;
+}
+
+.mood-privacy-note i {
+  color: var(--lav);
+}
+
+.mood-bottom-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.mood-week,
+.mood-context-summary,
+.mood-care {
+  min-width: 0;
+  padding: 16px 17px;
+}
+
+.mood-week-bars {
+  display: flex;
+  height: 93px;
+  align-items: flex-end;
+  gap: 7px;
+  padding-top: 10px;
+}
+
+.mood-week-col {
+  display: flex;
+  min-width: 0;
+  height: 100%;
+  flex: 1;
+  align-items: center;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.mood-week-value {
+  color: var(--dim);
+  font-size: .54rem;
+}
+
+.mood-week-track {
+  display: flex;
+  width: 100%;
+  max-width: 22px;
+  flex: 1;
+  align-items: flex-end;
+  overflow: hidden;
+  border-radius: 3px 3px 1px 1px;
+  background: var(--surface-muted);
+}
+
+.mood-week-track span {
+  display: block;
+  width: 100%;
+  border-radius: inherit;
+  background: linear-gradient(180deg, var(--lav), color-mix(in srgb, var(--lav) 28%, transparent));
+}
+
+.mood-week-col.is-today .mood-week-track span {
+  background: linear-gradient(180deg, var(--amber), color-mix(in srgb, var(--amber) 28%, transparent));
+}
+
+.mood-week-col.is-today .mood-week-label,
+.mood-week-col.is-today .mood-week-value {
+  color: var(--amber);
+}
+
+.mood-week-label {
+  color: var(--dim);
+  font-size: .59rem;
+}
+
+.mood-week-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid var(--line);
+  color: var(--dim);
+  font-size: .6rem;
+}
+
+.mood-week-foot strong {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.mood-context-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.mood-context-tag {
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: .66rem;
+}
+
+.mood-context-tag b {
+  margin-left: 2px;
+  color: var(--lav);
+  font-family: var(--font-mono);
+  font-size: .58rem;
+}
+
+.mood-gentle-note {
+  margin: 12px 0 0;
+  color: var(--dim);
+  font-size: .64rem;
+  line-height: 1.5;
+}
+
+.mood-care-title {
+  margin: 0 0 5px;
+  color: var(--text);
+  font-size: .82rem;
+  font-weight: 650;
+}
+
+.mood-care-foot {
+  margin-top: 12px;
+  padding-top: 9px;
+  border-top: 1px solid var(--line);
+  color: var(--dim);
+  font-size: .6rem;
+}
+
+.mood-care-foot i {
+  color: var(--lav);
+}
+
+@media (max-width: 1099.98px) {
+  .mood-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(275px, .8fr);
+  }
+
+  .mood-bottom-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .mood-care {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .mood-layout,
+  .mood-bottom-grid,
+  .mood-scales {
+    grid-template-columns: 1fr;
+  }
+
+  .mood-care {
+    grid-column: auto;
+  }
+
+  .mood-choice {
+    gap: 5px;
+  }
+
+  .mood-option {
+    min-height: 92px;
+    padding-inline: 2px;
+  }
+
+  .mood-face {
+    width: 32px;
+    height: 32px;
+    font-size: 17px;
+  }
+
+  .mood-name {
+    font-size: .65rem;
+  }
+
+  .mood-option small {
+    display: none;
+  }
+
+  .mood-week-foot {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* Cuidado pessoal é uma área própria, separada da produtividade. */
+.side-section-care {
+  margin-top: 2px;
+  padding-top: 15px;
+  border-top: 1px solid var(--line);
+}
+
+.side-section-care .side-label {
+  color: var(--emerald);
+}
+
+.side-section-care .side-link > i {
+  color: var(--emerald);
+}
+
+.topbar-care {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 2px;
+  padding-right: 8px;
+  border-right: 1px solid var(--line);
 }

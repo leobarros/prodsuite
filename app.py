@@ -292,6 +292,7 @@ def create_app(config_override: dict | None = None) -> Flask:
     from routes.scratchpad import scratchpad_bp
     from routes.tasks import tasks_bp
     from routes.water import water_bp
+    from routes.mood import mood_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -305,6 +306,7 @@ def create_app(config_override: dict | None = None) -> Flask:
     app.register_blueprint(notes_bp)
     app.register_blueprint(export_bp)
     app.register_blueprint(water_bp)
+    app.register_blueprint(mood_bp)
 
     # ------------------------------------------------ logs e segurança
     log_startup(app)

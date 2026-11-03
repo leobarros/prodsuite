@@ -22,6 +22,7 @@ from extensions import db
 from models import (
     BoardColumn,
     Category,
+    MoodEntry,
     Note,
     PomodoroCycle,
     Project,
@@ -86,6 +87,11 @@ def build_user_export(user) -> bytes:
         .all()
     )
     water_settings = db.session.get(WaterSettings, user.id)
+    mood_entries = (
+        MoodEntry.query.filter_by(user_id=user.id)
+        .order_by(MoodEntry.created_at.asc())
+        .all()
+    )
 
     payload = {
         "schema": "prodsuite.export.v1",
@@ -113,6 +119,7 @@ def build_user_export(user) -> bytes:
             "projects": len(projects),
             "column_stays": len(stays),
             "water_logs": len(water_logs),
+            "mood_entries": len(mood_entries),
         },
         "projects": [project.to_export_dict() for project in projects],
         "column_stays": [stay.to_export_dict() for stay in stays],
@@ -134,6 +141,7 @@ def build_user_export(user) -> bytes:
             else None
         ),
         "water_logs": [log.to_export_dict() for log in water_logs],
+        "mood_entries": [entry.to_export_dict() for entry in mood_entries],
     }
     return json.dumps(payload, ensure_ascii=False, indent=2).encode("utf-8")
 
@@ -182,6 +190,7 @@ def build_user_db_snapshot(user) -> str:
                 "task_column_stays",
                 "water_logs",
                 "water_settings",
+                "mood_entries",
             ):
                 dest.execute(
                     f"DELETE FROM {table} WHERE user_id != ?",  # nome fixo allowlist
@@ -214,6 +223,7 @@ def backup_counts(user) -> dict:
         "pomodoro_cycles": PomodoroCycle.query.filter_by(user_id=user.id).count(),
         "weekly_reviews": WeeklyReview.query.filter_by(user_id=user.id).count(),
         "water_logs": WaterLog.query.filter_by(user_id=user.id).count(),
+        "mood_entries": MoodEntry.query.filter_by(user_id=user.id).count(),
     }
 
 

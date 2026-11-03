@@ -81,15 +81,15 @@
     window.requestAnimationFrame(() => confirmAccept.focus());
   }
 
-  document.querySelectorAll("form[data-confirm]").forEach((form) => {
-    form.addEventListener("submit", (event) => {
-      if (form.dataset.confirmed === "1") {
-        delete form.dataset.confirmed;
-        return;
-      }
-      event.preventDefault();
-      openConfirm(form, event.submitter);
-    });
+  document.addEventListener("submit", (event) => {
+    const form = event.target.closest?.("form[data-confirm]");
+    if (!form) return;
+    if (form.dataset.confirmed === "1") {
+      delete form.dataset.confirmed;
+      return;
+    }
+    event.preventDefault();
+    openConfirm(form, event.submitter);
   });
 
   confirmAccept?.addEventListener("click", () => {
@@ -829,6 +829,7 @@
         KeyM: shortcutUrls.dashboard,
         KeyT: shortcutUrls.tasks,
         KeyA: shortcutUrls.water,
+        KeyH: shortcutUrls.mood,
         KeyP: shortcutUrls.pomodoro,
         KeyR: shortcutUrls.scratchpad,
         KeyO: shortcutUrls.notes,

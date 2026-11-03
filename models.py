@@ -600,6 +600,43 @@ class TaskColumnStay(db.Model):
         }
 
 
+class MoodEntry(db.Model):
+    """Um check-in pessoal de humor e contexto."""
+
+    __tablename__ = "mood_entries"
+    __table_args__ = (
+        db.CheckConstraint("mood BETWEEN 1 AND 5", name="ck_mood_mood"),
+        db.CheckConstraint("energy BETWEEN 1 AND 5", name="ck_mood_energy"),
+        db.CheckConstraint("tension BETWEEN 1 AND 5", name="ck_mood_tension"),
+        db.Index("ix_mood_entries_user_created", "user_id", "created_at"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    mood = db.Column(db.Integer, nullable=False, default=3)
+    energy = db.Column(db.Integer, nullable=False, default=3)
+    tension = db.Column(db.Integer, nullable=False, default=2)
+    contexts = db.Column(db.String(255), nullable=False, default="")
+    note = db.Column(db.String(500), nullable=False, default="")
+    created_at = db.Column(db.DateTime, nullable=False, default=utcnow, index=True)
+
+    def to_export_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "mood": self.mood,
+            "energy": self.energy,
+            "tension": self.tension,
+            "contexts": self.contexts,
+            "note": self.note,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<MoodEntry {self.mood}/5 user={self.user_id}>"
+
+
 class WaterSettings(db.Model):
     """Preferências e faixa pessoal de hidratação."""
 

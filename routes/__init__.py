@@ -10,6 +10,7 @@ from .review import review_bp
 from .scratchpad import scratchpad_bp
 from .tasks import tasks_bp
 from .water import water_bp
+from .mood import mood_bp
 
 __all__ = [
     "auth_bp",
@@ -22,4 +23,5 @@ __all__ = [
     "review_bp",
     "export_bp",
     "water_bp",
+    "mood_bp",
 ]

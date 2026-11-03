@@ -28,6 +28,7 @@ from models import (
     Category,
     Project,
     TaskColumnStay,
+    MoodEntry,
     Note,
     PomodoroCycle,
     Scratchpad,
@@ -1515,6 +1516,18 @@ class TestWater:
         assert payload["total"] == 250
         assert "recent_html" in payload
 
+        with app.app_context():
+            log_id = WaterLog.query.one().id
+        removed = client.post(
+            f"/agua/desfazer/{log_id}",
+            headers={"X-Requested-With": "fetch", "Accept": "application/json"},
+        )
+        assert removed.status_code == 200
+        assert removed.get_json()["total"] == 0
+        assert "water-log-empty" in removed.get_json()["recent_html"]
+        with app.app_context():
+            assert WaterLog.query.count() == 0
+
         configured = client.post(
             "/agua/configurar",
             data={
@@ -1528,7 +1541,7 @@ class TestWater:
         with app.app_context():
             user_id = User.query.one().id
             assert db.session.get(WaterSettings, user_id).weight_kg == 70
-            assert WaterLog.query.count() == 1
+            assert WaterLog.query.count() == 0
 
         updated = client.get("/agua/")
         html = updated.get_data(as_text=True)
@@ -1549,6 +1562,56 @@ class TestWater:
         assert "Ritmo alto" in response.get_data(as_text=True)
         with app.app_context():
             assert WaterLog.query.count() == 3
+
+
+# ==========================================================================
+# HUMOR
+# ==========================================================================
+class TestMood:
+    def test_mood_checkin_is_saved_and_can_be_deleted(self, client, app, make_user):
+        make_user()
+        login(client)
+        page = client.get("/humor/")
+        assert page.status_code == 200
+        assert "Como você está agora" in page.get_data(as_text=True)
+
+        response = client.post(
+            "/humor/registrar",
+            data={
+                "mood": "4",
+                "energy": "3",
+                "tension": "2",
+                "contexts": ["sono", "trabalho"],
+                "note": "Um dia mais leve.",
+            },
+            follow_redirects=True,
+        )
+        assert response.status_code == 200
+        html = response.get_data(as_text=True)
+        assert "Um dia mais leve." in html
+        with app.app_context():
+            entry = MoodEntry.query.one()
+            assert entry.mood == 4
+            assert entry.contexts == "sono,trabalho"
+            entry_id = entry.id
+
+        removed = client.post(
+            f"/humor/{entry_id}/excluir", follow_redirects=True
+        )
+        assert removed.status_code == 200
+        with app.app_context():
+            assert MoodEntry.query.count() == 0
+
+    def test_mood_rejects_invalid_scale(self, client, app, make_user):
+        make_user()
+        login(client)
+        response = client.post(
+            "/humor/registrar",
+            data={"mood": "9", "energy": "3", "tension": "2", "note": ""},
+        )
+        assert response.status_code == 400
+        with app.app_context():
+            assert MoodEntry.query.count() == 0
 
 
 # ==========================================================================
