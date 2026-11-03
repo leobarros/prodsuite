@@ -600,6 +600,52 @@ class TaskColumnStay(db.Model):
         }
 
 
+class WaterSettings(db.Model):
+    """Preferências e faixa pessoal de hidratação."""
+
+    __tablename__ = "water_settings"
+
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    weight_kg = db.Column(db.Float, nullable=True)
+    extra_ml = db.Column(db.Integer, nullable=False, default=0)
+    reminders_enabled = db.Column(db.Boolean, nullable=False, default=False)
+    reminder_interval_minutes = db.Column(db.Integer, nullable=False, default=90)
+    updated_at = db.Column(
+        db.DateTime, nullable=False, default=utcnow, onupdate=utcnow
+    )
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<WaterSettings user={self.user_id}>"
+
+
+class WaterLog(db.Model):
+    """Um registro de água bebida."""
+
+    __tablename__ = "water_logs"
+    __table_args__ = (
+        db.Index("ix_water_logs_user_logged", "user_id", "logged_at"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    amount_ml = db.Column(db.Integer, nullable=False, default=200)
+    logged_at = db.Column(db.DateTime, nullable=False, default=utcnow, index=True)
+
+    def to_export_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "amount_ml": self.amount_ml,
+            "logged_at": self.logged_at.isoformat() if self.logged_at else None,
+        }
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<WaterLog {self.amount_ml}ml user={self.user_id}>"
+
+
 class PomodoroTimer(db.Model):
     """Estado compartilhado de um único Pomodoro por usuário."""
 

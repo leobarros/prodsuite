@@ -828,6 +828,7 @@
       const routes = {
         KeyM: shortcutUrls.dashboard,
         KeyT: shortcutUrls.tasks,
+        KeyA: shortcutUrls.water,
         KeyP: shortcutUrls.pomodoro,
         KeyR: shortcutUrls.scratchpad,
         KeyO: shortcutUrls.notes,

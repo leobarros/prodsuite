@@ -1,0 +1,22 @@
+{% from "_macros.html" import csrf %}
+{% if recent %}
+<div class="water-log-list">
+  {% for log in recent %}
+  <div class="water-log-row">
+    <span class="water-log-dot" aria-hidden="true"></span>
+    <span class="water-log-time">{{ log.logged_at|localtime('%H:%M') }}</span>
+    <span class="water-log-name">Registro</span>
+    <strong class="water-log-amount">{{ log.amount_ml }} ml</strong>
+    <form method="post" action="{{ url_for('water.undo', log_id=log.id) }}" data-confirm="Remover este registro de água?">
+      {{ csrf() }}
+      <button class="icon-btn-sm" type="submit" aria-label="Remover registro" title="Remover registro"><i class="bi bi-x-lg"></i></button>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="water-log-empty">
+  <i class="bi bi-cup-straw"></i>
+  <span>Nenhum registro hoje. O primeiro gole pode ser agora.</span>
+</div>
+{% endif %}

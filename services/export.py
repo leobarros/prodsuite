@@ -29,6 +29,8 @@ from models import (
     Task,
     TaskColumnStay,
     User,
+    WaterLog,
+    WaterSettings,
     WeeklyReview,
     utcnow,
 )
@@ -78,6 +80,12 @@ def build_user_export(user) -> bytes:
         .order_by(Project.position.asc(), Project.id.asc())
         .all()
     )
+    water_logs = (
+        WaterLog.query.filter_by(user_id=user.id)
+        .order_by(WaterLog.logged_at.asc())
+        .all()
+    )
+    water_settings = db.session.get(WaterSettings, user.id)
 
     payload = {
         "schema": "prodsuite.export.v1",
@@ -104,6 +112,7 @@ def build_user_export(user) -> bytes:
             "categories": len(categories),
             "projects": len(projects),
             "column_stays": len(stays),
+            "water_logs": len(water_logs),
         },
         "projects": [project.to_export_dict() for project in projects],
         "column_stays": [stay.to_export_dict() for stay in stays],
@@ -114,6 +123,17 @@ def build_user_export(user) -> bytes:
         "scratchpads": [scratch.to_export_dict() for scratch in scratchpads],
         "pomodoro_cycles": [cycle.to_export_dict() for cycle in cycles],
         "weekly_reviews": [review.to_export_dict() for review in reviews],
+        "water_settings": (
+            {
+                "weight_kg": water_settings.weight_kg,
+                "extra_ml": water_settings.extra_ml,
+                "reminders_enabled": water_settings.reminders_enabled,
+                "reminder_interval_minutes": water_settings.reminder_interval_minutes,
+            }
+            if water_settings
+            else None
+        ),
+        "water_logs": [log.to_export_dict() for log in water_logs],
     }
     return json.dumps(payload, ensure_ascii=False, indent=2).encode("utf-8")
 
@@ -160,6 +180,8 @@ def build_user_db_snapshot(user) -> str:
                 "categories",
                 "projects",
                 "task_column_stays",
+                "water_logs",
+                "water_settings",
             ):
                 dest.execute(
                     f"DELETE FROM {table} WHERE user_id != ?",  # nome fixo allowlist
@@ -191,6 +213,7 @@ def backup_counts(user) -> dict:
         ).count(),
         "pomodoro_cycles": PomodoroCycle.query.filter_by(user_id=user.id).count(),
         "weekly_reviews": WeeklyReview.query.filter_by(user_id=user.id).count(),
+        "water_logs": WaterLog.query.filter_by(user_id=user.id).count(),
     }
 
 

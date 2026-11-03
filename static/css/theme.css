@@ -4778,3 +4778,976 @@ a.recent-scratch-item:focus-visible {
     column-gap: 24px;
   }
 }
+
+/* ------------------------------------------------------------- hidratação */
+.water-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.85fr);
+  gap: 15px;
+  align-items: stretch;
+}
+
+.water-hero {
+  padding: 18px 20px;
+}
+
+.water-glass-stage {
+  position: relative;
+  display: flex;
+  min-height: 245px;
+  align-items: center;
+  justify-content: center;
+  padding-top: 5px;
+}
+
+.water-glass-glow {
+  position: absolute;
+  width: 190px;
+  height: 145px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--cyan) 14%, transparent);
+  filter: blur(22px);
+}
+
+.water-glass {
+  position: relative;
+  width: 132px;
+  height: 178px;
+  overflow: hidden;
+  border: 2px solid color-mix(in srgb, var(--lav) 55%, var(--line));
+  border-top: 0;
+  border-radius: 8px 8px 23px 23px;
+  background: color-mix(in srgb, var(--cyan) 5%, transparent);
+  box-shadow: inset 0 0 24px color-mix(in srgb, var(--lav) 7%, transparent);
+}
+
+.water-glass::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -2px;
+  left: -2px;
+  height: 13px;
+  border-top: 2px solid color-mix(in srgb, var(--lav) 55%, var(--line));
+  border-radius: 50%;
+}
+
+.water-glass-ripple {
+  position: absolute;
+  right: 10px;
+  bottom: 13px;
+  left: 10px;
+  height: 1px;
+  background: color-mix(in srgb, var(--lav) 25%, transparent);
+}
+
+.water-glass-fill {
+  position: absolute;
+  right: -4px;
+  bottom: -2px;
+  left: -4px;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 4px 4px 20px 20px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--cyan) 55%, transparent),
+    color-mix(in srgb, var(--lav) 32%, transparent)
+  );
+  transition: height 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: water-breathe 4s ease-in-out infinite;
+}
+
+.water-glass-fill::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  right: -10%;
+  left: -10%;
+  height: 16px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--lav) 55%, transparent);
+  animation: water-wave 4.8s ease-in-out infinite;
+}
+
+.water-glass-caption {
+  position: absolute;
+  bottom: 17px;
+  left: 50%;
+  color: var(--muted);
+  font-size: 10px;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.water-glass-caption strong {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.water-bubble {
+  position: absolute;
+  border: 1px solid color-mix(in srgb, #fff 55%, transparent);
+  border-radius: 50%;
+  animation: water-bubble 4.8s linear infinite;
+}
+
+.water-bubble-a {
+  bottom: 14px;
+  left: 26px;
+  width: 7px;
+  height: 7px;
+}
+
+.water-bubble-b {
+  bottom: 31px;
+  left: 79px;
+  width: 4px;
+  height: 4px;
+  animation-delay: 1.4s;
+}
+
+.water-bubble-c {
+  bottom: 7px;
+  left: 50px;
+  width: 5px;
+  height: 5px;
+  animation-delay: 2.2s;
+}
+
+.water-progress {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--line);
+}
+
+.water-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--cyan), var(--lav));
+  transition: width 0.7s ease;
+}
+
+.water-meta-line,
+.water-range-line,
+.water-week-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.water-meta-line {
+  margin-top: 7px;
+  color: var(--dim);
+  font-size: 0.68rem;
+}
+
+.water-meta-line strong {
+  color: var(--lav);
+}
+
+.water-range-line {
+  margin-top: 16px;
+  padding-top: 13px;
+  border-top: 1px solid var(--line);
+}
+
+.water-range-line .form-label {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.water-range-line strong {
+  color: var(--text);
+  font-size: 0.85rem;
+}
+
+.water-status-in_range {
+  border-color: color-mix(in srgb, var(--green) 35%, var(--line));
+  background: color-mix(in srgb, var(--green) 8%, transparent);
+  color: var(--green);
+}
+
+.water-status-below {
+  border-color: color-mix(in srgb, var(--amber) 35%, var(--line));
+  background: color-mix(in srgb, var(--amber) 8%, transparent);
+  color: var(--amber);
+}
+
+.water-status-above {
+  border-color: color-mix(in srgb, var(--danger) 40%, var(--line));
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+  color: var(--danger);
+}
+
+.water-safety-note,
+.water-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 11px;
+  border: 1px solid color-mix(in srgb, var(--amber) 24%, var(--line));
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--amber) 5%, transparent);
+  color: var(--dim);
+  font-size: 0.69rem;
+  line-height: 1.5;
+}
+
+.water-safety-note i,
+.water-disclaimer i {
+  margin-top: 1px;
+  color: var(--amber);
+}
+
+.water-safety-note p {
+  margin: 0;
+}
+
+.water-safety-note strong {
+  color: var(--text);
+}
+
+.water-add-card {
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+}
+
+.water-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.water-quick-grid form {
+  margin: 0;
+}
+
+.water-quick-btn {
+  display: flex;
+  width: 100%;
+  min-height: 58px;
+  align-items: center;
+  gap: 8px;
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  text-align: left;
+}
+
+.water-quick-btn:hover {
+  border-color: var(--line-strong);
+  color: var(--text);
+}
+
+.water-quick-btn > i {
+  color: var(--cyan);
+  font-size: 1rem;
+}
+
+.water-quick-btn > span {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.water-quick-btn strong {
+  color: var(--text);
+  font-size: 0.78rem;
+}
+
+.water-quick-btn small {
+  color: var(--dim);
+  font-size: 0.6rem;
+}
+
+.water-quick-btn > b {
+  margin-left: auto;
+  color: var(--lav);
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.water-custom-form {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.water-custom-form .form-control {
+  min-width: 0;
+  flex: 1;
+  font-size: 0.76rem;
+}
+
+.water-custom-form .btn {
+  flex: 0 0 auto;
+  padding-inline: 12px;
+}
+
+.water-divider {
+  height: 1px;
+  margin: 14px 0 12px;
+  background: var(--line);
+}
+
+.water-subhead {
+  margin-bottom: 6px;
+}
+
+.water-subhead .card-title {
+  font-size: 0.86rem;
+}
+
+.water-log-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.water-log-row {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 7px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+  color: var(--muted);
+  font-size: 0.71rem;
+}
+
+.water-log-row:last-child {
+  border-bottom: 0;
+}
+
+.water-log-dot {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  border-radius: 50%;
+  background: var(--lav);
+}
+
+.water-log-time {
+  width: 38px;
+  flex: 0 0 38px;
+  color: var(--dim);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+}
+
+.water-log-name {
+  flex: 1;
+}
+
+.water-log-amount {
+  color: var(--text);
+  font-size: 0.7rem;
+}
+
+.water-log-row form {
+  margin: 0;
+}
+
+.water-log-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 58px;
+  color: var(--dim);
+  font-size: 0.72rem;
+}
+
+.water-log-empty i {
+  color: var(--muted);
+  font-size: 1.1rem;
+}
+
+.water-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-bottom: 13px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--line));
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--danger) 7%, transparent);
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.water-warning i {
+  color: var(--danger);
+}
+
+.water-warning strong {
+  color: var(--text);
+}
+
+.water-warning[hidden] {
+  display: none;
+}
+
+.water-bottom-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.water-reminder-card,
+.water-week-card,
+.water-limit-card {
+  min-width: 0;
+  padding: 16px 17px;
+}
+
+.water-reminder-title,
+.water-limit-title {
+  margin: 0 0 4px;
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 650;
+}
+
+.water-reminder-next {
+  margin: 10px 0 12px;
+  color: var(--lav);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+}
+
+.water-reminder-form {
+  margin-top: 12px;
+}
+
+.water-week-bars {
+  display: flex;
+  height: 95px;
+  align-items: flex-end;
+  gap: 5px;
+  padding-top: 12px;
+}
+
+.water-week-col {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.water-week-value {
+  color: var(--dim);
+  font-size: 0.55rem;
+}
+
+.water-week-track {
+  display: flex;
+  width: 100%;
+  max-width: 19px;
+  flex: 1;
+  align-items: flex-end;
+  overflow: hidden;
+  border-radius: 3px 3px 1px 1px;
+  background: var(--surface-muted);
+}
+
+.water-week-track span {
+  display: block;
+  width: 100%;
+  border-radius: inherit;
+  background: var(--lav);
+  opacity: 0.62;
+}
+
+.water-week-col.is-today .water-week-track span {
+  background: var(--amber);
+  opacity: 1;
+}
+
+.water-week-col.is-today .water-week-value,
+.water-week-col.is-today .water-week-label {
+  color: var(--amber);
+}
+
+.water-week-label {
+  color: var(--dim);
+  font-size: 0.59rem;
+}
+
+.water-week-foot {
+  margin-top: 11px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  color: var(--dim);
+  font-size: 0.62rem;
+}
+
+.water-week-foot strong {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.water-limit-title strong {
+  color: var(--amber);
+}
+
+@media (max-width: 1099.98px) {
+  .water-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.85fr);
+  }
+
+  .water-bottom-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .water-limit-card {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .water-layout,
+  .water-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .water-limit-card {
+    grid-column: auto;
+  }
+
+  .water-hero {
+    padding: 15px;
+  }
+
+  .water-glass-stage {
+    min-height: 225px;
+  }
+
+  .water-range-line {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .water-quick-btn {
+    min-height: 62px;
+  }
+}
+
+@keyframes water-wave {
+  0%, 100% { transform: translateX(-5px) rotate(-1deg); }
+  50% { transform: translateX(5px) rotate(1deg); }
+}
+
+@keyframes water-breathe {
+  0%, 100% { opacity: 0.94; }
+  50% { opacity: 1; }
+}
+
+@keyframes water-bubble {
+  0% { opacity: 0; transform: translateY(0); }
+  20% { opacity: 0.8; }
+  100% { opacity: 0; transform: translateY(-110px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .water-glass-fill,
+  .water-glass-fill::before,
+  .water-bubble {
+    animation: none;
+  }
+}
+
+/* Copo real: contorno, boca, laterais afuniladas e base visíveis mesmo vazio. */
+.water-glass {
+  width: 160px;
+  height: 215px;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.water-glass::before {
+  display: none;
+}
+
+.water-glass-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  clip-path: polygon(8% 8%, 92% 8%, 85% 91%, 82% 96%, 18% 96%, 15% 91%);
+}
+
+.water-glass-outline {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: color-mix(in srgb, var(--lav) 62%, var(--line));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.water-glass-body {
+  fill: color-mix(in srgb, var(--cyan) 3%, transparent);
+  stroke-width: 2;
+}
+
+.water-glass-rim {
+  fill: color-mix(in srgb, var(--cyan) 3%, transparent);
+  stroke-width: 2;
+}
+
+.water-glass-rim-inner {
+  stroke: color-mix(in srgb, var(--lav) 35%, var(--line));
+  stroke-width: 1;
+}
+
+.water-glass-shine {
+  stroke: color-mix(in srgb, #fff 30%, transparent);
+  stroke-width: 2.2;
+}
+
+.water-glass-base {
+  stroke: color-mix(in srgb, var(--lav) 45%, var(--line));
+  stroke-width: 1.5;
+}
+
+.water-glass .water-glass-fill {
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 0 0 16px 16px;
+}
+
+.water-glass-stage {
+  min-height: 260px;
+}
+
+.water-glass-caption {
+  bottom: 5px;
+}
+
+@media (max-width: 767.98px) {
+  .water-glass {
+    width: 142px;
+    height: 192px;
+  }
+
+  .water-glass-stage {
+    min-height: 238px;
+  }
+}
+
+/* Ajuste final do copo: contorno legível e água com contraste real. */
+.water-glass-outline {
+  z-index: 2;
+  stroke: color-mix(in srgb, var(--lav) 82%, var(--line));
+}
+
+.water-glass-body {
+  fill: color-mix(in srgb, var(--cyan) 2%, transparent);
+  stroke-width: 2.2;
+}
+
+.water-glass-shine {
+  display: none;
+}
+
+.water-glass .water-glass-fill {
+  z-index: 1;
+  display: block !important;
+  background: linear-gradient(
+    180deg,
+    rgba(170, 198, 220, 0.62),
+    rgba(203, 185, 232, 0.4)
+  );
+  opacity: 1;
+  box-shadow: inset 8px 0 18px rgba(255, 255, 255, 0.06);
+}
+
+.water-glass .water-glass-fill::before {
+  top: -7px;
+  height: 14px;
+  background: rgba(203, 185, 232, 0.82);
+  box-shadow: 0 1px 8px rgba(203, 185, 232, 0.25);
+}
+
+.water-glass-caption {
+  z-index: 3;
+  color: var(--muted);
+}
+
+.water-glass-caption strong {
+  color: var(--text);
+}
+
+.water-glass-stage .water-glass-glow {
+  opacity: 0.7;
+}
+
+/* Copo vetorial fiel às referências: vidro, água azul e superfície visível. */
+.water-glass {
+  position: relative;
+  width: 175px;
+  height: auto;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.water-glass::before {
+  display: none;
+}
+
+.water-glass-svg {
+  display: block;
+  width: 175px;
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 18px 18px rgba(0, 0, 0, 0.18));
+}
+
+.water-glass-inner {
+  stroke: none;
+}
+
+.water-fill-group {
+  transform: translateY(var(--water-offset, 236px));
+  transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.water-body {
+  opacity: 0.9;
+}
+
+.water-surface {
+  fill: #b8ebfc;
+  opacity: 0.95;
+}
+
+.water-surface-glow {
+  fill: #e5fbff;
+  opacity: 0.75;
+}
+
+.water-bubble-svg {
+  fill: #dff8ff;
+  opacity: 0.65;
+  animation: water-bubble-svg 5s ease-in-out infinite;
+}
+
+.water-bubble-svg:nth-of-type(2n) {
+  animation-delay: 1.2s;
+}
+
+.water-glass-outline-v {
+  fill: none;
+  stroke: #b9e7f4;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.9;
+}
+
+.water-glass-rim-v {
+  fill: none;
+  stroke: #c9f0fa;
+  stroke-width: 3;
+  opacity: 0.9;
+}
+
+.water-glass-rim-light {
+  fill: none;
+  stroke: #e8fdff;
+  stroke-width: 1.2;
+  opacity: 0.55;
+}
+
+.water-glass-highlight {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0.2;
+}
+
+.water-glass-highlight-right {
+  opacity: 0.12;
+}
+
+.water-glass-base-v {
+  fill: none;
+  stroke: #a9dfef;
+  stroke-width: 2;
+  opacity: 0.75;
+}
+
+.water-glass-caption {
+  bottom: -2px;
+  z-index: 3;
+}
+
+.water-glass-caption strong {
+  color: var(--text);
+}
+
+@keyframes water-bubble-svg {
+  0%, 100% { transform: translateY(0); opacity: 0.45; }
+  45% { opacity: 0.9; }
+  100% { transform: translateY(-75px); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .water-bubble-svg {
+    animation: none;
+  }
+}
+
+/* Copo moderno: vidro translúcido, água dessaturada e reflexos amplos. */
+.water-glass {
+  width: 175px;
+  height: auto;
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.water-glass::before {
+  display: none;
+}
+
+.water-glass-svg {
+  width: 175px;
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.16));
+}
+
+.water-glass-inner {
+  stroke: none;
+}
+
+.water-glass-outline-v {
+  fill: none;
+  stroke: rgba(225, 248, 252, 0.25);
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  opacity: 0.85;
+}
+
+.water-glass-rim-v {
+  stroke-width: 1.5;
+}
+
+.water-glass-rim-light {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.24);
+  stroke-width: 1;
+}
+
+.water-glass-reflection {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.13);
+  stroke-width: 7;
+  stroke-linecap: round;
+  filter: blur(2px);
+}
+
+.water-glass-reflection-right {
+  stroke-width: 5;
+  opacity: 0.5;
+}
+
+.water-glass-base-v {
+  fill: rgba(199, 232, 237, 0.06);
+  stroke: rgba(225, 248, 252, 0.22);
+  stroke-width: 1.2;
+}
+
+.water-fill-group {
+  transform: translateY(var(--water-offset, 236px));
+  transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.water-body {
+  opacity: 1;
+}
+
+.water-surface {
+  stroke: rgba(255, 255, 255, 0.38);
+  stroke-width: 0.8;
+}
+
+.water-surface-inner {
+  fill: rgba(255, 255, 255, 0.16);
+}
+
+.water-bubble-svg {
+  fill: rgba(235, 252, 255, 0.4);
+  opacity: 0.65;
+  animation: water-bubble-svg 7s ease-in-out infinite;
+}
+
+.water-bubble-svg-b {
+  animation-delay: 2.4s;
+}
+
+.water-glass-caption {
+  bottom: 3px;
+  font-size: 0.67rem;
+}
+
+.water-glass-caption strong {
+  color: var(--text);
+  font-weight: 650;
+}
+
+.water-glass-stage {
+  min-height: 255px;
+}
+
+@media (max-width: 767.98px) {
+  .water-glass {
+    width: 152px;
+  }
+
+  .water-glass-svg {
+    width: 152px;
+  }
+
+  .water-glass-stage {
+    min-height: 235px;
+  }
+}
+
+/* O vidro vazio continua legível sem voltar ao traço de clipart. */
+.water-glass-outline-v {
+  stroke: rgba(225, 248, 252, 0.32);
+}
+
+.water-glass-inner {
+  opacity: 0.9;
+}
+
+.water-glass-rim-v {
+  opacity: 1;
+}

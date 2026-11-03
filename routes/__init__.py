@@ -9,6 +9,7 @@ from .pomodoro import pomodoro_bp
 from .review import review_bp
 from .scratchpad import scratchpad_bp
 from .tasks import tasks_bp
+from .water import water_bp
 
 __all__ = [
     "auth_bp",
@@ -20,4 +21,5 @@ __all__ = [
     "planner_bp",
     "review_bp",
     "export_bp",
+    "water_bp",
 ]

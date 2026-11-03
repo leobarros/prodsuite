@@ -33,6 +33,8 @@ from models import (
     Scratchpad,
     Task,
     User,
+    WaterLog,
+    WaterSettings,
     WeeklyReview,
     utcnow,
 )
@@ -1487,6 +1489,66 @@ class TestScratchpad:
             data={"title": "x", "priority": "low", "estimate_pomodoros": "1"},
         )
         assert response.status_code == 404
+
+
+# ==========================================================================
+# HIDRATAÇÃO
+# ==========================================================================
+class TestWater:
+    def test_water_tracks_quick_add_and_personal_range(self, client, app, make_user):
+        make_user()
+        login(client)
+
+        page = client.get("/agua/")
+        assert page.status_code == 200
+        assert "Um copo por vez" in page.get_data(as_text=True)
+        assert "cachoeiras" in page.get_data(as_text=True)
+
+        added = client.post(
+            "/agua/registrar",
+            json={"amount_ml": 250},
+            headers={"X-Requested-With": "fetch", "Accept": "application/json"},
+        )
+        assert added.status_code == 200
+        payload = added.get_json()
+        assert payload["ok"] is True
+        assert payload["total"] == 250
+        assert "recent_html" in payload
+
+        configured = client.post(
+            "/agua/configurar",
+            data={
+                "weight_kg": "70",
+                "extra_ml": "0",
+                "reminder_interval_minutes": "90",
+            },
+            follow_redirects=True,
+        )
+        assert configured.status_code == 200
+        with app.app_context():
+            user_id = User.query.one().id
+            assert db.session.get(WaterSettings, user_id).weight_kg == 70
+            assert WaterLog.query.count() == 1
+
+        updated = client.get("/agua/")
+        html = updated.get_data(as_text=True)
+        assert "2.1" in html or "2,1" in html
+        assert "2.5" in html or "2,5" in html
+
+    def test_water_hourly_safety_warning(self, client, app, make_user):
+        make_user()
+        login(client)
+        for _ in range(3):
+            client.post(
+                "/agua/registrar",
+                json={"amount_ml": 500},
+                headers={"X-Requested-With": "fetch", "Accept": "application/json"},
+            )
+        response = client.get("/agua/")
+        assert response.status_code == 200
+        assert "Ritmo alto" in response.get_data(as_text=True)
+        with app.app_context():
+            assert WaterLog.query.count() == 3
 
 
 # ==========================================================================

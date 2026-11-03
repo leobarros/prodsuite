@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, field_errors %}
+{% block title %}Água{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow"><i class="bi bi-droplet"></i> hidratação <span class="sep">·</span> {{ summary.day|datebr }}</p>
+    <h1 class="page-title">Um copo por vez.</h1>
+    <p class="page-sub">Registre o que bebeu, veja sua faixa do dia e receba lembretes gentis — sem transformar água em cobrança.</p>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <button class="btn btn-ghost btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#waterSettingsModal"><i class="bi bi-sliders"></i> Ajustar meta</button>
+    <form method="post" action="{{ url_for('water.register') }}" data-water-add>
+      {{ csrf() }}
+      <input type="hidden" name="amount_ml" value="200">
+      <button class="btn btn-neon btn-sm" type="submit"><i class="bi bi-plus-lg"></i> Registrar água</button>
+    </form>
+  </div>
+</div>
+
+<div class="water-warning" role="alert" data-water-hourly-warning {% if not summary.hourly_warning %}hidden{% endif %}>
+  <i class="bi bi-exclamation-triangle"></i>
+  <span><strong>Ritmo alto:</strong> você registrou mais de 1 L na última hora. Beba com calma e não force grandes volumes.</span>
+</div>
+
+<div class="water-layout"
+     data-water-reminders="{{ 1 if settings and settings.reminders_enabled else 0 }}"
+     data-water-interval="{{ settings.reminder_interval_minutes if settings else 90 }}"
+     data-water-goal-reached="{{ 1 if summary.status_key in ['in_range', 'above'] else 0 }}">
+  <section class="bento-card water-hero">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-droplet-half"></i> Seu copo de hoje</h2>
+      <span class="card-link">{{ summary.day|datebr }}</span>
+    </div>
+    <div class="water-glass-stage">
+      <div class="water-glass-glow" aria-hidden="true"></div>
+      <div class="water-glass" aria-hidden="true">
+        <svg class="water-glass-svg" viewBox="0 0 220 290">
+          <defs>
+            <clipPath id="waterGlassClip">
+              <path d="M43 31 L58 245 Q60 258 75 260 L145 260 Q160 258 162 245 L177 31 Z"></path>
+            </clipPath>
+            <linearGradient id="waterFillGradient" x1="0" y1="0" x2="0.2" y2="1">
+              <stop offset="0" stop-color="#d5edf1" stop-opacity=".62"></stop>
+              <stop offset=".38" stop-color="#a9ced8" stop-opacity=".46"></stop>
+              <stop offset="1" stop-color="#7c91b4" stop-opacity=".3"></stop>
+            </linearGradient>
+            <linearGradient id="glassTint" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#f2fbff" stop-opacity=".18"></stop>
+              <stop offset=".42" stop-color="#d6f2f8" stop-opacity=".035"></stop>
+              <stop offset="1" stop-color="#b7dce8" stop-opacity=".12"></stop>
+            </linearGradient>
+            <linearGradient id="surfaceGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#f2fdff" stop-opacity=".72"></stop>
+              <stop offset="1" stop-color="#c5e8ee" stop-opacity=".24"></stop>
+            </linearGradient>
+            <linearGradient id="rimGradient" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#ffffff" stop-opacity=".14"></stop>
+              <stop offset=".5" stop-color="#e9fbff" stop-opacity=".55"></stop>
+              <stop offset="1" stop-color="#ffffff" stop-opacity=".12"></stop>
+            </linearGradient>
+          </defs>
+          <path class="water-glass-inner" d="M43 31 L58 245 Q60 258 75 260 L145 260 Q160 258 162 245 L177 31 Z" fill="url(#glassTint)"></path>
+          <g clip-path="url(#waterGlassClip)">
+            <g class="water-fill-group" data-water-fill style="--water-offset: {{ ((1 - summary.percent / 100) * 236)|round(1) }}px">
+              <rect class="water-body" x="40" y="24" width="140" height="240" fill="url(#waterFillGradient)"></rect>
+              <ellipse class="water-surface" cx="110" cy="24" rx="68" ry="8" fill="url(#surfaceGradient)"></ellipse>
+              <ellipse class="water-surface-inner" cx="110" cy="25" rx="47" ry="3.5"></ellipse>
+              <circle class="water-bubble-svg" cx="82" cy="150" r="2"></circle>
+              <circle class="water-bubble-svg water-bubble-svg-b" cx="132" cy="205" r="1.4"></circle>
+            </g>
+          </g>
+          <path class="water-glass-outline-v" d="M31 30 L52 246 Q55 265 74 267 L146 267 Q165 265 168 246 L189 30"></path>
+          <ellipse class="water-glass-rim-v" cx="110" cy="30" rx="79" ry="12" fill="none" stroke="url(#rimGradient)"></ellipse>
+          <ellipse class="water-glass-rim-light" cx="110" cy="30" rx="66" ry="6.5"></ellipse>
+          <path class="water-glass-reflection" d="M51 48 Q45 70 51 132"></path>
+          <path class="water-glass-reflection water-glass-reflection-right" d="M170 54 Q175 78 170 125"></path>
+          <ellipse class="water-glass-base-v" cx="110" cy="263" rx="58" ry="6"></ellipse>
+        </svg>
+      </div>
+      <div class="water-glass-caption">
+        <strong data-water-total>{{ summary.total }}</strong> <span>ml de</span> <strong>{{ summary.goal.target }} ml</strong>
+      </div>
+    </div>
+    <div class="water-progress" role="progressbar" aria-label="Progresso de água" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ summary.percent }}">
+      <span data-water-percent style="width: {{ summary.percent }}%"></span>
+    </div>
+    <div class="water-meta-line">
+      <span><strong data-water-percent-label>{{ summary.percent }}%</strong> da faixa de hoje</span>
+      <span data-water-remaining-wrap>{% if summary.remaining %}faltam {{ summary.remaining }} ml{% else %}faixa atingida{% endif %}</span>
+    </div>
+    <div class="water-range-line">
+      <div>
+        <span class="form-label">Faixa de conforto</span>
+        <strong>{{ (summary.goal.low / 1000)|round(1) }}–{{ (summary.goal.high / 1000)|round(1) }} L</strong>
+      </div>
+      <span class="chip water-status-{{ summary.status_key }}" data-water-status>{{ summary.status_label }}</span>
+    </div>
+    <div class="water-safety-note">
+      <i class="bi bi-heart-pulse"></i>
+      <p><strong>Sem exagero:</strong> a meta é uma referência, não uma prova. Pare quando saciar a sede, distribua ao longo do dia e evite grandes volumes em pouco tempo.</p>
+    </div>
+  </section>
+
+  <section class="bento-card water-add-card">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-plus-circle"></i> Registrar agora</h2>
+      <span class="card-link">um toque</span>
+    </div>
+    <div class="water-quick-grid">
+      <form method="post" action="{{ url_for('water.register') }}" data-water-add>
+        {{ csrf() }}<input type="hidden" name="amount_ml" value="200">
+        <button class="water-quick-btn" type="submit"><i class="bi bi-cup"></i><span><strong>200 ml</strong><small>copo</small></span><b>+</b></button>
+      </form>
+      <form method="post" action="{{ url_for('water.register') }}" data-water-add>
+        {{ csrf() }}<input type="hidden" name="amount_ml" value="300">
+        <button class="water-quick-btn" type="submit"><i class="bi bi-cup-hot"></i><span><strong>300 ml</strong><small>caneca</small></span><b>+</b></button>
+      </form>
+      <form method="post" action="{{ url_for('water.register') }}" data-water-add>
+        {{ csrf() }}<input type="hidden" name="amount_ml" value="500">
+        <button class="water-quick-btn" type="submit"><i class="bi bi-cup-straw"></i><span><strong>500 ml</strong><small>garrafa</small></span><b>+</b></button>
+      </form>
+      <form method="post" action="{{ url_for('water.register') }}" data-water-add>
+        {{ csrf() }}<input type="hidden" name="amount_ml" value="250">
+        <button class="water-quick-btn" type="submit"><i class="bi bi-plus-lg"></i><span><strong>250 ml</strong><small>outro</small></span><b>+</b></button>
+      </form>
+    </div>
+    <form class="water-custom-form" method="post" action="{{ url_for('water.register') }}" data-water-add>
+      {{ csrf() }}
+      <label class="visually-hidden" for="waterCustomAmount">Quantidade em mililitros</label>
+      <input class="form-control" id="waterCustomAmount" type="number" name="amount_ml" min="10" max="1000" step="10" placeholder="Quantidade personalizada (ml)" required>
+      <button class="btn btn-neon" type="submit" aria-label="Registrar quantidade personalizada"><i class="bi bi-plus-lg"></i></button>
+    </form>
+    <div class="water-divider"></div>
+    <div class="card-head water-subhead">
+      <h2 class="card-title"><i class="bi bi-clock-history"></i> Últimos registros</h2>
+      <span class="card-link">hoje</span>
+    </div>
+    <div data-water-recent>
+      {% include "_water_recent.html" %}
+    </div>
+  </section>
+</div>
+
+<div class="water-bottom-grid">
+  <section class="bento-card water-reminder-card">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-bell"></i> Lembretes</h2>
+      <span class="chip {{ 'is-done' if settings and settings.reminders_enabled else '' }}">{{ 'ativos' if settings and settings.reminders_enabled else 'desativados' }}</span>
+    </div>
+    {% if settings and settings.reminders_enabled %}
+    <p class="water-reminder-title">A cada {{ settings.reminder_interval_minutes }} minutos</p>
+    <p class="form-hint mb-2">08:00–21:00 · máximo 8 por dia · pausa após atingir a faixa.</p>
+    <p class="water-reminder-next" data-water-next-reminder>Calculando próximo lembrete…</p>
+    {% else %}
+    <p class="water-reminder-title">Lembretes desligados</p>
+    <p class="form-hint mb-2">Ative para receber um toque gentil ao longo do dia. Gotas, cachoeiras e mar — sem cobrança. Funciona enquanto o app estiver aberto.</p>
+    {% endif %}
+    <form method="post" action="{{ url_for('water.configure') }}" data-water-reminders-form class="water-reminder-form">
+      {{ csrf() }}
+      <input type="hidden" name="weight_kg" value="{{ settings.weight_kg if settings and settings.weight_kg else '' }}">
+      <input type="hidden" name="extra_ml" value="{{ settings.extra_ml if settings else 0 }}">
+      <input type="hidden" name="reminders_enabled" value="{{ '0' if settings and settings.reminders_enabled else '1' }}">
+      <input type="hidden" name="reminder_interval_minutes" value="{{ settings.reminder_interval_minutes if settings else 90 }}">
+      <button class="btn btn-ghost btn-sm" type="submit"><i class="bi bi-bell{{ '-slash' if settings and settings.reminders_enabled else '' }}"></i> {{ 'Desativar lembretes' if settings and settings.reminders_enabled else 'Ativar lembretes' }}</button>
+    </form>
+  </section>
+
+  <section class="bento-card water-week-card">
+    <div class="card-head"><h2 class="card-title"><i class="bi bi-bar-chart"></i> Seu ritmo</h2><span class="card-link">7 dias</span></div>
+    {% set week_max = ([summary.goal.high] + (summary.week_days|map(attribute='ml')|list))|max %}
+    <div class="water-week-bars">
+      {% for day in summary.week_days %}
+      <div class="water-week-col {{ 'is-today' if day.is_today }}" data-water-week-col="{{ day.date }}">
+        <span class="water-week-value" data-water-week-value>{{ (day.ml / 1000)|round(1) }}L</span>
+        <div class="water-week-track"><span data-water-week-fill style="height: {{ [((day.ml / week_max * 100)|round|int), 2]|max }}%"></span></div>
+        <span class="water-week-label">{{ day.label }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="water-week-foot"><span>média <b data-water-week-average>{{ (summary.week_average / 1000)|round(1) }} L</b></span><strong data-water-week-days>{{ summary.in_range_days }} de 7 dias na faixa</strong></div>
+  </section>
+
+  <section class="bento-card water-limit-card">
+    <div class="card-head"><h2 class="card-title"><i class="bi bi-shield-check"></i> Limite de segurança</h2><span class="chip">atenção</span></div>
+    <p class="water-limit-title">Máximo de <strong>1 L por hora</strong></p>
+    <p class="form-hint mb-0">O app para de incentivar ao atingir a faixa. Pessoas com doença renal, cardíaca ou retenção de líquidos devem seguir orientação profissional.</p>
+    <div class="water-disclaimer"><i class="bi bi-info-circle"></i> Ferramenta de apoio ao hábito, não substitui avaliação médica.</div>
+  </section>
+</div>
+
+<div class="modal fade" id="waterSettingsModal" tabindex="-1" aria-labelledby="waterSettingsLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('water.configure') }}">
+        {{ csrf() }}
+        <div class="modal-header">
+          <h2 class="modal-title" id="waterSettingsLabel"><i class="bi bi-sliders text-emerald"></i> Ajustar hidratação</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <p class="page-sub">A faixa é uma referência inicial para adultos saudáveis. Ajuste com orientação profissional quando necessário.</p>
+          <div class="mb-3">
+            <label class="form-label" for="waterWeight">Peso (kg)</label>
+            <input class="form-control" id="waterWeight" type="number" min="30" max="250" step="0.1" name="weight_kg" value="{{ settings.weight_kg if settings and settings.weight_kg else '' }}" placeholder="Ex.: 70">
+            <div class="form-hint">Usamos 30–35 ml por kg para estimar a faixa. Sem peso, usamos uma referência padrão de 1,8–2,2 L.</div>
+          </div>
+          <div class="row g-3">
+            <div class="col-12 col-sm-6">
+              <label class="form-label" for="waterExtra">Dia quente/ativo</label>
+              <select class="form-select" id="waterExtra" name="extra_ml">
+                <option value="0" {{ 'selected' if not settings or settings.extra_ml == 0 }}>Sem ajuste</option>
+                <option value="300" {{ 'selected' if settings and settings.extra_ml == 300 }}>+300 ml</option>
+                <option value="600" {{ 'selected' if settings and settings.extra_ml == 600 }}>+600 ml</option>
+              </select>
+            </div>
+            <div class="col-12 col-sm-6">
+              <label class="form-label" for="waterInterval">Intervalo de lembretes</label>
+              <select class="form-select" id="waterInterval" name="reminder_interval_minutes">
+                <option value="60" {{ 'selected' if settings and settings.reminder_interval_minutes == 60 }}>60 min</option>
+                <option value="90" {{ 'selected' if not settings or settings.reminder_interval_minutes == 90 }}>90 min</option>
+                <option value="120" {{ 'selected' if settings and settings.reminder_interval_minutes == 120 }}>120 min</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" id="waterReminders" name="reminders_enabled" value="1" {{ 'checked' if settings and settings.reminders_enabled }}>
+            <label class="form-check-label" for="waterReminders">Ativar lembretes entre 08:00 e 21:00</label>
+          </div>
+          <p class="form-hint mt-2 mb-0">Lembretes do navegador só aparecem enquanto o app estiver aberto e com permissão.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-neon btn-sm"><i class="bi bi-check-lg"></i> Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/water.js') }}" defer></script>
+{% endblock %}
