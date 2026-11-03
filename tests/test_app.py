@@ -421,7 +421,7 @@ class TestAuth:
         assert "inválidos" in unknown_user.get_data(as_text=True)
 
     def test_protected_routes_redirect_anonymous(self, client):
-        for path in ["/", "/tarefas", "/foco", "/rascunhos", "/notas", "/exportar"]:
+        for path in ["/", "/tarefas", "/foco", "/anotacoes", "/notas", "/exportar"]:
             response = client.get(path)
             assert response.status_code == 302, path
             assert "/entrar" in response.headers["Location"], path
@@ -1389,11 +1389,18 @@ class TestTasks:
 # CAPTURA RÁPIDA
 # ==========================================================================
 class TestScratchpad:
+    def test_legacy_draft_url_redirects_to_annotations(self, client, make_user):
+        make_user()
+        login(client)
+        response = client.get("/rascunhos")
+        assert response.status_code == 302
+        assert response.headers["Location"].endswith("/anotacoes")
+
     def test_ajax_capture_returns_json(self, client, app, make_user):
         make_user()
         login(client)
         response = client.post(
-            "/rascunhos",
+            "/anotacoes",
             data={"content": "Ideia bruta"},
             headers={
                 "X-Requested-With": "fetch",
@@ -1411,7 +1418,7 @@ class TestScratchpad:
         make_user()
         login(client)
         response = client.post(
-            "/rascunhos",
+            "/anotacoes",
             data={"content": "   "},
             headers={"X-Requested-With": "fetch", "Accept": "application/json"},
         )
@@ -1421,27 +1428,27 @@ class TestScratchpad:
     def test_annotation_check_completes_and_reopens(self, client, app, make_user):
         make_user()
         login(client)
-        client.post("/rascunhos", data={"content": "Anotação para concluir"})
+        client.post("/anotacoes", data={"content": "Anotação para concluir"})
         with app.app_context():
             item_id = Scratchpad.query.one().id
 
         completed = client.post(
-            f"/rascunhos/{item_id}/concluir", follow_redirects=False
+            f"/anotacoes/{item_id}/concluir", follow_redirects=False
         )
         assert completed.status_code == 302
         assert "ver=abertas" in completed.headers["Location"]
         with app.app_context():
             assert db.session.get(Scratchpad, item_id).is_completed is True
 
-        completed_list = client.get("/rascunhos?ver=concluidas").get_data(as_text=True)
+        completed_list = client.get("/anotacoes?ver=concluidas").get_data(as_text=True)
         assert "Anotação para concluir" in completed_list
         assert "concluída" in completed_list
         assert "virar tarefa" not in completed_list
-        opened = client.get("/rascunhos?ver=abertas").get_data(as_text=True)
+        opened = client.get("/anotacoes?ver=abertas").get_data(as_text=True)
         assert "Anotação para concluir" not in opened
 
         blocked = client.post(
-            f"/rascunhos/{item_id}/editar",
+            f"/anotacoes/{item_id}/editar",
             data={"content": "Não deveria mudar"},
             follow_redirects=True,
         )
@@ -1450,7 +1457,7 @@ class TestScratchpad:
             assert db.session.get(Scratchpad, item_id).content == "Anotação para concluir"
 
         reopened = client.post(
-            f"/rascunhos/{item_id}/concluir", follow_redirects=False
+            f"/anotacoes/{item_id}/concluir", follow_redirects=False
         )
         assert reopened.status_code == 302
         assert "ver=abertas" in reopened.headers["Location"]
@@ -1462,11 +1469,11 @@ class TestScratchpad:
     ):
         make_user()
         login(client)
-        client.post("/rascunhos", data={"content": "Texto original"})
+        client.post("/anotacoes", data={"content": "Texto original"})
         with app.app_context():
             item_id = Scratchpad.query.one().id
 
-        detail = client.get(f"/rascunhos/{item_id}")
+        detail = client.get(f"/anotacoes/{item_id}")
         assert detail.status_code == 200
         html = detail.get_data(as_text=True)
         assert "Texto original" in html
@@ -1477,7 +1484,7 @@ class TestScratchpad:
         assert "Etiquetas" in html
 
         saved = client.post(
-            f"/rascunhos/{item_id}/editar",
+            f"/anotacoes/{item_id}/editar",
             data={"content": "Texto revisado"},
             follow_redirects=True,
         )
@@ -1489,12 +1496,12 @@ class TestScratchpad:
     def test_convert_scratchpad_to_task(self, client, app, make_user):
         make_user()
         login(client)
-        client.post("/rascunhos", data={"content": "Comprar cafe"})
+        client.post("/anotacoes", data={"content": "Comprar cafe"})
         with app.app_context():
             item_id = Scratchpad.query.one().id
 
         response = client.post(
-            f"/rascunhos/{item_id}/converter",
+            f"/anotacoes/{item_id}/converter",
             data={
                 "title": "Comprar café",
                 "priority": "high",
@@ -1510,7 +1517,7 @@ class TestScratchpad:
             assert task.description == "Comprar cafe"
 
         again = client.post(
-            f"/rascunhos/{item_id}/converter",
+            f"/anotacoes/{item_id}/converter",
             data={"title": "Outra", "priority": "low", "estimate_pomodoros": "1"},
         )
         assert again.status_code == 404
@@ -1525,7 +1532,7 @@ class TestScratchpad:
             item_id = item.id
         login(client, "alice")
         response = client.post(
-            f"/rascunhos/{item_id}/converter",
+            f"/anotacoes/{item_id}/converter",
             data={"title": "x", "priority": "low", "estimate_pomodoros": "1"},
         )
         assert response.status_code == 404
@@ -2745,7 +2752,7 @@ class TestPages:
             ("/revisao", "Sua semana"),
             ("/tarefas", "kanban"),
             ("/foco", "Pomodoro"),
-            ("/rascunhos", "Anotações"),
+            ("/anotacoes", "Anotações"),
             ("/notas", "Notas"),
             ("/exportar", "Meus dados"),
             ("/perfil", "Perfil"),

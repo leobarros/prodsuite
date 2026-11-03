@@ -50,7 +50,7 @@
     {
       "name": "Nova anotação",
       "short_name": "Anotação",
-      "url": "/rascunhos",
+      "url": "/anotacoes",
       "icons": [{ "src": "/static/icons/icon-192.png", "sizes": "192x192" }]
     }
   ]

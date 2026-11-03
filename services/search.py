@@ -116,7 +116,7 @@ def global_search(user, query: str, limit_per_kind: int = MAX_PER_KIND) -> dict:
                     {
                         "title": "Anotação",
                         "snippet": _snippet(scratch.content, term),
-                        "url": "/rascunhos",
+                        "url": "/anotacoes",
                         "meta": "captura",
                     }
                     for scratch in scratchpads

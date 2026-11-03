@@ -143,14 +143,14 @@
         }
         field.value = "";
         updateCharCounts();
-        toast("Captura registrada em Rascunhos.");
+        toast("Anotação capturada em Anotações.");
         const preview = document.querySelector("[data-scratch-preview]");
         if (preview && data.scratchpad) {
           const row = document.createElement("a");
           row.className = "recent-scratch-item";
-          const scratchBase = (preview.dataset.scratchBase || "/rascunhos").replace(/\/$/, "");
+          const scratchBase = (preview.dataset.scratchBase || "/anotacoes").replace(/\/$/, "");
           row.href = `${scratchBase}/${data.scratchpad.id}`;
-          row.title = "Abrir rascunho";
+          row.title = "Abrir anotação";
           const icon = document.createElement("i");
           icon.className = "bi bi-dash";
           const text = document.createElement("span");

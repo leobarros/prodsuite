@@ -91,6 +91,26 @@ def _render_detail(
 
 @scratchpad_bp.route("/rascunhos", methods=["GET", "POST"])
 @login_required
+def legacy_index():
+    target = url_for("scratchpad.index", **request.args)
+    return redirect(target, code=308 if request.method == "POST" else 302)
+
+
+@scratchpad_bp.route("/rascunhos/<path:rest>", methods=["GET", "POST"])
+@login_required
+def legacy_path(rest: str):
+    query = request.query_string.decode("utf-8", "ignore")
+    target = f"/anotacoes/{rest}"
+    if query:
+        target = f"{target}?{query}"
+    return redirect(
+        target,
+        code=308 if request.method == "POST" else 302,
+    )
+
+
+@scratchpad_bp.route("/anotacoes", methods=["GET", "POST"])
+@login_required
 def index():
     form = ScratchpadForm()
 
@@ -114,7 +134,7 @@ def index():
                 ),
                 201,
             )
-        flash("Rascunho capturado.", "success")
+        flash("Anotação capturada.", "success")
         return redirect(url_for("scratchpad.index"))
 
     if request.method == "POST" and _wants_json():
@@ -152,13 +172,13 @@ def index():
     )
 
 
-@scratchpad_bp.get("/rascunhos/<int:item_id>")
+@scratchpad_bp.get("/anotacoes/<int:item_id>")
 @login_required
 def detail(item_id: int):
     return _render_detail(_get_item(item_id))
 
 
-@scratchpad_bp.post("/rascunhos/<int:item_id>/editar")
+@scratchpad_bp.post("/anotacoes/<int:item_id>/editar")
 @login_required
 def edit(item_id: int):
     item = _get_item(item_id)
@@ -169,13 +189,13 @@ def edit(item_id: int):
     if form.validate_on_submit():
         item.content = form.content.data
         db.session.commit()
-        flash("Rascunho atualizado.", "success")
-        return redirect(url_for("scratchpad.detail", item_id=item.id))
+        flash("Anotação atualizada.", "success")
+        return redirect(url_for("scratchpad.index", ver="abertas"))
     flash("Revise a anotação antes de salvar.", "danger")
     return _render_detail(item, edit_form=form, status=400)
 
 
-@scratchpad_bp.post("/rascunhos/<int:item_id>/converter")
+@scratchpad_bp.post("/anotacoes/<int:item_id>/converter")
 @login_required
 def convert(item_id: int):
     item = _get_item(item_id)
@@ -209,11 +229,11 @@ def convert(item_id: int):
 
     db.session.delete(item)
     db.session.commit()
-    flash("Rascunho convertido em tarefa e removido dos rascunhos.", "success")
+    flash("Anotação convertida em tarefa e removida das anotações.", "success")
     return redirect(url_for("tasks.edit", task_id=task.id))
 
 
-@scratchpad_bp.post("/rascunhos/<int:item_id>/concluir")
+@scratchpad_bp.post("/anotacoes/<int:item_id>/concluir")
 @login_required
 def complete(item_id: int):
     item = _get_item(item_id)
@@ -228,11 +248,11 @@ def complete(item_id: int):
     return redirect(url_for("scratchpad.index", ver="abertas"))
 
 
-@scratchpad_bp.post("/rascunhos/<int:item_id>/excluir")
+@scratchpad_bp.post("/anotacoes/<int:item_id>/excluir")
 @login_required
 def delete(item_id: int):
     item = _get_item(item_id)
     db.session.delete(item)
     db.session.commit()
-    flash("Rascunho excluído.", "info")
+    flash("Anotação excluída.", "info")
     return redirect(url_for("scratchpad.index"))
