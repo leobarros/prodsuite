@@ -99,9 +99,6 @@
       <a class="side-link {{ 'active' if ep == 'review.weekly' }}" href="{{ url_for('review.weekly') }}" aria-keyshortcuts="Alt+E">
         <i class="bi bi-journal-check"></i><span>Revisão</span>
       </a>
-      <a class="side-link {{ 'active' if ep.startswith('export.') }}" href="{{ url_for('export.index') }}">
-        <i class="bi bi-person-lines-fill"></i><span>Meus dados</span>
-      </a>
     </nav>
 
     <div class="sidebar-footer">
