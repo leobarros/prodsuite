@@ -55,6 +55,7 @@
   let soundUnlocked = false;
   let scheduledChime = [];
   let keepAliveOscillator = null;
+  let serverClockOffset = 0;
   let completionAlertVisible = false;
   let lastRenderedSecond = null;
   let transitioning = false;
@@ -147,6 +148,11 @@
     if (!force && revision <= (Number(state.serverRevision) || 0)) {
       return false;
     }
+    if (remote.now) {
+      // O servidor é a referência de tempo. O Docker pode ter um relógio
+      // alguns minutos diferente do navegador.
+      serverClockOffset = Date.parse(remote.now) - Date.now();
+    }
     state.mode = remote.mode;
     const canonicalDuration = modeInfo(remote.mode).seconds;
     state.duration = canonicalDuration;
@@ -154,7 +160,7 @@
     state.running = Boolean(remote.running && state.endsAt);
     state.remaining = state.running
       ? clamp(
-          Math.ceil((state.endsAt - Date.now()) / 1000),
+          Math.ceil((state.endsAt - (Date.now() + serverClockOffset)) / 1000),
           0,
           canonicalDuration
         )
@@ -615,17 +621,21 @@
     scheduledChime = [];
   }
 
+  function serverNowMs() {
+    return Date.now() + serverClockOffset;
+  }
+
   function scheduleChimeAt(endsAt) {
     clearScheduledChime();
     if (
       !endsAt ||
       !audioContext ||
       audioContext.state !== "running" ||
-      endsAt <= Date.now()
+      endsAt <= serverNowMs()
     ) {
       return;
     }
-    const start = audioContext.currentTime + (endsAt - Date.now()) / 1000;
+    const start = audioContext.currentTime + (endsAt - serverNowMs()) / 1000;
     [880, 1320].forEach((frequency, index) => {
       const oscillator = audioContext.createOscillator();
       const gain = audioContext.createGain();
@@ -752,7 +762,7 @@
       1,
       canonicalDuration
     );
-    state.endsAt = Date.now() + state.remaining * 1000;
+    state.endsAt = serverNowMs() + state.remaining * 1000;
     state.running = true;
     save();
     render();
@@ -991,7 +1001,7 @@
     if (!isRunning()) return;
     const remaining = Math.min(
       state.duration,
-      Math.ceil((state.endsAt - Date.now()) / 1000)
+      Math.ceil((state.endsAt - serverNowMs()) / 1000)
     );
     if (remaining <= 0) {
       completeCycle();

@@ -1986,6 +1986,7 @@ class TestPlanning:
         assert state["mode"] == "focus"
         assert state["duration"] == 1500
         assert state["remaining"] == 1500
+        assert state["now"]
         assert state["runId"]
         assert state["revision"] >= 1
 

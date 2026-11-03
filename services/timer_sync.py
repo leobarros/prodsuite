@@ -64,6 +64,7 @@ def serialize_timer(timer: PomodoroTimer | None) -> dict | None:
         return None
     return {
         "mode": timer.mode,
+        "now": utcnow().isoformat() + "Z",
         "duration": timer.duration_seconds,
         "remaining": timer.remaining_seconds,
         "endsAt": timer.ends_at.isoformat() + "Z" if timer.ends_at else None,
