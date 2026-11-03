@@ -989,7 +989,10 @@
 
   function tick() {
     if (!isRunning()) return;
-    const remaining = Math.ceil((state.endsAt - Date.now()) / 1000);
+    const remaining = Math.min(
+      state.duration,
+      Math.ceil((state.endsAt - Date.now()) / 1000)
+    );
     if (remaining <= 0) {
       completeCycle();
       return;

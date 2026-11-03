@@ -12,6 +12,36 @@ from models import POMODORO_DURATIONS, POMODORO_MODES, PomodoroTimer, Task, utcn
 MAX_TIMER_SECONDS = 6 * 60 * 60
 
 
+def _normalize_timer(timer: PomodoroTimer | None) -> bool:
+    """Corrige estados antigos que tenham duração acima da canônica."""
+    if timer is None:
+        return False
+    canonical = POMODORO_DURATIONS.get(timer.mode, POMODORO_DURATIONS["focus"]) * 60
+    now = utcnow()
+    changed = False
+    if timer.duration_seconds != canonical:
+        timer.duration_seconds = canonical
+        changed = True
+
+    if timer.running and timer.ends_at:
+        remaining = max(0, math.ceil((timer.ends_at - now).total_seconds()))
+        if remaining > canonical:
+            timer.ends_at = now + timedelta(seconds=canonical)
+            timer.remaining_seconds = canonical
+            changed = True
+        elif timer.remaining_seconds > canonical:
+            timer.remaining_seconds = canonical
+            changed = True
+    elif timer.remaining_seconds > canonical:
+        timer.remaining_seconds = canonical
+        changed = True
+
+    if changed:
+        timer.revision = (timer.revision or 0) + 1
+        timer.updated_at = now
+    return changed
+
+
 def get_timer(user, create: bool = False) -> PomodoroTimer | None:
     timer = db.session.get(PomodoroTimer, user.id)
     if timer is None and create:
@@ -24,6 +54,8 @@ def get_timer(user, create: bool = False) -> PomodoroTimer | None:
         )
         db.session.add(timer)
         db.session.flush()
+    elif _normalize_timer(timer):
+        db.session.commit()
     return timer
 
 

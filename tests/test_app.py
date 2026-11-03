@@ -2053,6 +2053,38 @@ class TestPlanning:
         with app.app_context():
             assert PomodoroCycle.query.filter_by(run_id=state["runId"]).count() == 1
 
+    def test_stale_timer_state_is_normalized_to_mode_duration(
+        self, client, app, make_user
+    ):
+        from datetime import timedelta
+        from models import PomodoroTimer
+
+        user_id = make_user()
+        login(client)
+        with app.app_context():
+            timer = PomodoroTimer(
+                user_id=user_id,
+                mode="focus",
+                duration_seconds=1898,
+                remaining_seconds=1898,
+                running=True,
+                ends_at=utcnow() + timedelta(seconds=1898),
+                revision=1,
+            )
+            db.session.add(timer)
+            db.session.commit()
+
+        response = client.get("/foco/estado")
+        assert response.status_code == 200
+        state = response.get_json()["state"]
+        assert state["mode"] == "focus"
+        assert state["duration"] == 1500
+        assert state["remaining"] <= 1500
+        with app.app_context():
+            timer = db.session.get(PomodoroTimer, user_id)
+            assert timer.duration_seconds == 1500
+            assert timer.remaining_seconds <= 1500
+
     def test_focus_defaults_to_first_doing_card(self, client, app, make_user):
         user_id = make_user()
         login(client)
