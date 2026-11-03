@@ -167,7 +167,7 @@
   <section class="bento-card bento-capture">
     <div class="card-head">
       <h2 class="card-title"><i class="bi bi-lightbulb"></i> Anotação rápida</h2>
-      <a class="card-link" href="{{ url_for('scratchpad.index') }}">ver rascunhos <i class="bi bi-arrow-up-right"></i></a>
+      <a class="card-link" href="{{ url_for('scratchpad.index') }}">ver anotações <i class="bi bi-arrow-up-right"></i></a>
     </div>
     <form class="quick-capture" method="post" action="{{ url_for('scratchpad.index') }}" data-ajax-capture>
       {{ csrf() }}
@@ -184,7 +184,7 @@
     {% if recent_scratch %}
     <div class="recent-scratch dashboard-scratch-list" data-scratch-preview data-scratch-base="{{ url_for('scratchpad.index') }}">
       {% for item in recent_scratch %}
-      <a class="recent-scratch-item" href="{{ url_for('scratchpad.detail', item_id=item.id) }}" title="Abrir rascunho">
+      <a class="recent-scratch-item" href="{{ url_for('scratchpad.detail', item_id=item.id) }}" title="Abrir anotação">
         <i class="bi bi-{{ 'check2' if item.is_converted else 'dash' }}"></i>
         <span>{{ item.preview }}</span>
       </a>

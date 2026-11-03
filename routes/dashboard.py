@@ -104,6 +104,7 @@ def dashboard():
         Scratchpad.query.filter(
             Scratchpad.user_id == uid,
             Scratchpad.converted_task_id.is_(None),
+            Scratchpad.completed_at.is_(None),
         )
         .order_by(Scratchpad.created_at.desc())
         .limit(20)

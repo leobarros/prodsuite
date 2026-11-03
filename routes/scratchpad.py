@@ -15,7 +15,7 @@ from flask_login import current_user, login_required
 
 from extensions import db
 from forms import ScratchpadForm, TaskForm
-from models import Scratchpad
+from models import Scratchpad, utcnow
 from services.boards import ensure_default_project, project_columns
 from services.categories import category_choices, ensure_categories
 from services.task_creation import create_task_from_form
@@ -120,16 +120,36 @@ def index():
     if request.method == "POST" and _wants_json():
         return jsonify(ok=False, errors=form.errors), 400
 
-    items = (
-        Scratchpad.query.filter(
-            Scratchpad.user_id == current_user.id,
-            Scratchpad.converted_task_id.is_(None),
-        )
-        .order_by(Scratchpad.created_at.desc())
-        .limit(100)
-        .all()
+    view = (request.args.get("ver") or "abertas").strip()
+    if view not in {"abertas", "concluidas", "todas"}:
+        view = "abertas"
+    base = Scratchpad.query.filter(
+        Scratchpad.user_id == current_user.id,
+        Scratchpad.converted_task_id.is_(None),
     )
-    return render_template("scratchpad.html", form=form, items=items)
+    if view == "concluidas":
+        items = (
+            base.filter(Scratchpad.completed_at.isnot(None))
+            .order_by(Scratchpad.completed_at.desc())
+            .limit(100)
+            .all()
+        )
+    elif view == "todas":
+        items = base.order_by(Scratchpad.created_at.asc()).limit(100).all()
+    else:
+        items = (
+            base.filter(Scratchpad.completed_at.is_(None))
+            .order_by(Scratchpad.created_at.asc())
+            .limit(100)
+            .all()
+        )
+    counts = {
+        "open": base.filter(Scratchpad.completed_at.is_(None)).count(),
+        "done": base.filter(Scratchpad.completed_at.isnot(None)).count(),
+    }
+    return render_template(
+        "scratchpad.html", form=form, items=items, view=view, counts=counts
+    )
 
 
 @scratchpad_bp.get("/rascunhos/<int:item_id>")
@@ -142,6 +162,9 @@ def detail(item_id: int):
 @login_required
 def edit(item_id: int):
     item = _get_item(item_id)
+    if item.is_completed:
+        flash("Anotação concluída é somente para consulta. Reabra para editar.", "warning")
+        return redirect(url_for("scratchpad.detail", item_id=item.id))
     form = ScratchpadForm(obj=item)
     if form.validate_on_submit():
         item.content = form.content.data
@@ -157,7 +180,10 @@ def edit(item_id: int):
 def convert(item_id: int):
     item = _get_item(item_id)
     if item.is_converted:
-        flash("Este rascunho já foi convertido em tarefa.", "warning")
+        flash("Esta anotação já foi convertida em tarefa.", "warning")
+        return redirect(url_for("scratchpad.detail", item_id=item.id))
+    if item.is_completed:
+        flash("Anotação concluída é somente para consulta. Reabra para transformar em tarefa.", "warning")
         return redirect(url_for("scratchpad.detail", item_id=item.id))
 
     task_form = TaskForm()
@@ -185,6 +211,21 @@ def convert(item_id: int):
     db.session.commit()
     flash("Rascunho convertido em tarefa e removido dos rascunhos.", "success")
     return redirect(url_for("tasks.edit", task_id=task.id))
+
+
+@scratchpad_bp.post("/rascunhos/<int:item_id>/concluir")
+@login_required
+def complete(item_id: int):
+    item = _get_item(item_id)
+    if item.is_completed:
+        item.completed_at = None
+        flash("Anotação reaberta.", "info")
+    else:
+        item.completed_at = utcnow()
+        flash("Anotação concluída.", "success")
+    db.session.commit()
+    # O check conclui a anotação sem tirar a pessoa da lista de abertas.
+    return redirect(url_for("scratchpad.index", ver="abertas"))
 
 
 @scratchpad_bp.post("/rascunhos/<int:item_id>/excluir")

@@ -99,6 +99,9 @@ def ensure_schema() -> None:
         "pomodoro_cycles": {
             "run_id": "VARCHAR(64)",
         },
+        "scratchpads": {
+            "completed_at": "DATETIME",
+        },
         "board_columns": {
             "project_id": "INTEGER",
             "archived_at": "DATETIME",

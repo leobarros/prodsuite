@@ -1,4 +1,4 @@
-"""Busca global (tarefas, notas e rascunhos) com consultas parametrizadas."""
+"""Busca global (tarefas, notas e anotações) com consultas parametrizadas."""
 
 from __future__ import annotations
 
@@ -110,11 +110,11 @@ def global_search(user, query: str, limit_per_kind: int = MAX_PER_KIND) -> dict:
         groups.append(
             {
                 "kind": "scratch",
-                "label": "Rascunhos",
+                "label": "Anotações",
                 "icon": "bi-lightning",
                 "items": [
                     {
-                        "title": "Rascunho",
+                        "title": "Anotação",
                         "snippet": _snippet(scratch.content, term),
                         "url": "/rascunhos",
                         "meta": "captura",

@@ -1418,6 +1418,45 @@ class TestScratchpad:
         assert response.status_code == 400
         assert response.get_json()["ok"] is False
 
+    def test_annotation_check_completes_and_reopens(self, client, app, make_user):
+        make_user()
+        login(client)
+        client.post("/rascunhos", data={"content": "Anotação para concluir"})
+        with app.app_context():
+            item_id = Scratchpad.query.one().id
+
+        completed = client.post(
+            f"/rascunhos/{item_id}/concluir", follow_redirects=False
+        )
+        assert completed.status_code == 302
+        assert "ver=abertas" in completed.headers["Location"]
+        with app.app_context():
+            assert db.session.get(Scratchpad, item_id).is_completed is True
+
+        completed_list = client.get("/rascunhos?ver=concluidas").get_data(as_text=True)
+        assert "Anotação para concluir" in completed_list
+        assert "concluída" in completed_list
+        assert "virar tarefa" not in completed_list
+        opened = client.get("/rascunhos?ver=abertas").get_data(as_text=True)
+        assert "Anotação para concluir" not in opened
+
+        blocked = client.post(
+            f"/rascunhos/{item_id}/editar",
+            data={"content": "Não deveria mudar"},
+            follow_redirects=True,
+        )
+        assert blocked.status_code == 200
+        with app.app_context():
+            assert db.session.get(Scratchpad, item_id).content == "Anotação para concluir"
+
+        reopened = client.post(
+            f"/rascunhos/{item_id}/concluir", follow_redirects=False
+        )
+        assert reopened.status_code == 302
+        assert "ver=abertas" in reopened.headers["Location"]
+        with app.app_context():
+            assert db.session.get(Scratchpad, item_id).is_completed is False
+
     def test_scratchpad_detail_can_be_edited_and_uses_task_form(
         self, client, app, make_user
     ):
@@ -2706,7 +2745,7 @@ class TestPages:
             ("/revisao", "Sua semana"),
             ("/tarefas", "kanban"),
             ("/foco", "Pomodoro"),
-            ("/rascunhos", "Rascunhos"),
+            ("/rascunhos", "Anotações"),
             ("/notas", "Notas"),
             ("/exportar", "Meus dados"),
             ("/perfil", "Perfil"),

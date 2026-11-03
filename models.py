@@ -779,6 +779,7 @@ class Scratchpad(db.Model):
         db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
     content = db.Column(db.Text, nullable=False)
+    completed_at = db.Column(db.DateTime, nullable=True, index=True)
     converted_task_id = db.Column(
         db.Integer, db.ForeignKey("tasks.id", ondelete="SET NULL"), nullable=True
     )
@@ -795,6 +796,10 @@ class Scratchpad(db.Model):
         return self.converted_task_id is not None
 
     @property
+    def is_completed(self) -> bool:
+        return self.completed_at is not None
+
+    @property
     def preview(self) -> str:
         text = " ".join((self.content or "").split())
         return text[:160] + ("…" if len(text) > 160 else "")
@@ -803,10 +808,15 @@ class Scratchpad(db.Model):
         return {
             "id": self.id,
             "content": self.content,
+            "completed_at": self.completed_at.isoformat() if self.completed_at else None,
             "converted_task_id": self.converted_task_id,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
+
+    @property
+    def is_completed(self) -> bool:
+        return self.completed_at is not None
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<Scratchpad {self.id}>"

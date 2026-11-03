@@ -19,7 +19,7 @@ Para a apresentação do app, o tour visual e o guia de uso, volte ao **[README]
 | Banco | `/data/prodsuite.db` |
 | Limite de memória | 512 MB |
 | Healthcheck | `GET /healthz` |
-| Testes | 113 Pytest |
+| Testes | 114 Pytest |
 | Dados no Git | nenhum (banco, `.env` e backups são ignorados) |
 
 ---
@@ -456,7 +456,7 @@ source .venv/bin/activate
 pytest -q
 ```
 
-Resultado esperado: **113 testes passando**.
+Resultado esperado: **114 testes passando**.
 
 Cobertura:
 
@@ -563,7 +563,7 @@ prodsuite/
 ├── templates/              # Jinja
 ├── static/                 # CSS, JS, ícones, áudio, Bootstrap local
 ├── docs/images/            # imagens do README
-├── tests/test_app.py       # 113 testes
+├── tests/test_app.py       # 114 testes
 ├── Dockerfile
 ├── docker-compose.yml
 ├── gunicorn.conf.py
