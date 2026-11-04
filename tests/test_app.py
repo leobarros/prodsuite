@@ -2122,6 +2122,59 @@ class TestPlanning:
         dashboard = client.get("/").get_data(as_text=True)
         assert "Foco principal" in dashboard
 
+    def test_focus_url_selection_updates_idle_timer_task(
+        self, client, app, make_user
+    ):
+        from models import PomodoroTimer
+
+        user_id = make_user()
+        login(client)
+        with app.app_context():
+            project = Project.query.filter_by(name="Projeto de teste").one()
+            column = BoardColumn.query.filter_by(
+                project_id=project.id, kind="todo"
+            ).first()
+            first = Task(
+                user_id=user_id,
+                project_id=project.id,
+                column_id=column.id,
+                title="Tarefa antiga",
+                status="doing",
+                position=1,
+                estimate_pomodoros=1,
+            )
+            selected = Task(
+                user_id=user_id,
+                project_id=project.id,
+                column_id=column.id,
+                title="Tarefa escolhida",
+                status="doing",
+                position=2,
+                estimate_pomodoros=1,
+            )
+            db.session.add_all([first, selected])
+            db.session.flush()
+            db.session.add(
+                PomodoroTimer(
+                    user_id=user_id,
+                    mode="focus",
+                    duration_seconds=1500,
+                    remaining_seconds=1500,
+                    running=False,
+                    task_id=first.id,
+                )
+            )
+            db.session.commit()
+            selected_id = selected.id
+
+        response = client.get(f"/foco?tarefa={selected_id}")
+        assert response.status_code == 200
+        html = response.get_data(as_text=True)
+        assert f'<option value="{selected_id}" selected>' in html
+        with app.app_context():
+            timer = db.session.get(PomodoroTimer, user_id)
+            assert timer.task_id == selected_id
+
     def test_moving_to_completion_column_does_not_archive_immediately(
         self, client, app, make_user
     ):

@@ -5,11 +5,13 @@ from __future__ import annotations
 from flask import Blueprint, jsonify, render_template, request
 from flask_login import current_user, login_required
 
+from extensions import db
 from models import (
     POMODORO_DURATIONS,
     POMODORO_MODE_LABELS,
     PomodoroCycle,
     Task,
+    utcnow,
 )
 from services.boards import first_task_in_focus_column
 from services.pomodoro import (
@@ -56,6 +58,29 @@ def focus():
     selected_task_id = request.args.get("tarefa", type=int)
     if selected_task_id is None and first_doing is not None:
         selected_task_id = first_doing.id
+
+    # Uma seleção explícita na URL precisa valer também para o timer
+    # compartilhado. Sem isso, a sincronização seguinte voltava para a
+    # tarefa que estava salva no servidor.
+    timer = get_timer(current_user)
+    if selected_task_id is not None:
+        selected_task = Task.query.filter_by(
+            id=selected_task_id,
+            user_id=uid,
+            archived_at=None,
+        ).first()
+        if selected_task is None or selected_task.status == "done":
+            selected_task_id = None
+        elif timer is not None:
+            if timer.running and timer.task_id:
+                selected_task_id = timer.task_id
+            elif timer.task_id != selected_task_id:
+                timer.task_id = selected_task_id
+                timer.revision = (timer.revision or 0) + 1
+                timer.updated_at = utcnow()
+                db.session.commit()
+    elif timer is not None and timer.running and timer.task_id:
+        selected_task_id = timer.task_id
 
     return render_template(
         "focus.html",
