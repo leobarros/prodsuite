@@ -6707,3 +6707,73 @@ a.recent-scratch-item:focus-visible {
 .daily-fields .form-hint {
   margin-top: 3px;
 }
+
+/* Copo no tema claro: o vidro branco translúcido desaparecia no fundo. */
+html[data-theme="light"] .water-glass-svg {
+  filter: drop-shadow(0 14px 18px rgba(61, 52, 66, 0.14));
+}
+
+html[data-theme="light"] .water-glass-inner {
+  fill: rgba(142, 190, 204, 0.16);
+}
+
+html[data-theme="light"] .water-glass-outline-v {
+  stroke: rgba(54, 103, 119, 0.5);
+  stroke-width: 1.5;
+}
+
+html[data-theme="light"] .water-glass-rim-v {
+  stroke: rgba(64, 112, 128, 0.48);
+  stroke-width: 1.7;
+}
+
+html[data-theme="light"] .water-glass-rim-light {
+  stroke: rgba(79, 133, 148, 0.28);
+  stroke-width: 1.1;
+}
+
+html[data-theme="light"] .water-glass-reflection {
+  stroke: rgba(255, 255, 255, 0.78);
+}
+
+html[data-theme="light"] .water-glass-base-v {
+  fill: rgba(112, 171, 185, 0.14);
+  stroke: rgba(54, 103, 119, 0.36);
+}
+
+html[data-theme="light"] .water-surface {
+  stroke: rgba(255, 255, 255, 0.82);
+}
+
+html[data-theme="light"] .water-surface-inner {
+  fill: rgba(255, 255, 255, 0.42);
+}
+
+html[data-theme="light"] .water-bubble-svg {
+  fill: rgba(255, 255, 255, 0.7);
+}
+
+html[data-theme="light"] #waterFillGradient stop:nth-child(1) {
+  stop-color: #8fd6e8;
+  stop-opacity: 0.78;
+}
+
+html[data-theme="light"] #waterFillGradient stop:nth-child(2) {
+  stop-color: #73bfd4;
+  stop-opacity: 0.58;
+}
+
+html[data-theme="light"] #waterFillGradient stop:nth-child(3) {
+  stop-color: #5d8fa9;
+  stop-opacity: 0.4;
+}
+
+html[data-theme="light"] #surfaceGradient stop:nth-child(1) {
+  stop-color: #effcff;
+  stop-opacity: 0.92;
+}
+
+html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
+  stop-color: #a6dbe5;
+  stop-opacity: 0.56;
+}
