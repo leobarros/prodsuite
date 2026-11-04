@@ -15,7 +15,7 @@ from flask import (
     url_for,
 )
 from flask_login import current_user, login_required
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 from extensions import db
 from forms import TaskForm
@@ -175,7 +175,7 @@ def _board_column_counts(columns, tasks) -> dict:
 
 
 def _status_counts() -> dict:
-    from sqlalchemy import func
+    from sqlalchemy import func, or_
 
     rows = (
         db.session.query(Task.status, func.count(Task.id))
@@ -286,7 +286,11 @@ def index():
         "todas": tasks_query.count(),
         "hoje": tasks_query.filter(
             Task.status != "done",
-            Task.due_date == today,
+            or_(
+                Task.due_date == today,
+                Task.planned_for == today,
+                Task.repeat_daily.is_(True),
+            ),
         ).count(),
         "mit": tasks_query.filter(
             Task.status != "done", Task.is_mit.is_(True)
@@ -299,7 +303,11 @@ def index():
     if filters["filtro"] == "hoje":
         tasks_query = tasks_query.filter(
             Task.status != "done",
-            Task.due_date == today,
+            or_(
+                Task.due_date == today,
+                Task.planned_for == today,
+                Task.repeat_daily.is_(True),
+            ),
         )
     elif filters["filtro"] == "mit":
         tasks_query = tasks_query.filter(
@@ -408,6 +416,10 @@ def update(task_id: int):
     task.description = form.description.data or ""
     task.estimate_pomodoros = form.estimate_pomodoros.data or 0
     task.due_date = form.due_date.data
+    task.repeat_daily = bool(form.repeat_daily.data)
+    task.daily_target_pomodoros = max(
+        1, min(8, int(form.daily_target_pomodoros.data or 1))
+    )
     task.category = form.category.data or categories[0].key
     task.quadrant = form.quadrant.data or None
     task.tags = normalize_tags(form.tags.data)

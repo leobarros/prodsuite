@@ -249,6 +249,20 @@ class TaskForm(FlaskForm):
         validators=[Optional()],
         render_kw={"type": "date"},
     )
+    repeat_daily = BooleanField(
+        "Trabalhar diariamente até o prazo",
+        default=False,
+        description="A tarefa aparece em Blocos de hoje todos os dias até ser concluída.",
+    )
+    daily_target_pomodoros = IntegerField(
+        "Sessões por dia",
+        default=1,
+        validators=[
+            Optional(),
+            NumberRange(min=1, max=8, message="Use entre 1 e 8 sessões por dia."),
+        ],
+        render_kw={"min": 1, "max": 8, "inputmode": "numeric"},
+    )
     category = SelectField(
         "Categoria",
         choices=[],

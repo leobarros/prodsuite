@@ -1562,6 +1562,11 @@ class TestWater:
         assert payload["total"] == 250
         assert "recent_html" in payload
 
+        # Regressão: a lista também precisa vir no carregamento normal.
+        refreshed = client.get("/agua/").get_data(as_text=True)
+        assert "250 ml" in refreshed
+        assert "Nenhum registro hoje" not in refreshed
+
         with app.app_context():
             log_id = WaterLog.query.one().id
         removed = client.post(
@@ -1889,6 +1894,52 @@ class TestPlanning:
             assert task.quadrant == "schedule"
             assert task.is_mit is True
             assert task.planned_for is None
+
+    def test_daily_task_appears_in_today_blocks_and_keeps_progress(
+        self, client, app, make_user
+    ):
+        user_id = make_user()
+        login(client)
+        due = date.today() + timedelta(days=6)
+        response = client.post(
+            "/tarefas",
+            data={
+                "title": "Ler 300 páginas",
+                "estimate_pomodoros": "6",
+                "due_date": due.isoformat(),
+                "repeat_daily": "y",
+                "daily_target_pomodoros": "2",
+                "category": "study",
+            },
+            follow_redirects=True,
+        )
+        assert response.status_code == 200
+        with app.app_context():
+            task = Task.query.filter_by(title="Ler 300 páginas").one()
+            task_id = task.id
+            assert task.repeat_daily is True
+            assert task.daily_target_pomodoros == 2
+            db.session.add(
+                PomodoroCycle(
+                    user_id=user_id,
+                    task_id=task_id,
+                    mode="focus",
+                    duration_minutes=25,
+                    completed=True,
+                    ended_at=utcnow(),
+                )
+            )
+            db.session.commit()
+
+        planner = client.get("/planejar")
+        assert planner.status_code == 200
+        html = planner.get_data(as_text=True)
+        assert "Ler 300 páginas" in html
+        assert "1/2 hoje" in html
+        assert "diária" in html
+
+        today = client.get("/tarefas?filtro=hoje").get_data(as_text=True)
+        assert "Ler 300 páginas" in today
 
     def test_filter_empty_message_does_not_hide_visible_results(
         self, client, app, make_user

@@ -376,6 +376,9 @@ class Task(db.Model):
     due_date = db.Column(db.Date, nullable=True)
     # Planejamento do dia (time blocking leve) e classificação do método.
     planned_for = db.Column(db.Date, nullable=True)
+    # Rotina diária: aparece em Blocos de hoje enquanto estiver aberta.
+    repeat_daily = db.Column(db.Boolean, nullable=False, default=False, index=True)
+    daily_target_pomodoros = db.Column(db.Integer, nullable=False, default=1)
     category = db.Column(db.String(20), nullable=False, default="work")
     quadrant = db.Column(db.String(20), nullable=True)
     is_mit = db.Column(db.Boolean, nullable=False, default=False, index=True)
@@ -504,6 +507,10 @@ class Task(db.Model):
         return self.planned_for == local_today()
 
     @property
+    def daily_target(self) -> int:
+        return max(1, min(8, int(self.daily_target_pomodoros or 1)))
+
+    @property
     def progress_percent(self) -> int:
         estimate = max(self.estimate_pomodoros or 0, 1)
         return min(100, round((self.completed_pomodoros or 0) / estimate * 100))
@@ -535,6 +542,8 @@ class Task(db.Model):
             "completed_pomodoros": self.completed_pomodoros,
             "due_date": self.due_date.isoformat() if self.due_date else None,
             "planned_for": self.planned_for.isoformat() if self.planned_for else None,
+            "repeat_daily": self.repeat_daily,
+            "daily_target_pomodoros": self.daily_target,
             "category": self.category,
             "category_label": self.category_label,
             "quadrant": self.quadrant,

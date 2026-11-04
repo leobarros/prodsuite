@@ -69,6 +69,10 @@ def create_task_from_form(
         project_id=project.id,
         estimate_pomodoros=form.estimate_pomodoros.data or 0,
         due_date=form.due_date.data or local_today(),
+        repeat_daily=bool(form.repeat_daily.data),
+        daily_target_pomodoros=max(
+            1, min(8, int(form.daily_target_pomodoros.data or 1))
+        ),
         category=form.category.data or categories[0].key,
         quadrant=form.quadrant.data or None,
         is_mit=wants_mit,

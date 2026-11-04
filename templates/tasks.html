@@ -192,6 +192,9 @@
           {% if task.is_overdue %}
           <span class="task-flag task-flag-overdue"><i class="bi bi-exclamation-circle"></i> prazo vencido</span>
           {% endif %}
+          {% if task.repeat_daily %}
+          <span class="task-flag task-flag-daily"><i class="bi bi-arrow-repeat"></i> diária · {{ task.daily_target }}×/dia</span>
+          {% endif %}
           {% if task.is_mit %}
           <span class="task-flag task-flag-mit"><i class="bi bi-star-fill"></i> prioridade</span>
           {% endif %}

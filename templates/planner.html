@@ -136,12 +136,19 @@
           <span class="plan-item-meta">
             <i class="bi {{ task.category_icon }}"></i> {{ task.category_label }}
             <span class="sep">·</span> {{ task.estimate_label }}
-            {% if task.due_date and task.due_date == today %}<span class="sep">·</span> prazo hoje{% endif %}
+            {% if task.due_date %}<span class="sep">·</span> prazo {{ task.due_date|datebr }}{% endif %}
+            {% if task.repeat_daily %}
+            <span class="sep">·</span>
+            <span class="plan-daily-meta"><i class="bi bi-arrow-repeat"></i> {{ daily_progress.get(task.id, 0) }}/{{ task.daily_target }} hoje</span>
+            {% endif %}
           </span>
         </span>
         <a class="icon-btn-sm" href="{{ url_for('pomodoro.focus', tarefa=task.id) }}" title="Começar foco" aria-label="Começar foco">
           <span class="emoji-icon tomato-glyph" aria-hidden="true"></span>
         </a>
+        {% if task.repeat_daily %}
+        <span class="plan-daily-chip" title="Rotina diária até a conclusão"><i class="bi bi-arrow-repeat"></i> diária</span>
+        {% else %}
         <form method="post" action="{{ url_for('tasks.plan_today', task_id=task.id) }}">
           {{ csrf() }}
           <input type="hidden" name="next" value="{{ url_for('planner.plan') }}">
@@ -149,6 +156,7 @@
             <i class="bi bi-x-lg"></i>
           </button>
         </form>
+        {% endif %}
       </div>
       {% endfor %}
     </div>

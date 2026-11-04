@@ -6665,3 +6665,45 @@ a.recent-scratch-item:focus-visible {
 .annotation-readonly-label i {
   color: var(--emerald);
 }
+
+/* Rotina diária no planejamento e nas tarefas. */
+.task-flag-daily {
+  border-color: color-mix(in srgb, var(--cyan) 34%, var(--line));
+  background: color-mix(in srgb, var(--cyan) 8%, transparent);
+  color: var(--cyan);
+}
+
+.plan-daily-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--cyan);
+}
+
+.plan-daily-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 7px;
+  border: 1px solid color-mix(in srgb, var(--cyan) 30%, var(--line));
+  border-radius: 99px;
+  color: var(--cyan);
+  font-size: .58rem;
+  white-space: nowrap;
+}
+
+.daily-fields {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface-soft);
+}
+
+.daily-fields .form-check-label {
+  color: var(--muted);
+  font-size: .76rem;
+}
+
+.daily-fields .form-hint {
+  margin-top: 3px;
+}

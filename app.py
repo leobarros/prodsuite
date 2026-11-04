@@ -86,6 +86,8 @@ def ensure_schema() -> None:
     table_columns = {
         "tasks": {
             "planned_for": "DATE",
+            "repeat_daily": "BOOLEAN NOT NULL DEFAULT 0",
+            "daily_target_pomodoros": "INTEGER NOT NULL DEFAULT 1",
             "category": "VARCHAR(20) NOT NULL DEFAULT 'work'",
             "quadrant": "VARCHAR(20)",
             "is_mit": "BOOLEAN NOT NULL DEFAULT 0",

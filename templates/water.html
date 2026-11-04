@@ -138,7 +138,9 @@
       <span class="card-link">recentes</span>
     </div>
     <div data-water-recent>
+      {% with recent = summary.recent %}
       {% include "_water_recent.html" %}
+      {% endwith %}
     </div>
   </section>
 </div>

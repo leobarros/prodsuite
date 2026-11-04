@@ -118,6 +118,20 @@
               {{ field_errors(form.due_date) }}
             </div>
           </div>
+          <div class="daily-fields mt-3">
+            <div class="form-check">
+              {{ form.repeat_daily(class="form-check-input") }}
+              {{ form.repeat_daily.label(class="form-check-label") }}
+            </div>
+            <div class="form-hint">Aparece em Blocos de hoje todos os dias até ser concluída.</div>
+            <div class="row g-2 align-items-end mt-1">
+              <div class="col-6 col-md-4">
+                {{ form.daily_target_pomodoros.label(class="form-label") }}
+                {{ form.daily_target_pomodoros(class="form-control") }}
+                {{ field_errors(form.daily_target_pomodoros) }}
+              </div>
+            </div>
+          </div>
           <div class="row g-3 mt-1">
             <div class="col-6 col-md-3">
               {{ form.category.label(class="form-label") }}
