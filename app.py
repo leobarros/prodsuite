@@ -294,6 +294,7 @@ def create_app(config_override: dict | None = None) -> Flask:
     from routes.planner import planner_bp
     from routes.pomodoro import pomodoro_bp
     from routes.review import review_bp
+    from routes.reports import reports_bp
     from routes.scratchpad import scratchpad_bp
     from routes.tasks import tasks_bp
     from routes.water import water_bp
@@ -307,6 +308,7 @@ def create_app(config_override: dict | None = None) -> Flask:
     app.register_blueprint(planner_bp)
     app.register_blueprint(pomodoro_bp)
     app.register_blueprint(review_bp)
+    app.register_blueprint(reports_bp)
     app.register_blueprint(scratchpad_bp)
     app.register_blueprint(notes_bp)
     app.register_blueprint(export_bp)

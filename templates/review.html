@@ -1,91 +1,58 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf, field_errors %}
-{% block title %}Revisão da semana{% endblock %}
+{% block title %}Fechar a semana{% endblock %}
 
 {% block content %}
 <div class="page-head">
   <div>
     <p class="eyebrow"><i class="bi bi-journal-check"></i> revisão semanal <span class="sep">·</span> {{ metrics.week_start.strftime('%d/%m') }} a {{ metrics.week_end.strftime('%d/%m') }} {% if not is_current_week %}<span class="chip">semana encerrada</span>{% endif %}</p>
-    <h1 class="page-title">Sua semana</h1>
-    <p class="page-sub">{% if is_current_week %}Olhe para trás com gentileza e escolha o foco da próxima semana.{% else %}Consulta da semana encerrada. Os dados são somente para leitura.{% endif %}</p>
+    <h1 class="page-title">Fechar a semana</h1>
+    <p class="page-sub">{% if is_current_week %}O relatório mostra o que aconteceu. Aqui você decide o que isso significa e o que leva para a próxima semana.{% else %}Consulta da semana encerrada. As decisões registradas são somente para leitura.{% endif %}</p>
   </div>
-  <div class="d-flex gap-2">
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('reports.weekly', semana=metrics.week_start.isoformat()) }}"><i class="bi bi-bar-chart-line"></i> Ver relatório completo</a>
     <a class="btn btn-ghost btn-sm" href="{{ url_for('review.weeks') }}"><i class="bi bi-calendar3"></i> Semanas</a>
     {% if not is_current_week %}
     <a class="btn btn-ghost btn-sm" href="{{ url_for('review.weekly', semana=current_week_start.isoformat()) }}"><i class="bi bi-calendar-week"></i> Semana atual</a>
     {% else %}
-    <a class="btn btn-ghost btn-sm" href="{{ url_for('planner.plan') }}"><i class="bi bi-calendar2-check"></i> Planejar</a>
-    <a class="btn btn-neon btn-sm" href="{{ url_for('tasks.index', nova=1) }}"><i class="bi bi-plus-lg"></i> Nova tarefa</a>
+    <a class="btn btn-neon btn-sm" href="{{ url_for('planner.plan') }}"><i class="bi bi-calendar2-check"></i> Planejar próxima semana</a>
     {% endif %}
   </div>
 </div>
 
-<div class="bento-grid">
-  <section class="bento-card review-stats">
-    <div class="card-head">
-      <h2 class="card-title"><i class="bi bi-bar-chart"></i> Como foi a semana</h2>
-      <span class="card-link">{{ metrics.sessions }}/{{ metrics.goal }} sessões</span>
-    </div>
-    <div class="review-metrics {{ 'is-past' if not is_current_week }}">
-      <div class="review-metric">
-        <span class="review-emoji tomato-glyph" aria-hidden="true"></span>
-        <strong>{{ metrics.sessions }}</strong>
-        <span>sessões de foco</span>
-      </div>
-      <div class="review-metric">
-        <span class="review-emoji" aria-hidden="true">⏱️</span>
-        <strong>{{ metrics.minutes }}</strong>
-        <span>minutos de foco</span>
-      </div>
-      <div class="review-metric">
-        <span class="review-emoji" aria-hidden="true">✅</span>
-        <strong>{{ metrics.completed_tasks }}</strong>
-        <span>tarefas concluídas</span>
-      </div>
-      {% if is_current_week %}
-      <div class="review-metric">
-        <i class="review-emoji bi bi-star-fill text-amber" aria-hidden="true"></i>
-        <strong>{{ metrics.mit_done }}/{{ metrics.mit_total }}</strong>
-        <span>prioridades</span>
-      </div>
-      {% endif %}
-    </div>
-    <div class="goal-bar mt-3" role="img" aria-label="{{ metrics.goal_percent }}% da meta">
-      <span style="width: {{ metrics.goal_percent }}%"></span>
-    </div>
-    <div class="goal-labels">
-      <span>meta: {{ metrics.goal }} sessões</span>
-      <span>{{ metrics.goal_percent }}%</span>
-    </div>
-  </section>
+<ol class="review-steps" aria-label="Fluxo de fechamento da semana">
+  <li class="is-done"><span>1</span><a href="{{ url_for('reports.weekly', semana=metrics.week_start.isoformat()) }}">Leia o relatório</a></li>
+  <li class="is-current"><span>2</span><strong>Escreva a revisão</strong></li>
+  <li><span>3</span><span>Feche a semana</span></li>
+</ol>
 
-  <section class="bento-card review-categories">
-    <div class="card-head">
-      <h2 class="card-title"><i class="bi bi-pie-chart"></i> Onde foi seu foco</h2>
-      <span class="card-link">por categoria</span>
+<section class="bento-card review-snapshot">
+  <div class="card-head">
+    <div>
+      <h2 class="card-title"><i class="bi bi-clipboard-data"></i> Resumo da semana</h2>
+      <p class="page-sub mb-0">Um retrato curto. O detalhe completo fica no relatório.</p>
     </div>
-    <div class="category-bars">
-      {% for category in metrics.categories %}
-      <div class="category-row">
-        <span class="category-name">
-          <i class="bi {{ category.icon }}"></i>
-          {{ category.label }}
-        </span>
-        <div class="category-bar"><span style="width: {{ (category.minutes / metrics.category_max_minutes * 100)|round|int }}%"></span></div>
-        <span class="category-value">{{ category.minutes }} min</span>
-      </div>
-      {% endfor %}
-    </div>
-    <p class="form-hint mt-3 mb-0">Use isso como bússola: mais tempo no que faz diferença, menos no que só ocupa a agenda.</p>
-  </section>
+    <a class="card-link" href="{{ url_for('reports.weekly', semana=metrics.week_start.isoformat()) }}">abrir relatório <i class="bi bi-arrow-up-right"></i></a>
+  </div>
+  <div class="review-snapshot-grid">
+    <a class="review-snapshot-item" href="{{ url_for('pomodoro.focus') }}"><span>Foco</span><strong>{{ report_snapshot.focus_display }}</strong><small>{{ report_snapshot.current.cycles }} sessões</small></a>
+    <a class="review-snapshot-item" href="{{ url_for('tasks.index', filtro='hoje') }}"><span>Tarefas concluídas</span><strong>{{ report_snapshot.current.tasks }}</strong><small>na semana</small></a>
+    <a class="review-snapshot-item" href="{{ url_for('water.index') }}"><span>Água · média</span><strong>{{ report_snapshot.water_display }}</strong><small>{{ report_snapshot.current.water_days }}/7 dias na faixa</small></a>
+    <a class="review-snapshot-item" href="{{ url_for('mood.index') }}"><span>Humor · média</span><strong>{{ report_snapshot.mood_display }}<em>/5</em></strong><small>{{ report_snapshot.current.mood_count }} check-in{{ 's' if report_snapshot.current.mood_count != 1 }}</small></a>
+  </div>
+</section>
 
+<div class="review-layout">
   <section class="bento-card review-form-card">
     <div class="card-head">
-      <h2 class="card-title"><i class="bi bi-pencil-square"></i> Suas anotações</h2>
+      <div>
+        <h2 class="card-title"><i class="bi bi-pencil-square"></i> Sua revisão</h2>
+        <p class="page-sub mb-0">Três perguntas para transformar dados em decisão.</p>
+      </div>
       <div class="d-flex align-items-center gap-2">
         {% if review and not editing and is_current_week %}
-        <a class="btn btn-ghost btn-xs" href="{{ url_for('review.weekly', editar=1) }}">
-          <i class="bi bi-pencil"></i> Editar
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('review.weekly', editar=1) }}">
+          <i class="bi bi-pencil-square" aria-hidden="true"></i> Editar
         </a>
         {% endif %}
         <span class="card-link">{{ 'editando' if editing else 'salva' if review else 'ainda não escrita' }}</span>
@@ -95,22 +62,31 @@
     {% if editing and is_current_week %}
     <form method="post" action="{{ url_for('review.weekly', editar=1, semana=week_start.isoformat()) }}">
       {{ form.hidden_tag() }}
-      <div class="mb-3">
-        {{ form.wins.label(class="form-label") }}
-        {{ form.wins(class="form-control" + (" is-invalid" if form.wins.errors else "")) }}
-        {{ field_errors(form.wins) }}
+      <div class="review-question">
+        <span class="review-question-number">01</span>
+        <div class="flex-grow-1">
+          {{ form.wins.label(class="form-label") }}
+          {{ form.wins(class="form-control" + (" is-invalid" if form.wins.errors else ""), placeholder="O que funcionou bem? O que você quer repetir?") }}
+          {{ field_errors(form.wins) }}
+        </div>
       </div>
-      <div class="mb-3">
-        {{ form.challenges.label(class="form-label") }}
-        {{ form.challenges(class="form-control" + (" is-invalid" if form.challenges.errors else "")) }}
-        {{ field_errors(form.challenges) }}
+      <div class="review-question">
+        <span class="review-question-number">02</span>
+        <div class="flex-grow-1">
+          {{ form.challenges.label(class="form-label") }}
+          {{ form.challenges(class="form-control" + (" is-invalid" if form.challenges.errors else ""), placeholder="O que pesou? O que pode ser menor ou diferente?") }}
+          {{ field_errors(form.challenges) }}
+        </div>
       </div>
-      <div class="mb-3">
-        {{ form.next_steps.label(class="form-label") }}
-        {{ form.next_steps(class="form-control" + (" is-invalid" if form.next_steps.errors else "")) }}
-        {{ field_errors(form.next_steps) }}
+      <div class="review-question">
+        <span class="review-question-number">03</span>
+        <div class="flex-grow-1">
+          {{ form.next_steps.label(class="form-label") }}
+          {{ form.next_steps(class="form-control" + (" is-invalid" if form.next_steps.errors else ""), placeholder="Qual é o foco? Uma prioridade, não uma lista.") }}
+          {{ field_errors(form.next_steps) }}
+        </div>
       </div>
-      <div class="d-flex gap-2">
+      <div class="d-flex gap-2 mt-3">
         <button class="btn btn-neon btn-sm" type="submit"><i class="bi bi-check-lg"></i> Salvar revisão</button>
         <a class="btn btn-ghost btn-sm" href="{{ url_for('review.weekly', semana=week_start.isoformat()) }}">Cancelar</a>
       </div>
@@ -128,59 +104,66 @@
       </div>
       {% endfor %}
     </div>
+    <div class="review-form-foot">
+      <span class="form-hint"><i class="bi bi-check2-circle"></i> Revisão salva. Você pode ajustar enquanto a semana estiver aberta.</span>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('planner.plan') }}">Ir para o planejamento <i class="bi bi-arrow-right"></i></a>
+    </div>
     {% else %}
     <div class="empty-state review-empty">
       <i class="bi bi-journal-text"></i>
-      <span>{% if is_current_week %}Você ainda não escreveu a revisão desta semana.{% else %}Esta semana foi encerrada sem revisão registrada.{% endif %}</span>
+      <span>{% if is_current_week %}Você ainda não escreveu a revisão desta semana. Comece pelo relatório, se quiser contexto.{% else %}Esta semana foi encerrada sem revisão registrada.{% endif %}</span>
       {% if is_current_week %}
-      <a class="btn btn-neon btn-xs" href="{{ url_for('review.weekly', editar=1) }}">
-        <i class="bi bi-pencil"></i> Escrever revisão
+      <a class="btn btn-neon btn-sm" href="{{ url_for('review.weekly', editar=1) }}">
+        <i class="bi bi-pencil-square" aria-hidden="true"></i> Escrever revisão
       </a>
       {% endif %}
     </div>
     {% endif %}
   </section>
 
-  <section class="bento-card review-completed">
-    <div class="card-head">
-      <h2 class="card-title"><i class="bi bi-check2-circle"></i> O que ficou pronto</h2>
-      <span class="card-link">{{ metrics.completed_tasks }}</span>
-    </div>
-    {% if metrics.completed_list %}
-    <div class="list-stack">
-      {% for task in metrics.completed_list[:8] %}
-      <div class="list-row">
-        <i class="bi {{ task.category_icon }} text-emerald"></i>
-        <span class="list-main">
-          <span class="list-title">{{ task.title }}</span>
-          <span class="list-meta">{{ task.category_label }} · {{ task.completed_at|localtime('%d/%m %H:%M') }}</span>
-        </span>
+  <aside class="review-side">
+    <section class="bento-card review-completed">
+      <div class="card-head">
+        <h2 class="card-title"><i class="bi bi-check2-circle"></i> O que ficou pronto</h2>
+        <span class="card-link">{{ metrics.completed_tasks }}</span>
       </div>
-      {% endfor %}
-    </div>
-    {% else %}
-    <div class="empty-state">
-      <i class="bi bi-seedling"></i>
-      <span>Ainda não há tarefas concluídas nesta semana. Pequenos passos também contam.</span>
-    </div>
-    {% endif %}
-    <div class="d-flex flex-wrap gap-2 mt-3">
-      <a class="btn btn-ghost btn-sm" href="{{ url_for('tasks.archived') }}">
-        <i class="bi bi-archive"></i> Ver arquivo
-      </a>
-      {% if is_current_week and unarchived_completed %}
-      <form method="post" action="{{ url_for('review.archive_completed') }}"
-            data-confirm="Fechar a semana e arquivar as tarefas concluídas que ainda estão no quadro? Elas poderão ser restauradas no Arquivo.">
-        {{ csrf() }}
-        <input type="hidden" name="week_start" value="{{ week_start.isoformat() }}">
-        <button class="btn btn-neon btn-sm" type="submit">
-          <i class="bi bi-archive"></i> Fechar semana e arquivar concluídas
-        </button>
-      </form>
+      <p class="page-sub">Feche o ciclo arquivando as concluídas que ainda estão no quadro. Elas continuam recuperáveis no Arquivo.</p>
+      {% if metrics.completed_list %}
+      <div class="list-stack">
+        {% for task in metrics.completed_list[:7] %}
+        <div class="list-row">
+          <i class="bi {{ task.category_icon }} text-emerald"></i>
+          <span class="list-main">
+            <span class="list-title">{{ task.title }}</span>
+            <span class="list-meta">{{ task.category_label }} · {{ task.completed_at|localtime('%d/%m %H:%M') }}</span>
+          </span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-seedling"></i>
+        <span>Ainda não há tarefas concluídas nesta semana. Pequenos passos também contam.</span>
+      </div>
       {% endif %}
-    </div>
-    <div class="divider"></div>
-    <p class="page-sub mb-0">“Produtividade não é fazer mais. É fazer o que importa e ainda sobrar energia para você.”</p>
-  </section>
+      <div class="review-close-actions">
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('tasks.archived') }}"><i class="bi bi-archive"></i> Ver arquivo</a>
+        {% if is_current_week and unarchived_completed %}
+        <form method="post" action="{{ url_for('review.archive_completed') }}"
+              data-confirm="Fechar a semana e arquivar as tarefas concluídas que ainda estão no quadro? Elas poderão ser restauradas no Arquivo.">
+          {{ csrf() }}
+          <input type="hidden" name="week_start" value="{{ week_start.isoformat() }}">
+          <button class="btn btn-neon btn-sm" type="submit"><i class="bi bi-archive"></i> Fechar semana e arquivar</button>
+        </form>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="bento-card review-purpose">
+      <div class="card-head"><h2 class="card-title"><i class="bi bi-compass"></i> O que fica aqui</h2><span class="chip">decisão</span></div>
+      <p>O relatório mostra <strong>o que aconteceu</strong>. Esta revisão guarda <strong>o que você decidiu</strong> para a próxima semana.</p>
+      <p class="form-hint mb-0">Sem nota, sem sequência e sem meta inventada.</p>
+    </section>
+  </aside>
 </div>
 {% endblock %}

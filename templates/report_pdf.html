@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Relatório semanal · ProdSuite</title>
+<style>
+  @page {
+    size: A4;
+    margin: 15mm 14mm 16mm;
+    @bottom-left {
+      content: "ProdSuite · relatório semanal";
+      color: #8c7d91;
+      font-family: "DejaVu Sans", Arial, sans-serif;
+      font-size: 7.5pt;
+    }
+    @bottom-right {
+      content: "página " counter(page) " de " counter(pages);
+      color: #8c7d91;
+      font-family: "DejaVu Sans", Arial, sans-serif;
+      font-size: 7.5pt;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #fbf8f5;
+    color: #352d3a;
+    font-family: "DejaVu Sans", Arial, sans-serif;
+    font-size: 8.5pt;
+    line-height: 1.42;
+  }
+  .page { page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+  .muted { color: #776b7e; }
+  .dim { color: #96899c; }
+  .brand-row { width: 100%; border-collapse: collapse; }
+  .brand-row td { vertical-align: middle; padding: 0; }
+  .brand-left { width: 56%; }
+  .brand-right { width: 44%; text-align: right; }
+  .brand-lockup { display: inline-block; }
+  .logo {
+    display: inline-block;
+    width: 13mm;
+    height: 13mm;
+    object-fit: contain;
+    border-radius: 3mm;
+    vertical-align: middle;
+    margin-right: 3mm;
+  }
+  .brand-name { display: inline-block; vertical-align: middle; }
+  .brand-name strong { display: block; font-size: 13pt; letter-spacing: -.02em; color: #3b3041; }
+  .brand-name span { display: block; color: #8b7c91; font-size: 7pt; letter-spacing: .08em; text-transform: uppercase; margin-top: 1mm; }
+  .report-kicker { color: #7c6aa3; font-size: 7pt; letter-spacing: .1em; text-transform: uppercase; font-weight: bold; }
+  .report-range { display: block; color: #3b3041; font-size: 8pt; margin-top: 1.5mm; }
+  .private-pill { display: inline-block; margin-top: 1.5mm; padding: 1mm 2.5mm; border: .2mm solid #d8cadd; border-radius: 8mm; color: #74657c; font-size: 6.5pt; }
+  .rule { height: .3mm; background: #ded3e1; margin: 5mm 0 4mm; }
+  h1 { margin: 0; color: #352d3a; font-size: 22pt; line-height: 1.08; letter-spacing: -.04em; }
+  .lead { margin: 2.5mm 0 5mm; max-width: 165mm; color: #6f6276; font-size: 9pt; line-height: 1.48; }
+  .kpis { width: 100%; border-collapse: separate; border-spacing: 2.5mm 0; margin-left: -2.5mm; margin-right: -2.5mm; }
+  .kpis td { width: 25%; vertical-align: top; }
+  .kpi { padding: 3mm; border: .25mm solid #e2d7e5; border-radius: 3mm; background: #ffffff; min-height: 20mm; }
+  .kpi-label { color: #887a90; font-size: 6.5pt; text-transform: uppercase; letter-spacing: .07em; }
+  .kpi-value { display: block; margin-top: 2mm; color: #352d3a; font-size: 17pt; font-weight: bold; letter-spacing: -.03em; line-height: 1; }
+  .kpi-value small { font-size: 8pt; font-weight: normal; color: #776b7e; }
+  .kpi-foot { display: block; margin-top: 2mm; color: #8b7c91; font-size: 6.5pt; }
+  .up { color: #4f8060; }
+  .down { color: #a65f57; }
+  .flat { color: #6a8497; }
+  .section { margin-top: 5mm; }
+  .section-title { margin: 0 0 2mm; color: #3b3041; font-size: 10.5pt; letter-spacing: -.02em; }
+  .section-kicker { color: #8b7c91; font-size: 6.5pt; text-transform: uppercase; letter-spacing: .08em; }
+  .card { border: .25mm solid #e2d7e5; border-radius: 3mm; background: #ffffff; padding: 3.5mm; }
+  .chart-card { padding: 3.5mm 4mm 2.5mm; }
+  .chart-head { width: 100%; border-collapse: collapse; margin-bottom: 2mm; }
+  .chart-head td { padding: 0; vertical-align: middle; }
+  .legend { text-align: right; color: #887a90; font-size: 6.5pt; }
+  .legend-swatch { display: inline-block; width: 2mm; height: 2mm; border-radius: .5mm; margin: 0 1mm 0 3mm; }
+  .chart-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .chart-table td { vertical-align: bottom; padding: 0 1mm; text-align: center; }
+  .chart-stack { position: relative; height: 34mm; width: 100%; border-bottom: .2mm solid #e6dce8; }
+  .chart-bar { position: absolute; bottom: 0; width: 3mm; border-radius: 1mm 1mm 0 0; }
+  .bar-focus { left: 38%; background: #9d88bd; }
+  .bar-tasks { left: 59%; width: 2mm; background: #8eb7c6; }
+  .chart-y { color: #9d91a3; font-size: 6pt; text-align: right; padding-right: 1.5mm; vertical-align: top; }
+  .chart-y-label { display: block; height: 8.5mm; }
+  .chart-day { color: #8b7c91; font-size: 6.5pt; padding-top: 1.5mm; }
+  .chart-day.today { color: #a8783f; font-weight: bold; }
+  .chart-foot { margin-top: 2mm; padding-top: 2mm; border-top: .2mm solid #eee6ef; color: #887a90; font-size: 7pt; }
+  .chart-foot strong { color: #5f5266; }
+  .two-col { width: 100%; border-collapse: separate; border-spacing: 2.5mm 0; margin-left: -2.5mm; margin-right: -2.5mm; margin-top: 4mm; }
+  .two-col > tbody > tr > td { width: 50%; vertical-align: top; }
+  .category-row { width: 100%; border-collapse: collapse; margin: 2mm 0; }
+  .category-row td { padding: 0; vertical-align: middle; font-size: 7pt; }
+  .category-name { width: 23mm; color: #6f6276; }
+  .category-track { height: 2mm; background: #f0eaf1; border-radius: 1mm; overflow: hidden; }
+  .category-fill { height: 2mm; background: #9d88bd; border-radius: 1mm; }
+  .category-value { width: 13mm; text-align: right; color: #8b7c91; font-size: 6.5pt; }
+  .insight { padding: 2mm 0 2mm 3mm; border-left: .6mm solid #9d88bd; margin: 1mm 0 2.5mm; color: #6f6276; font-size: 7pt; line-height: 1.45; }
+  .insight strong { display: block; color: #3b3041; font-size: 7.5pt; margin-bottom: .7mm; }
+  .insight.category { border-color: #8eb7c6; }
+  .insight.water { border-color: #c49a62; }
+  .insight.mood { border-color: #7eaa8a; }
+  .insight.empty { border-color: #b9acbb; }
+  .note { color: #8b7c91; font-size: 6.5pt; margin-top: 2mm; }
+  .page-two-title { margin: 0 0 2mm; color: #352d3a; font-size: 18pt; letter-spacing: -.035em; }
+  .heat { width: 100%; border-collapse: separate; border-spacing: 1mm; }
+  .heat th { color: #8b7c91; font-size: 6.5pt; font-weight: normal; text-align: center; padding: 1mm 0; }
+  .heat th.label { text-align: left; width: 20mm; }
+  .heat td { border-radius: 1.2mm; height: 8mm; text-align: center; color: #5e5264; font-size: 6.5pt; }
+  .heat-focus-0, .heat-task-0, .heat-water-0, .heat-mood-0 { background: #f3edf4; color: #9d91a3; }
+  .heat-focus-1, .heat-task-1, .heat-mood-1 { background: #eee5f1; }
+  .heat-focus-2, .heat-task-2, .heat-mood-2 { background: #e1d3e8; }
+  .heat-focus-3, .heat-task-3, .heat-mood-3 { background: #cdb8dd; color: #3b3041; }
+  .heat-focus-4, .heat-task-4, .heat-mood-4 { background: #b39bd0; color: #ffffff; }
+  .heat-water-1 { background: #edf3f4; }
+  .heat-water-2 { background: #dbe9ec; }
+  .heat-water-3 { background: #bfd9df; }
+  .heat-water-4 { background: #98c4cd; color: #263c42; }
+  .heat-legend { margin-top: 1.5mm; color: #8b7c91; font-size: 6.5pt; }
+  .swatch { display: inline-block; width: 2.5mm; height: 2.5mm; border-radius: .5mm; margin: 0 .8mm 0 2mm; vertical-align: middle; }
+  .compare { width: 100%; border-collapse: collapse; margin-top: 1mm; }
+  .compare td { padding: 2mm 0; border-bottom: .2mm solid #eee6ef; font-size: 7pt; vertical-align: middle; }
+  .compare td.label { width: 17mm; color: #6f6276; }
+  .compare td.value { width: 17mm; text-align: right; color: #5f5266; font-size: 6.8pt; }
+  .compare-track { height: 2mm; background: #f0eaf1; border-radius: 1mm; overflow: hidden; }
+  .compare-fill { height: 2mm; background: #9d88bd; border-radius: 1mm; }
+  .compare-fill.cyan { background: #8eb7c6; }
+  .compare-fill.amber { background: #c49a62; }
+  .compare-fill.green { background: #7eaa8a; }
+  .week-tags { margin-top: 2mm; color: #8b7c91; font-size: 6.5pt; }
+  .week-tags span { display: inline-block; padding: .8mm 2mm; border-radius: 5mm; background: #f0eaf8; color: #7c6aa3; margin-right: 1.5mm; }
+  .week-tags span.muted { background: #f2edf2; color: #8b7c91; }
+  .questions { width: 100%; border-collapse: collapse; }
+  .questions td { width: 33.33%; vertical-align: top; padding: 0 2.5mm 0 0; color: #6f6276; font-size: 7pt; line-height: 1.45; }
+  .questions strong { display: block; color: #3b3041; font-size: 7.5pt; margin-bottom: 1mm; }
+  .disclaimer { margin-top: 3mm; padding: 2.5mm 3mm; border: .25mm solid #e5d7c5; border-radius: 2mm; background: #fbf4e9; color: #806e5b; font-size: 6.5pt; line-height: 1.45; }
+  .signature { margin-top: 4mm; color: #8b7c91; font-size: 6.5pt; }
+  .signature strong { color: #5f5266; }
+</style>
+</head>
+<body>
+{% set current = report.current %}
+<section class="page">
+  <table class="brand-row"><tr>
+    <td class="brand-left"><span class="brand-lockup"><img class="logo" src="{{ logo_data }}" alt=""><span class="brand-name"><strong>ProdSuite</strong><span>produtividade pessoal</span></span></span></td>
+    <td class="brand-right"><span class="report-kicker">relatório semanal</span><span class="report-range">{{ report.week_start.strftime('%d/%m/%Y') }} – {{ report.week_end.strftime('%d/%m/%Y') }}</span><span class="private-pill">documento privado</span></td>
+  </tr></table>
+  <div class="rule"></div>
+  <h1>Sua semana<br>em perspectiva.</h1>
+  <p class="lead">
+    {% if current.focus_minutes or current.tasks or current.water_total or current.mood_count %}
+    Uma leitura dos seus registros entre {{ report.week_start.strftime('%d/%m') }} e {{ report.week_end.strftime('%d/%m') }}. Foco, tarefas e cuidado pessoal no mesmo lugar, para perceber evolução — não para gerar uma nota.
+    {% else %}
+    Ainda há pouco movimento registrado nesta semana. Quando você registrar foco, tarefas, água ou humor, este relatório ganha forma.
+    {% endif %}
+  </p>
+
+  <table class="kpis"><tr>
+    <td><div class="kpi"><span class="kpi-label">Foco</span><span class="kpi-value">{{ report.focus_display }}</span><span class="kpi-foot"><span class="{{ 'up' if report.focus_change and report.focus_change > 0 else 'down' if report.focus_change and report.focus_change < 0 else 'flat' }}">{{ report.focus_change_text }}</span> · {{ current.cycles }} sessões</span></div></td>
+    <td><div class="kpi"><span class="kpi-label">Tarefas concluídas</span><span class="kpi-value">{{ current.tasks }}</span><span class="kpi-foot"><span class="{{ 'up' if report.task_change > 0 else 'down' if report.task_change < 0 else 'flat' }}">{{ report.task_change_text }}</span> · na semana</span></div></td>
+    <td><div class="kpi"><span class="kpi-label">Água · média diária</span><span class="kpi-value">{{ report.water_display }}</span><span class="kpi-foot">{{ current.water_days }}/7 dias na faixa</span></div></td>
+    <td><div class="kpi"><span class="kpi-label">Humor · média</span><span class="kpi-value">{{ report.mood_display }}<small>/5</small></span><span class="kpi-foot">{{ current.mood_count }} check-in{{ 's' if current.mood_count != 1 }} · {{ report.mood_change_text }}</span></div></td>
+  </tr></table>
+
+  <div class="section">
+    <table class="chart-head"><tr><td><h2 class="section-title">Ritmo da semana</h2><span class="section-kicker">foco e tarefas por dia</span></td><td class="legend"><span class="legend-swatch" style="background:#9d88bd"></span>foco (min)<span class="legend-swatch" style="background:#8eb7c6"></span>tarefas</td></tr></table>
+    <div class="card chart-card">
+      <table class="chart-table"><tr>
+        <td class="chart-y" style="width:8mm"><span class="chart-y-label">{{ ((current.focus_max or 60) * 1.0)|round|int }}</span><span class="chart-y-label">{{ ((current.focus_max or 60) * 0.75)|round|int }}</span><span class="chart-y-label">{{ ((current.focus_max or 60) * 0.5)|round|int }}</span><span class="chart-y-label">{{ ((current.focus_max or 60) * 0.25)|round|int }}</span><span class="chart-y-label">0</span></td>
+        {% for day in current.days %}
+        <td><div class="chart-stack"><span class="chart-bar bar-focus" style="height: {{ day.focus_height }}%"></span><span class="chart-bar bar-tasks" style="height: {{ day.task_height }}%"></span></div><div class="chart-day {{ 'today' if day.is_today }}">{{ day.label }}</div></td>
+        {% endfor %}
+      </tr></table>
+      <div class="chart-foot">{% if current.focus_minutes %}<strong>Melhor dia:</strong> {{ report.best_day.label }}, {{ report.best_day.focus_minutes }} min de foco em {{ report.best_day.focus_sessions }} {{ 'sessão' if report.best_day.focus_sessions == 1 else 'sessões' }}.{% else %}Ainda não há sessões de foco nesta semana.{% endif %}</div>
+    </div>
+  </div>
+
+  <table class="two-col"><tr>
+    <td><div class="card"><h2 class="section-title">Onde foi o foco</h2><span class="section-kicker">distribuição por categoria</span>
+      {% for category in current.categories_with_focus[:5] %}
+      <table class="category-row"><tr><td class="category-name">{{ category.label }}</td><td><div class="category-track"><div class="category-fill" style="width: {{ category.percent }}%; background: {{ ['#9d88bd','#8eb7c6','#c49a62','#7eaa8a','#c68b86'][loop.index0] }}"></div></div></td><td class="category-value">{{ category.percent }}%</td></tr></table>
+      {% else %}
+      <p class="note">Sem foco registrado nesta semana.</p>
+      {% endfor %}
+    </div></td>
+    <td><div class="card"><h2 class="section-title">O que a semana mostra</h2><span class="section-kicker">pistas, não verdades</span>
+      {% for insight in report.insights %}
+      <div class="insight {{ insight.kind }}"><strong>{{ insight.title }}</strong>{{ insight.text }}</div>
+      {% endfor %}
+    </div></td>
+  </tr></table>
+</section>
+
+<section class="page">
+  <table class="brand-row"><tr>
+    <td class="brand-left"><span class="brand-lockup"><img class="logo" src="{{ logo_data }}" alt=""><span class="brand-name"><strong>ProdSuite</strong><span>relatório semanal</span></span></span></td>
+    <td class="brand-right"><span class="report-range">{{ report.week_start.strftime('%d/%m/%Y') }} – {{ report.week_end.strftime('%d/%m/%Y') }}</span></td>
+  </tr></table>
+  <div class="rule"></div>
+  <h2 class="page-two-title">A semana em detalhe.</h2>
+  <p class="lead">Os mesmos dias, olhados por camadas. Compare com a semana anterior e use o que fizer sentido — sem cobrança.</p>
+
+  <div class="section">
+    <div class="card">
+      <table class="heat">
+        <tr><th class="label"></th>{% for day in current.days %}<th>{{ day.label }}</th>{% endfor %}</tr>
+        <tr><th class="label">Foco</th>{% for day in current.days %}<td class="heat-focus-{{ day.focus_level }}">{{ day.focus_minutes }}m</td>{% endfor %}</tr>
+        <tr><th class="label">Tarefas</th>{% for day in current.days %}<td class="heat-task-{{ day.task_level }}">{{ day.tasks }}</td>{% endfor %}</tr>
+        <tr><th class="label">Água</th>{% for day in current.days %}<td class="heat-water-{{ day.water_level }}">{{ ('%.1f'|format(day.water_ml / 1000)).replace('.', ',') }}L</td>{% endfor %}</tr>
+        <tr><th class="label">Humor</th>{% for day in current.days %}<td class="heat-mood-{{ day.mood_level }}">{{ ('%.1f'|format(day.mood_avg)).replace('.', ',') if day.mood_count else '—' }}</td>{% endfor %}</tr>
+      </table>
+      <div class="heat-legend">menos <span class="swatch" style="background:#eee5f1"></span><span class="swatch" style="background:#d9c8e2"></span><span class="swatch" style="background:#b39bd0"></span> mais <span style="float:right">● água e humor usam escalas próprias</span></div>
+    </div>
+  </div>
+
+  <table class="two-col"><tr>
+    <td><div class="card"><h2 class="section-title">Semana anterior</h2><span class="section-kicker">comparação</span>
+      <table class="compare">
+        {% for row in report.comparison_rows %}
+        <tr><td class="label">{{ row.label }}</td><td><div class="compare-track"><div class="compare-fill {{ ['','cyan','amber','green'][loop.index0] }}" style="width: {{ row.width }}%"></div></div></td><td class="value">{{ row.value }}</td></tr>
+        {% endfor %}
+      </table>
+      <div class="week-tags"><span>esta semana</span><span class="muted">anterior</span></div>
+    </div></td>
+    <td><div class="card"><h2 class="section-title">Para levar para a próxima</h2><span class="section-kicker">sua revisão</span>
+      <table class="questions"><tr>
+        <td><strong>O que funcionou?</strong>O que você quer repetir?</td>
+        <td><strong>O que pesou?</strong>O que pode ser menor?</td>
+        <td><strong>Qual é o foco?</strong>Uma prioridade, não uma lista.</td>
+      </tr></table>
+      <p class="note">Use o relatório como ponto de partida para a revisão semanal escrita.</p>
+    </div></td>
+  </tr></table>
+
+  <div class="disclaimer"><strong>Como ler este relatório.</strong> Os dados são um retrato dos seus registros, não uma medida do seu valor. Água e humor são apoio ao autoconhecimento e não substituem avaliação ou acompanhamento profissional. Compare tendências, não dias isolados.</div>
+  <div class="signature"><strong>ProdSuite</strong> · relatório pessoal gerado em {{ generated_at.strftime('%d/%m/%Y às %H:%M') }} · dados privados</div>
+</section>
+</body>
+</html>

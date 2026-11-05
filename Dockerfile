@@ -8,9 +8,18 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     MALLOC_ARENA_MAX=2 \
-    FLASK_ENV=production
+    FLASK_ENV=production \
+    XDG_CACHE_HOME=/tmp
 
 WORKDIR /app
+
+# Bibliotecas de texto/imagem necessárias ao WeasyPrint (PDF do relatório).
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libpango-1.0-0 libpangoft2-1.0-0 libcairo2 \
+        libharfbuzz-subset0 libffi8 libjpeg62-turbo libopenjp2-7 \
+        fonts-dejavu-core shared-mime-info \
+    && rm -rf /var/lib/apt/lists/*
 
 # Usuário sem privilégios e diretórios preparados para o volume.
 # UID/GID determinísticos (10001) simplificam backup/restore do volume.

@@ -19,7 +19,7 @@ Para a apresentação do app, o tour visual e o guia de uso, volte ao **[README]
 | Banco | `/data/prodsuite.db` |
 | Limite de memória | 512 MB |
 | Healthcheck | `GET /healthz` |
-| Testes | 118 Pytest |
+| Testes | 123 Pytest |
 | Dados no Git | nenhum (banco, `.env` e backups são ignorados) |
 
 ---
@@ -456,7 +456,7 @@ source .venv/bin/activate
 pytest -q
 ```
 
-Resultado esperado: **118 testes passando**.
+Resultado esperado: **123 testes passando**.
 
 Cobertura:
 
@@ -563,7 +563,7 @@ prodsuite/
 ├── templates/              # Jinja
 ├── static/                 # CSS, JS, ícones, áudio, Bootstrap local
 ├── docs/images/            # imagens do README
-├── tests/test_app.py       # 118 testes
+├── tests/test_app.py       # 123 testes
 ├── Dockerfile
 ├── docker-compose.yml
 ├── gunicorn.conf.py
@@ -599,3 +599,49 @@ Rotas principais:
 ---
 
 **ProdSuite v1.0** — operação simples, decisões explícitas e o seu ritmo.
+
+## Validação obrigatória de entrega
+
+Toda mudança no ProdSuite deve ser validada em dois ambientes:
+
+```bash
+# 1. Local
+.venv/bin/python -m pytest -q
+
+# 2. Imagem de produção
+docker build -t prodsuite:1.0 .
+docker run --rm -i --read-only --tmpfs /tmp:size=64m,mode=1777 \
+  -e SECRET_KEY=x -e DATABASE_URL=sqlite:///:memory: \
+  --entrypoint python prodsuite:1.0 - <<'PY'
+from app import create_app
+from extensions import db
+from models import User
+app = create_app({"TESTING": True, "WTF_CSRF_ENABLED": False,
+                  "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+                  "CREATE_DB_ON_START": True,
+                  "PASSWORD_HASH_METHOD": "pbkdf2:sha256:1000"})
+with app.app_context():
+    u = User(username="smoke", display_name="Smoke", email="smoke@example.com")
+    u.set_password("x")
+    db.session.add(u)
+    db.session.commit()
+c = app.test_client()
+c.post("/entrar", data={"identifier": "smoke", "password": "x"})
+for path in ("/", "/relatorio/", "/revisao", "/agua/", "/humor/"):
+    r = c.get(path)
+    print(path, r.status_code)
+r = c.get("/relatorio/pdf")
+print("pdf", r.status_code, r.mimetype, r.data[:4])
+PY
+```
+
+Sem os dois resultados, a entrega não está concluída. Para alterações de
+relatório/PDF, valide também o PDF dentro do Docker, não apenas no host.
+
+### Validação visual obrigatória
+
+Toda mudança de interface deve ser conferida em **tema claro e tema escuro**.
+Use os tokens e componentes descritos em [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md).
+Verifique card, borda, texto, chip, botão, campo, gráfico, estado vazio, foco e
+responsividade. O PDF é um documento A4 independente e usa paleta própria; isso
+não autoriza cores literais arbitrárias na interface web.

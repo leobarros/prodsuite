@@ -2886,7 +2886,7 @@ class TestPages:
         [
             ("/", "Meu dia"),
             ("/planejar", "Planeje o seu dia"),
-            ("/revisao", "Sua semana"),
+            ("/revisao", "Fechar a semana"),
             ("/tarefas", "kanban"),
             ("/foco", "Pomodoro"),
             ("/anotacoes", "Anotações"),
@@ -2943,3 +2943,131 @@ class TestPages:
         assert "weekly-chart-line" in html
         assert "weekly-chart-grid" in html
         assert "/sw.js" not in html  # registro fica no app.js
+
+
+# ==========================================================================
+# RELATÓRIO SEMANAL
+# ==========================================================================
+class TestReports:
+    def _seed_report_data(self, app, user_id):
+        from models import MoodEntry, PomodoroCycle, WaterLog
+        from services.planning import week_start_for
+        from services.timeutils import day_start_utc, local_today
+
+        with app.app_context():
+            project = Project.query.filter_by(name="Projeto de teste").one()
+            task = Task(
+                user_id=user_id,
+                project_id=project.id,
+                title="Tarefa do relatório",
+                status="done",
+                category="study",
+                completed_at=utcnow(),
+                estimate_pomodoros=2,
+            )
+            db.session.add(task)
+            db.session.flush()
+            db.session.add(
+                PomodoroCycle(
+                    user_id=user_id,
+                    task_id=task.id,
+                    mode="focus",
+                    duration_minutes=50,
+                    completed=True,
+                    ended_at=utcnow(),
+                )
+            )
+            db.session.add(
+                WaterLog(user_id=user_id, amount_ml=2000, logged_at=utcnow())
+            )
+            db.session.add(
+                MoodEntry(
+                    user_id=user_id,
+                    mood=4,
+                    energy=3,
+                    tension=2,
+                    created_at=utcnow(),
+                )
+            )
+            previous_start = week_start_for(local_today()) - timedelta(days=7)
+            db.session.add(
+                PomodoroCycle(
+                    user_id=user_id,
+                    task_id=task.id,
+                    mode="focus",
+                    duration_minutes=40,
+                    completed=True,
+                    ended_at=day_start_utc(previous_start) + timedelta(hours=12),
+                )
+            )
+            db.session.commit()
+            return task.id
+
+    def test_weekly_report_shows_aggregated_data_and_links(
+        self, client, app, make_user
+    ):
+        user_id = make_user()
+        self._seed_report_data(app, user_id)
+        login(client)
+
+        response = client.get("/relatorio/")
+        assert response.status_code == 200
+        html = response.get_data(as_text=True)
+        assert "Sua semana em perspectiva" in html
+        assert "50 min" in html
+        assert "Tarefa do relatório" not in html  # relatório agrega, não expõe notas
+        assert "Estudos" in html
+        assert "2,0" in html
+        assert "4,0" in html
+        assert 'href="/relatorio/pdf?semana=' in html
+        assert 'href="/foco"' in html
+        assert 'href="/agua/"' in html
+        assert 'href="/humor/"' in html
+        assert 'href="/tarefas?filtro=hoje"' in html
+
+    def test_weekly_report_pdf_is_generated_server_side(self, client, app, make_user):
+        user_id = make_user()
+        self._seed_report_data(app, user_id)
+        login(client)
+        response = client.get("/relatorio/pdf")
+        assert response.status_code == 200
+        assert response.mimetype == "application/pdf"
+        assert response.data.startswith(b"%PDF")
+        assert "attachment" in response.headers["Content-Disposition"]
+        assert b"ProdSuite" in response.data or len(response.data) > 1000
+
+    def test_report_hands_off_to_review(self, client, make_user):
+        make_user()
+        login(client)
+        report = client.get("/relatorio/").get_data(as_text=True)
+        assert "Levar esta leitura para a revisão" in report
+        assert 'href="/revisao?semana=' in report
+
+    def test_weekly_report_handles_empty_week_and_week_navigation(
+        self, client, make_user
+    ):
+        make_user()
+        login(client)
+        response = client.get("/relatorio/?semana=2020-01-06")
+        assert response.status_code == 200
+        html = response.get_data(as_text=True)
+        assert "Ainda há pouco para comparar" in html
+        assert "Sem foco registrado" in html
+        assert "Semana anterior" in html
+
+    def test_reports_link_from_review_and_dashboard(self, client, make_user):
+        make_user()
+        login(client)
+        dashboard = client.get("/").get_data(as_text=True)
+        assert 'href="/relatorio/"' in dashboard
+
+        review = client.get("/revisao").get_data(as_text=True)
+        assert 'href="/relatorio/?semana=' in review
+        assert "Fechar a semana" in review
+        assert "review-snapshot" in review
+        assert "Ver relatório completo" in review
+        assert "Onde foi seu foco" not in review
+        assert "Escrever revisão" in review
+        assert 'href="/foco"' in review
+        assert 'href="/agua/"' in review
+        assert 'href="/humor/"' in review

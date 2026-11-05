@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}Relatório semanal{% endblock %}
+
+{% block content %}
+{% set current = report.current %}
+<div class="page-head report-head">
+  <div>
+    <p class="eyebrow"><i class="bi bi-bar-chart-line"></i> relatório semanal <span class="sep">·</span> privado</p>
+    <h1 class="page-title">Sua semana em perspectiva.</h1>
+    <p class="page-sub">Foco, tarefas, água e humor no mesmo lugar. Compare com a semana anterior e perceba o que mudou — sem transformar sua vida em uma nota.</p>
+  </div>
+  <div class="report-actions">
+    <div class="report-week-nav" aria-label="Navegação entre semanas">
+      <a href="{{ url_for('reports.weekly', semana=report.previous_start.isoformat()) }}" aria-label="Semana anterior" title="Semana anterior"><i class="bi bi-chevron-left"></i></a>
+      <span>{{ report.week_start.strftime('%d/%m') }} – {{ report.week_end.strftime('%d/%m') }}</span>
+      {% if report.next_start %}
+      <a href="{{ url_for('reports.weekly', semana=report.next_start.isoformat()) }}" aria-label="Próxima semana" title="Próxima semana"><i class="bi bi-chevron-right"></i></a>
+      {% else %}
+      <span class="report-week-disabled" aria-hidden="true"><i class="bi bi-chevron-right"></i></span>
+      {% endif %}
+    </div>
+    <a class="btn btn-ghost report-download" href="{{ url_for('reports.pdf', semana=report.week_start.isoformat()) }}"><i class="bi bi-file-earmark-pdf"></i> Baixar PDF</a>
+  </div>
+</div>
+
+<div class="report-kpis">
+  <a class="bento-card report-kpi" href="{{ url_for('pomodoro.focus') }}">
+    <span class="report-kpi-label"><span>Foco</span><i class="bi bi-clock-history"></i></span>
+    <strong>{{ report.focus_display }}</strong>
+    <span class="report-kpi-foot">
+      <span class="report-change {{ 'up' if report.focus_change and report.focus_change > 0 else 'down' if report.focus_change and report.focus_change < 0 else 'flat' }}">{{ report.focus_change_text }}</span>
+      <span>{{ current.cycles }} sessões</span>
+    </span>
+  </a>
+  <a class="bento-card report-kpi" href="{{ url_for('tasks.index', filtro='hoje') }}">
+    <span class="report-kpi-label"><span>Tarefas concluídas</span><i class="bi bi-check2-square"></i></span>
+    <strong>{{ current.tasks }}</strong>
+    <span class="report-kpi-foot">
+      <span class="report-change {{ 'up' if report.task_change > 0 else 'down' if report.task_change < 0 else 'flat' }}">{{ report.task_change_text }}</span>
+      <span>na semana</span>
+    </span>
+  </a>
+  <a class="bento-card report-kpi" href="{{ url_for('water.index') }}">
+    <span class="report-kpi-label"><span>Água · média diária</span><i class="bi bi-droplet"></i></span>
+    <strong>{{ report.water_display }}</strong>
+    <span class="report-kpi-foot">
+      <span class="report-change {{ 'up' if report.water_change and report.water_change > 0 else 'down' if report.water_change and report.water_change < 0 else 'flat' }}">{{ report.water_change_text }}</span>
+      <span>{{ current.water_days }}/7 dias na faixa</span>
+    </span>
+  </a>
+  <a class="bento-card report-kpi" href="{{ url_for('mood.index') }}">
+    <span class="report-kpi-label"><span>Humor · média</span><i class="bi bi-emoji-smile"></i></span>
+    <strong>{{ report.mood_display }} <small>/5</small></strong>
+    <span class="report-kpi-foot">
+      <span class="report-change {{ 'up' if report.mood_change > 0 else 'down' if report.mood_change < 0 else 'flat' }}">{{ report.mood_change_text }}</span>
+      <span>{{ current.mood_count }} check-in{{ 's' if current.mood_count != 1 }}</span>
+    </span>
+  </a>
+</div>
+
+<div class="report-main-grid">
+  <section class="bento-card report-chart-card">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-bar-chart-line"></i> Ritmo da semana</h2>
+      <div class="report-legend"><span><i class="legend-focus"></i> foco (min)</span><span><i class="legend-tasks"></i> tarefas</span></div>
+    </div>
+    {% set chart_max = report.current.focus_max or 60 %}
+    <div class="report-chart-wrap">
+      <div class="report-chart-grid" aria-hidden="true">
+        {% for tick in [100, 75, 50, 25, 0] %}
+        <span style="bottom: {{ tick }}%"><em>{{ ((chart_max * tick / 100)|round|int) }}</em></span>
+        {% endfor %}
+      </div>
+      <div class="report-bars">
+        {% for day in current.days %}
+        <div class="report-day-column">
+          <div class="report-day-bars">
+            <span class="report-bar report-bar-focus {{ 'is-today' if day.is_today }}" style="height: {{ day.focus_height }}%" title="{{ day.label }}: {{ day.focus_minutes }} min de foco"></span>
+            <span class="report-bar report-bar-tasks" style="height: {{ day.task_height }}%" title="{{ day.label }}: {{ day.tasks }} tarefas concluídas"></span>
+          </div>
+          <span class="report-day-label {{ 'is-today' if day.is_today }}">{{ day.label }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="report-chart-foot">
+      {% if current.focus_minutes %}
+      <span><strong>Melhor dia:</strong> {{ report.best_day.label }}, {{ report.best_day.focus_minutes }} min de foco</span>
+      {% else %}
+      <span>Ainda não há sessões de foco nesta semana.</span>
+      {% endif %}
+      <a class="card-link" href="{{ url_for('pomodoro.focus') }}">abrir Pomodoro <i class="bi bi-arrow-up-right"></i></a>
+    </div>
+  </section>
+
+  <div class="report-side">
+    <section class="bento-card report-donut-card">
+      <div class="card-head"><h2 class="card-title"><i class="bi bi-pie-chart"></i> Onde foi o foco</h2><span class="card-link">{{ report.focus_display }}</span></div>
+      <div class="report-donut-row">
+        <div class="report-donut" style="background: {{ report.donut_style or 'conic-gradient(var(--line) 0 100%)' }}"><span>{{ report.focus_display }}</span></div>
+        <div class="report-donut-legend">
+          {% for category in current.categories_with_focus[:5] %}
+          <a href="{{ url_for('tasks.index', categoria=category.key) }}"><i style="background: {{ ['var(--lav)','var(--cyan)','var(--amber)','var(--green)','var(--coral)'][loop.index0] }}"></i>{{ category.label }} <b>{{ category.percent }}%</b></a>
+          {% else %}
+          <span class="form-hint">Sem foco registrado.</span>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section class="bento-card report-insights">
+      <div class="card-head"><h2 class="card-title"><i class="bi bi-stars"></i> O que a semana mostra</h2><span class="card-link">pistas</span></div>
+      {% for insight in report.insights %}
+      <div class="report-insight report-insight-{{ insight.kind }}">
+        <strong>{{ insight.title }}</strong>
+        <span>{{ insight.text }}</span>
+      </div>
+      {% endfor %}
+    </section>
+  </div>
+</div>
+
+<div class="report-bottom-grid">
+  <section class="bento-card report-heatmap-card">
+    <div class="card-head"><h2 class="card-title"><i class="bi bi-grid-3x3-gap"></i> Semana em detalhe</h2><span class="card-link">{{ report.week_start.strftime('%d/%m') }} – {{ report.week_end.strftime('%d/%m') }}</span></div>
+    <div class="report-heatmap">
+      <span></span>
+      {% for day in current.days %}<span class="report-heat-day">{{ day.label }}</span>{% endfor %}
+      <span class="report-heat-label">Foco</span>
+      {% for day in current.days %}<span class="report-heat-cell heat-focus-{{ day.focus_level }}" title="{{ day.focus_minutes }} min">{{ day.focus_minutes }}</span>{% endfor %}
+      <span class="report-heat-label">Tarefas</span>
+      {% for day in current.days %}<span class="report-heat-cell heat-task-{{ day.task_level }}" title="{{ day.tasks }} tarefas">{{ day.tasks }}</span>{% endfor %}
+      <span class="report-heat-label">Água</span>
+      {% for day in current.days %}<span class="report-heat-cell heat-water-{{ day.water_level }}" title="{{ day.water_ml }} ml">{{ ('%.1f'|format(day.water_ml / 1000)).replace('.', ',') }}L</span>{% endfor %}
+      <span class="report-heat-label">Humor</span>
+      {% for day in current.days %}<span class="report-heat-cell heat-mood-{{ day.mood_level }}" title="{{ day.mood_avg }}/5">{{ ('%.1f'|format(day.mood_avg)).replace('.', ',') if day.mood_count else '—' }}</span>{% endfor %}
+    </div>
+    <div class="report-heat-legend"><span>menos</span><i></i><i></i><i></i><span>mais</span><span class="ms-auto">dias com check-in de humor</span></div>
+  </section>
+
+  <section class="bento-card report-compare-card">
+    <div class="card-head"><h2 class="card-title"><i class="bi bi-arrow-left-right"></i> Semana anterior</h2><span class="report-change {{ 'up' if report.focus_change and report.focus_change > 0 else 'down' if report.focus_change and report.focus_change < 0 else 'flat' }}">{{ report.focus_change_text }}</span></div>
+    {% for row in report.comparison_rows %}
+    <div class="report-compare-row">
+      <span>{{ row.label }}</span>
+      <div class="report-compare-track"><i style="width: {{ row.width }}%"></i></div>
+      <b>{{ row.value }}</b>
+    </div>
+    {% endfor %}
+    <div class="report-compare-foot"><span class="report-week-tag">esta semana</span><span class="report-week-tag muted">anterior</span><span class="ms-auto">sem julgamento</span></div>
+  </section>
+</div>
+
+<div class="report-pagenote">
+  <span><i class="bi bi-lock"></i> Dados privados. Água e humor são apoio ao autoconhecimento, não diagnóstico.</span>
+  <a class="btn btn-ghost btn-sm report-review-handoff" href="{{ url_for('review.weekly', semana=report.week_start.isoformat()) }}"><i class="bi bi-journal-check"></i> Levar esta leitura para a revisão <i class="bi bi-arrow-right"></i></a>
+</div>
+{% endblock %}

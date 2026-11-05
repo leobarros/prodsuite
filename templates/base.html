@@ -99,6 +99,9 @@
       <a class="side-link {{ 'active' if ep == 'review.weekly' }}" href="{{ url_for('review.weekly') }}" aria-keyshortcuts="Alt+E">
         <i class="bi bi-journal-check"></i><span>Revisão</span>
       </a>
+      <a class="side-link {{ 'active' if ep.startswith('reports.') }}" href="{{ url_for('reports.weekly') }}" aria-keyshortcuts="Alt+L" title="Relatório semanal · Alt+L">
+        <i class="bi bi-bar-chart-line"></i><span>Relatório</span>
+      </a>
     </nav>
 
     <div class="sidebar-footer">
@@ -243,6 +246,7 @@
             <div><kbd>Alt</kbd> + <kbd>R</kbd><span>Anotações</span></div>
             <div><kbd>Alt</kbd> + <kbd>O</kbd><span>Notas</span></div>
             <div><kbd>Alt</kbd> + <kbd>E</kbd><span>Revisão</span></div>
+            <div><kbd>Alt</kbd> + <kbd>L</kbd><span>Relatório</span></div>
             <div><kbd>Alt</kbd> + <kbd>F</kbd><span>Buscar</span></div>
             <div><kbd>Alt</kbd> + <kbd>N</kbd><span>Nova tarefa</span></div>
             <div><kbd>Alt</kbd> + <kbd>C</kbd><span>Captura rápida</span></div>
@@ -268,6 +272,7 @@
        data-scratchpad="{{ url_for('scratchpad.index') }}"
        data-notes="{{ url_for('notes.index') }}"
        data-review="{{ url_for('review.weekly') }}"
+       data-report="{{ url_for('reports.weekly') }}"
        data-search="{{ url_for('main.search') }}"></div>
 
   {% include "_bottom_nav.html" %}

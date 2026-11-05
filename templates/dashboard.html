@@ -13,6 +13,9 @@
     <a class="btn btn-ghost btn-sm" href="{{ url_for('planner.plan') }}">
       <i class="bi bi-calendar2-check"></i> Planejar meu dia
     </a>
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('reports.weekly') }}">
+      <i class="bi bi-bar-chart-line"></i> Relatório
+    </a>
     <a class="btn btn-neon btn-sm" href="{{ url_for('tasks.index', nova=1) }}">
       <i class="bi bi-plus-lg"></i> Nova tarefa
     </a>
@@ -229,6 +232,7 @@
     <div data-weekly-chart-host>{{ weekly_chart(stats) }}</div>
     <div class="stat-foot mt-3">
       <a class="card-link" href="{{ url_for('review.weekly') }}">revisão da semana <i class="bi bi-arrow-up-right"></i></a>
+      <a class="card-link" href="{{ url_for('reports.weekly') }}">relatório visual <i class="bi bi-bar-chart-line"></i></a>
       <strong class="text-emerald">{{ week_metrics.sessions }}/{{ week_metrics.goal }} sessões</strong>
     </div>
   </section>

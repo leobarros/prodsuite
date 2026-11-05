@@ -834,6 +834,7 @@
         KeyR: shortcutUrls.scratchpad,
         KeyO: shortcutUrls.notes,
         KeyE: shortcutUrls.review,
+        KeyL: shortcutUrls.report,
         KeyF: shortcutUrls.search,
         KeyN: shortcutUrls.newTask,
       };

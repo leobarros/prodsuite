@@ -12,6 +12,7 @@ from forms import WeeklyReviewForm
 from models import PomodoroCycle, Task, WeeklyReview
 from services.archive import archive_week, count_unarchived_week
 from services.planning import week_start_for, weekly_metrics
+from services.reports import report_for
 from services.review_prompt import pending_week_review
 from services.timeutils import day_start_utc, local_today, to_local
 
@@ -38,6 +39,7 @@ def weekly():
     current_week_start = week_start_for(today)
     week_start = _requested_week_start()
     metrics = weekly_metrics(current_user, week_start)
+    report_snapshot = report_for(current_user, week_start.isoformat())
     review = WeeklyReview.query.filter_by(
         user_id=current_user.id, week_start=week_start
     ).first()
@@ -67,6 +69,7 @@ def weekly():
     return render_template(
         "review.html",
         metrics=metrics,
+        report_snapshot=report_snapshot,
         review=review,
         form=form,
         editing=editing,
