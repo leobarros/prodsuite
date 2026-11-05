@@ -35,9 +35,11 @@ coverage:
 	$(VENV)/bin/python -m pytest --cov=. --cov-report=term-missing
 
 run:
+	@test -x "$(VENV)/bin/flask" || { 		echo "Flask não encontrado em $(VENV)/bin/flask."; 		echo "O ambiente existe, mas as dependências não foram instaladas."; 		echo "Rode: make install"; 		exit 1; 	}
 	$(VENV)/bin/flask --app app run --debug
 
 init-db:
+	@test -x "$(VENV)/bin/flask" || { echo "Dependências ausentes. Rode: make install"; exit 1; }
 	$(VENV)/bin/flask --app app init-db
 
 icons:
