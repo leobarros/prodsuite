@@ -150,7 +150,7 @@
       {% for task in column_tasks[column.id] %}
       <article class="task-card quadrant-{{ task.quadrant or 'none' }} {{ 'is-done' if task.is_done }} {{ 'is-overdue' if task.is_overdue }}"
                draggable="true" data-task-id="{{ task.id }}" data-column-id="{{ task.column_id }}"
-               data-task-url="{{ url_for('tasks.edit', task_id=task.id) }}"
+               data-task-url="{{ url_for('tasks.detail', task_id=task.id) }}"
                title="Clique duas vezes para abrir a tarefa">
         <div class="task-top">
           <div class="d-flex flex-wrap gap-1 justify-content-end">
@@ -180,7 +180,7 @@
             </form>
           </div>
         </div>
-        <a class="task-title" href="{{ url_for('tasks.edit', task_id=task.id) }}">{{ task.title }}</a>
+        <a class="task-title" href="{{ url_for('tasks.detail', task_id=task.id) }}">{{ task.title }}</a>
         {% if task.description %}
         <p class="task-desc">{{ task.description }}</p>
         {% endif %}

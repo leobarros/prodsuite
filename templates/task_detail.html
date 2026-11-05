@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}{{ task.title }}{% endblock %}
+
+{% block content %}
+<div class="page-head task-detail-head">
+  <div>
+    <p class="eyebrow"><a href="{{ url_for('tasks.index') }}">tarefas</a> <span class="sep">/</span> {% if task.project %}{{ task.project.name }} <span class="sep">/</span> {% endif %}#{{ task.id }}</p>
+    <h1 class="page-title">{{ task.title }}</h1>
+    <div class="task-detail-meta">
+      <span class="task-flag"><i class="bi {{ task.category_icon }}"></i> {{ task.category_label }}</span>
+      <span class="chip {{ 'is-done' if task.is_done }}">{{ task.status_label }}</span>
+      {% if task.due_date %}<span class="task-flag {{ 'task-flag-overdue' if task.is_overdue }}"><i class="bi bi-calendar3"></i> {{ task.due_date|datebr }}</span>{% endif %}
+      {% if task.is_mit %}<span class="task-flag task-flag-mit"><i class="bi bi-star-fill"></i> prioridade</span>{% endif %}
+      {% if task.repeat_daily %}<span class="task-flag task-flag-daily"><i class="bi bi-arrow-repeat"></i> diária · {{ task.daily_target }}×/dia</span>{% endif %}
+    </div>
+  </div>
+  <div class="task-detail-actions">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('tasks.index') }}"><i class="bi bi-arrow-left"></i> Tarefas</a>
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('tasks.edit', task_id=task.id) }}"><i class="bi bi-pencil-square"></i> Editar tarefa</a>
+    {% if not task.is_done %}
+    <a class="btn btn-neon btn-sm" href="{{ url_for('pomodoro.focus', tarefa=task.id) }}"><i class="bi bi-play-fill"></i> Focar</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="task-detail-layout">
+  <div class="task-detail-main">
+    <section class="bento-card task-detail-context">
+      <div class="card-head">
+        <h2 class="card-title"><i class="bi bi-text-paragraph"></i> Contexto</h2>
+        <a class="card-link" href="{{ url_for('tasks.edit', task_id=task.id) }}">editar</a>
+      </div>
+      {% if task.description %}
+      <p class="task-description">{{ task.description }}</p>
+      {% else %}
+      <p class="form-hint mb-0">Sem contexto ainda. Use “Editar tarefa” para adicionar detalhes.</p>
+      {% endif %}
+      {% if task.tag_list %}
+      <div class="task-tags mt-3">{% for tag in task.tag_list %}<span class="tag">#{{ tag }}</span>{% endfor %}</div>
+      {% endif %}
+    </section>
+
+    <section class="bento-card task-detail-attachments" id="anexos">
+      <div class="card-head">
+        <h2 class="card-title"><i class="bi bi-paperclip"></i> Anexos</h2>
+        <span class="card-link">{{ attachments|length }} arquivo{{ 's' if attachments|length != 1 }}</span>
+      </div>
+      {% if attachments %}
+      <div class="task-attachment-list">
+        {% for attachment in attachments %}
+        <div class="task-attachment">
+          {% if attachment.is_image %}
+          <a class="task-attachment-thumb" href="{{ url_for('tasks.download_attachment', task_id=task.id, attachment_id=attachment.id) }}" target="_blank" rel="noopener">
+            <img src="{{ url_for('tasks.download_attachment', task_id=task.id, attachment_id=attachment.id) }}" alt="{{ attachment.original_name }}" loading="lazy">
+          </a>
+          {% else %}
+          <span class="task-attachment-icon"><i class="bi bi-file-earmark"></i></span>
+          {% endif %}
+          <div class="task-attachment-info">
+            <a href="{{ url_for('tasks.download_attachment', task_id=task.id, attachment_id=attachment.id, download=1) }}">{{ attachment.original_name }}</a>
+            <span>{{ attachment.size_label }}{% if attachment.comment_id %} · em comentário{% endif %}</span>
+          </div>
+          <form method="post" action="{{ url_for('tasks.delete_attachment', task_id=task.id, attachment_id=attachment.id) }}" data-confirm="Remover este anexo?">
+            {{ csrf() }}
+            <button class="icon-btn-sm" type="submit" aria-label="Remover anexo" title="Remover anexo"><i class="bi bi-x-lg"></i></button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="form-hint">Nenhum anexo ainda. Imagens e arquivos ficam privados nesta tarefa.</p>
+      {% endif %}
+      <form class="task-attachment-upload" method="post" action="{{ url_for('tasks.add_attachments', task_id=task.id) }}" enctype="multipart/form-data">
+        {{ csrf() }}
+        <label class="visually-hidden" for="attachmentFiles">Anexar arquivos</label>
+        <input class="form-control" id="attachmentFiles" type="file" name="files" multiple accept=".png,.jpg,.jpeg,.gif,.webp,.pdf,.txt,.csv,.md">
+        <button class="btn btn-ghost btn-sm" type="submit"><i class="bi bi-paperclip"></i> Anexar arquivo</button>
+      </form>
+      <p class="form-hint mb-0">Imagens, PDF, TXT, CSV ou Markdown · até 8 MB por arquivo.</p>
+    </section>
+
+    <section class="bento-card task-activity" id="atividade">
+      <div class="card-head">
+        <h2 class="card-title"><i class="bi bi-chat-left-text"></i> Comentários</h2>
+        <span class="form-hint"><i class="bi bi-lock"></i> visível só para você</span>
+      </div>
+      <p class="page-sub">Registre o que você fez, decisões e o que está travando. Sem avatar e sem feed social.</p>
+
+      {% if comments %}
+      <div class="task-comments">
+        {% for comment in comments %}
+        <article class="task-comment">
+          <div class="task-comment-head">
+            <time>{{ comment.created_at|localtime('%d/%m/%Y · %H:%M') }}</time>
+            <form method="post" action="{{ url_for('tasks.delete_comment', task_id=task.id, comment_id=comment.id) }}" data-confirm="Remover este comentário e seus anexos?">
+              {{ csrf() }}
+              <button class="icon-btn-sm" type="submit" aria-label="Remover comentário" title="Remover comentário"><i class="bi bi-x-lg"></i></button>
+            </form>
+          </div>
+          {% if comment.body %}<p>{{ comment.body }}</p>{% endif %}
+          {% for attachment in comment.attachments.all() %}
+          <div class="task-comment-attachment">
+            {% if attachment.is_image %}
+            <a href="{{ url_for('tasks.download_attachment', task_id=task.id, attachment_id=attachment.id) }}" target="_blank" rel="noopener">
+              <img src="{{ url_for('tasks.download_attachment', task_id=task.id, attachment_id=attachment.id) }}" alt="{{ attachment.original_name }}" loading="lazy">
+            </a>
+            {% else %}
+            <i class="bi bi-file-earmark"></i>
+            {% endif %}
+            <a href="{{ url_for('tasks.download_attachment', task_id=task.id, attachment_id=attachment.id, download=1) }}">{{ attachment.original_name }}</a>
+            <span>{{ attachment.size_label }}</span>
+          </div>
+          {% endfor %}
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state task-comment-empty">
+        <i class="bi bi-chat-left-text"></i>
+        <span>Ainda não há comentários. O primeiro pode ser o que você já fez ou onde está travando.</span>
+      </div>
+      {% endif %}
+
+      <form class="task-comment-form" method="post" action="{{ url_for('tasks.add_comment', task_id=task.id) }}" enctype="multipart/form-data">
+        {{ csrf() }}
+        <label class="visually-hidden" for="commentBody">Comentário</label>
+        <textarea class="form-control" id="commentBody" name="body" rows="3" maxlength="2000" placeholder="O que você fez? O que está travando?"></textarea>
+        <div class="task-comment-form-foot">
+          <label class="btn btn-ghost btn-sm task-file-label" for="commentFiles"><i class="bi bi-image"></i> Imagem ou arquivo</label>
+          <input class="visually-hidden" id="commentFiles" type="file" name="files" multiple accept=".png,.jpg,.jpeg,.gif,.webp,.pdf,.txt,.csv,.md">
+          <span class="form-hint" data-comment-files-label>Até 5 arquivos · 8 MB cada</span>
+          <button class="btn btn-neon btn-sm" type="submit"><i class="bi bi-arrow-up"></i> Comentar</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <aside class="task-detail-side">
+    <section class="bento-card">
+      <div class="card-head"><h2 class="card-title"><i class="bi bi-sliders"></i> Propriedades</h2><a class="card-link" href="{{ url_for('tasks.edit', task_id=task.id) }}">editar</a></div>
+      <div class="task-props">
+        <div><span>Status</span><strong>{{ task.status_label }}</strong></div>
+        <div><span>Prazo</span><strong>{{ task.due_date|datebr if task.due_date else '—' }}</strong></div>
+        <div><span>Estimativa</span><strong>{{ task.estimate_pomodoros }} sessõe{{ 's' if task.estimate_pomodoros != 1 }}</strong></div>
+        <div><span>Categoria</span><strong>{{ task.category_label }}</strong></div>
+        <div><span>Coluna</span><strong>{{ task.column.title if task.column else '—' }}</strong></div>
+        <div><span>Rotina diária</span><strong>{{ ('sim · ' ~ task.daily_target ~ '×/dia') if task.repeat_daily else 'não' }}</strong></div>
+      </div>
+    </section>
+
+    <section class="bento-card">
+      <div class="card-head"><h2 class="card-title"><i class="bi bi-clock-history"></i> Foco acumulado</h2><span class="card-link">Pomodoro</span></div>
+      <div class="task-focus-summary">
+        <strong>{{ task.completed_pomodoros }}/{{ task.estimate_pomodoros }}</strong>
+        <span>sessões concluídas</span>
+        <div class="stat-bar"><i class="bar-done" style="width: {{ task.progress_percent }}%"></i></div>
+      </div>
+      {% if not task.is_done %}
+      <a class="btn btn-cyan btn-sm mt-3" href="{{ url_for('pomodoro.focus', tarefa=task.id) }}"><span class="emoji-icon tomato-glyph" aria-hidden="true"></span> Começar foco</a>
+      {% endif %}
+    </section>
+
+    <section class="bento-card task-detail-info">
+      <div class="card-head"><h2 class="card-title"><i class="bi bi-info-circle"></i> Registro</h2></div>
+      <p>Criada em {{ task.created_at|localtime('%d/%m/%Y · %H:%M') }}.</p>
+      <p>Atualizada em {{ task.updated_at|localtime('%d/%m/%Y · %H:%M') }}.</p>
+      {% if task.completed_at %}<p>Concluída em {{ task.completed_at|localtime('%d/%m/%Y · %H:%M') }}.</p>{% endif %}
+    </section>
+
+    <section class="bento-card">
+      <div class="card-head"><h2 class="card-title"><i class="bi bi-trash3"></i> Excluir</h2></div>
+      <p class="form-hint">Remove a tarefa, comentários e anexos. Não há como desfazer.</p>
+      <form method="post" action="{{ url_for('tasks.delete', task_id=task.id) }}" data-confirm="Excluir definitivamente «{{ task.title }}» e seus anexos?">
+        {{ csrf() }}
+        <button class="btn btn-danger-ghost btn-sm" type="submit"><i class="bi bi-trash3"></i> Excluir tarefa</button>
+      </form>
+    </section>
+  </aside>
+</div>
+{% endblock %}

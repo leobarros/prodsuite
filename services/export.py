@@ -28,7 +28,9 @@ from models import (
     Project,
     Scratchpad,
     Task,
+    TaskAttachment,
     TaskColumnStay,
+    TaskComment,
     User,
     WaterLog,
     WaterSettings,
@@ -87,6 +89,16 @@ def build_user_export(user) -> bytes:
         .all()
     )
     water_settings = db.session.get(WaterSettings, user.id)
+    task_comments = (
+        TaskComment.query.filter_by(user_id=user.id)
+        .order_by(TaskComment.created_at.asc())
+        .all()
+    )
+    task_attachments = (
+        TaskAttachment.query.filter_by(user_id=user.id)
+        .order_by(TaskAttachment.created_at.asc())
+        .all()
+    )
     mood_entries = (
         MoodEntry.query.filter_by(user_id=user.id)
         .order_by(MoodEntry.created_at.asc())
@@ -142,6 +154,10 @@ def build_user_export(user) -> bytes:
         ),
         "water_logs": [log.to_export_dict() for log in water_logs],
         "mood_entries": [entry.to_export_dict() for entry in mood_entries],
+        "task_comments": [comment.to_export_dict() for comment in task_comments],
+        "task_attachments": [
+            attachment.to_export_dict() for attachment in task_attachments
+        ],
     }
     return json.dumps(payload, ensure_ascii=False, indent=2).encode("utf-8")
 
@@ -191,6 +207,8 @@ def build_user_db_snapshot(user) -> str:
                 "water_logs",
                 "water_settings",
                 "mood_entries",
+                "task_comments",
+                "task_attachments",
             ):
                 dest.execute(
                     f"DELETE FROM {table} WHERE user_id != ?",  # nome fixo allowlist
@@ -224,6 +242,8 @@ def backup_counts(user) -> dict:
         "weekly_reviews": WeeklyReview.query.filter_by(user_id=user.id).count(),
         "water_logs": WaterLog.query.filter_by(user_id=user.id).count(),
         "mood_entries": MoodEntry.query.filter_by(user_id=user.id).count(),
+        "task_comments": TaskComment.query.filter_by(user_id=user.id).count(),
+        "task_attachments": TaskAttachment.query.filter_by(user_id=user.id).count(),
     }
 
 

@@ -12,6 +12,7 @@ Cobrem:
 
 from __future__ import annotations
 
+import io
 import json
 import re
 import sqlite3
@@ -33,6 +34,8 @@ from models import (
     PomodoroCycle,
     Scratchpad,
     Task,
+    TaskAttachment,
+    TaskComment,
     User,
     WaterLog,
     WaterSettings,
@@ -1663,6 +1666,126 @@ class TestMood:
         assert response.status_code == 400
         with app.app_context():
             assert MoodEntry.query.count() == 0
+
+
+# ==========================================================================
+# DETALHE DA TAREFA / COMENTÁRIOS / ANEXOS
+# ==========================================================================
+class TestTaskDetail:
+    def _task(self, app, user_id):
+        with app.app_context():
+            task = Task(
+                user_id=user_id,
+                title="Tarefa com contexto",
+                description="Contexto privado da tarefa.",
+                estimate_pomodoros=2,
+                category="study",
+            )
+            db.session.add(task)
+            db.session.commit()
+            return task.id
+
+    def test_detail_is_read_only_and_has_comment_surface(
+        self, client, app, make_user
+    ):
+        user_id = make_user()
+        task_id = self._task(app, user_id)
+        login(client)
+        html = client.get(f"/tarefas/{task_id}").get_data(as_text=True)
+        assert "Contexto privado da tarefa." in html
+        assert "Progresso e comentários" in html or "Comentários" in html
+        assert "O que você fez? O que está travando?" in html
+        assert "Editar tarefa" in html
+        assert 'name="title"' not in html
+        assert f'href="/tarefas/{task_id}/editar"' in html
+
+    def test_comment_is_saved_without_user_identity_in_timeline(
+        self, client, app, make_user
+    ):
+        user_id = make_user()
+        task_id = self._task(app, user_id)
+        login(client)
+        response = client.post(
+            f"/tarefas/{task_id}/comentarios",
+            data={"body": "Fiz a primeira parte e travei no layout."},
+            follow_redirects=True,
+        )
+        assert response.status_code == 200
+        html = response.get_data(as_text=True)
+        assert "Fiz a primeira parte e travei no layout." in html
+        assert "task-comment" in html
+        with app.app_context():
+            comment = TaskComment.query.one()
+            assert comment.body.startswith("Fiz")
+            assert comment.user_id == user_id
+
+    def test_attachment_upload_and_private_download(self, client, app, make_user):
+        user_id = make_user()
+        task_id = self._task(app, user_id)
+        login(client)
+        png = (
+            b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
+            b"\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00"
+            b"\x1f\x15\xc4\x89\x00\x00\x00\x0aIEND\xaeB`\x82"
+        )
+        response = client.post(
+            f"/tarefas/{task_id}/anexos",
+            data={
+                "files": (io.BytesIO(png), "referencia.png"),
+            },
+            content_type="multipart/form-data",
+            follow_redirects=True,
+        )
+        assert response.status_code == 200
+        assert "referencia.png" in response.get_data(as_text=True)
+        with app.app_context():
+            attachment = TaskAttachment.query.one()
+            attachment_id = attachment.id
+            assert attachment.mime_type == "image/png"
+        file_response = client.get(
+            f"/tarefas/{task_id}/anexos/{attachment_id}"
+        )
+        assert file_response.status_code == 200
+        assert file_response.mimetype == "image/png"
+        download = client.get(
+            f"/tarefas/{task_id}/anexos/{attachment_id}?download=1"
+        )
+        assert download.status_code == 200
+        assert "attachment" in download.headers["Content-Disposition"]
+
+    def test_invalid_attachment_is_rejected(self, client, app, make_user):
+        user_id = make_user()
+        task_id = self._task(app, user_id)
+        login(client)
+        response = client.post(
+            f"/tarefas/{task_id}/anexos",
+            data={"files": (io.BytesIO(b"not allowed"), "script.exe")},
+            content_type="multipart/form-data",
+            follow_redirects=True,
+        )
+        assert response.status_code == 200
+        assert "Formato não permitido" in response.get_data(as_text=True)
+        with app.app_context():
+            assert TaskAttachment.query.count() == 0
+
+    def test_task_delete_removes_comment_and_attachment_records(self, client, app, make_user):
+        user_id = make_user()
+        task_id = self._task(app, user_id)
+        login(client)
+        client.post(
+            f"/tarefas/{task_id}/comentarios",
+            data={"body": "Registro"},
+        )
+        client.post(
+            f"/tarefas/{task_id}/anexos",
+            data={"files": (io.BytesIO(b"arquivo"), "nota.txt")},
+            content_type="multipart/form-data",
+        )
+        response = client.post(f"/tarefas/{task_id}/excluir", follow_redirects=True)
+        assert response.status_code == 200
+        with app.app_context():
+            assert TaskComment.query.count() == 0
+            assert TaskAttachment.query.count() == 0
 
 
 # ==========================================================================

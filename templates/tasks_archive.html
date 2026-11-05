@@ -30,7 +30,7 @@
     {% for task in group.tasks %}
     <div class="archive-row">
       <div class="archive-main">
-        <a class="archive-title" href="{{ url_for('tasks.edit', task_id=task.id) }}">{{ task.title }}</a>
+        <a class="archive-title" href="{{ url_for('tasks.detail', task_id=task.id) }}">{{ task.title }}</a>
         <span class="archive-meta">
           <i class="bi {{ task.category_icon }}"></i> {{ task.category_label }}
           {% if task.project %}<span class="sep">·</span> {{ task.project.name }}{% endif %}

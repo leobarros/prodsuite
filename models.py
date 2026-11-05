@@ -415,6 +415,20 @@ class Task(db.Model):
         passive_deletes=True,
         lazy="dynamic",
     )
+    comments = db.relationship(
+        "TaskComment",
+        back_populates="task",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        lazy="dynamic",
+    )
+    attachments = db.relationship(
+        "TaskAttachment",
+        back_populates="task",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        lazy="dynamic",
+    )
 
     # ------------------------------------------------------------- transições
     def move_to(self, status: str, when: datetime | None = None) -> None:
@@ -718,6 +732,100 @@ class PomodoroTimer(db.Model):
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<PomodoroTimer user={self.user_id} {self.mode} running={self.running}>"
+
+
+class TaskComment(db.Model):
+    """Comentário privado de progresso/problema em uma tarefa."""
+
+    __tablename__ = "task_comments"
+    __table_args__ = (
+        db.Index("ix_task_comments_task_created", "task_id", "created_at"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    task_id = db.Column(
+        db.Integer, db.ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False
+    )
+    body = db.Column(db.String(2000), nullable=False, default="")
+    created_at = db.Column(db.DateTime, nullable=False, default=utcnow, index=True)
+
+    task = db.relationship("Task", back_populates="comments")
+    attachments = db.relationship(
+        "TaskAttachment",
+        back_populates="comment",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        lazy="dynamic",
+    )
+
+    def to_export_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "task_id": self.task_id,
+            "body": self.body,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<TaskComment {self.id} task={self.task_id}>"
+
+
+class TaskAttachment(db.Model):
+    """Arquivo privado anexado a uma tarefa ou comentário."""
+
+    __tablename__ = "task_attachments"
+    __table_args__ = (
+        db.Index("ix_task_attachments_task_created", "task_id", "created_at"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    task_id = db.Column(
+        db.Integer, db.ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False
+    )
+    comment_id = db.Column(
+        db.Integer, db.ForeignKey("task_comments.id", ondelete="CASCADE"), nullable=True
+    )
+    original_name = db.Column(db.String(255), nullable=False)
+    stored_name = db.Column(db.String(255), nullable=False, unique=True)
+    mime_type = db.Column(db.String(120), nullable=False)
+    size_bytes = db.Column(db.Integer, nullable=False, default=0)
+    created_at = db.Column(db.DateTime, nullable=False, default=utcnow, index=True)
+
+    task = db.relationship("Task", back_populates="attachments")
+    comment = db.relationship("TaskComment", back_populates="attachments")
+
+    @property
+    def is_image(self) -> bool:
+        return self.mime_type.startswith("image/")
+
+    @property
+    def size_label(self) -> str:
+        size = max(0, int(self.size_bytes or 0))
+        if size < 1024:
+            return f"{size} B"
+        if size < 1024 * 1024:
+            return f"{size / 1024:.0f} KB"
+        return f"{size / (1024 * 1024):.1f} MB".replace(".", ",")
+
+    def to_export_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "task_id": self.task_id,
+            "comment_id": self.comment_id,
+            "original_name": self.original_name,
+            "mime_type": self.mime_type,
+            "size_bytes": self.size_bytes,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+    def __repr__(self) -> str:  # pragma: no cover
+        return f"<TaskAttachment {self.id} task={self.task_id}>"
 
 
 class PomodoroCycle(db.Model):

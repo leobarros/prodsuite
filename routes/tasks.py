@@ -11,6 +11,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    send_file,
     session,
     url_for,
 )
@@ -28,7 +29,9 @@ from models import (
     TASK_STATUS_LABELS,
     Scratchpad,
     Task,
+    TaskAttachment,
     TaskColumnStay,
+    TaskComment,
     normalize_tags,
     utcnow,
 )
@@ -50,6 +53,7 @@ from services.categories import (
 )
 from services.planning import week_start_for
 from services.task_creation import create_task_from_form
+from services.task_files import attachment_path, delete_attachment_file, save_attachment
 from services.timeutils import local_today
 
 tasks_bp = Blueprint("tasks", __name__)
@@ -362,6 +366,151 @@ def index():
     )
 
 
+@tasks_bp.get("/tarefas/<int:task_id>")
+@login_required
+def detail(task_id: int):
+    task = _get_task(task_id)
+    comments = (
+        TaskComment.query.filter_by(user_id=current_user.id, task_id=task.id)
+        .order_by(TaskComment.created_at.asc())
+        .all()
+    )
+    attachments = (
+        TaskAttachment.query.filter_by(user_id=current_user.id, task_id=task.id)
+        .order_by(TaskAttachment.created_at.asc())
+        .all()
+    )
+    return render_template(
+        "task_detail.html",
+        task=task,
+        comments=comments,
+        attachments=attachments,
+        **_task_timing_context(task),
+    )
+
+
+@tasks_bp.get("/tarefas/<int:task_id>/anexos/<int:attachment_id>")
+@login_required
+def download_attachment(task_id: int, attachment_id: int):
+    task = _get_task(task_id)
+    attachment = TaskAttachment.query.filter_by(
+        id=attachment_id, task_id=task.id, user_id=current_user.id
+    ).first_or_404()
+    path = attachment_path(attachment)
+    if not path.exists():
+        return ("Anexo não encontrado.", 404)
+    return send_file(
+        path,
+        mimetype=attachment.mime_type,
+        as_attachment=request.args.get("download") == "1",
+        download_name=attachment.original_name,
+        max_age=0,
+    )
+
+
+def _uploaded_files():
+    return [file for file in request.files.getlist("files") if file and file.filename]
+
+
+def _save_uploaded_files(task, files, comment=None):
+    saved = []
+    try:
+        for file in files:
+            saved.append(save_attachment(current_user, task, file, comment=comment))
+    except ValueError:
+        for attachment in saved:
+            delete_attachment_file(attachment)
+        raise
+    return saved
+
+
+@tasks_bp.post("/tarefas/<int:task_id>/comentarios")
+@login_required
+def add_comment(task_id: int):
+    task = _get_task(task_id)
+    body = (request.form.get("body") or "").strip()
+    files = _uploaded_files()
+    if not body and not files:
+        flash("Escreva um comentário ou anexe um arquivo.", "warning")
+        return redirect(url_for("tasks.detail", task_id=task.id))
+    if len(body) > 2000:
+        flash("O comentário pode ter no máximo 2000 caracteres.", "danger")
+        return redirect(url_for("tasks.detail", task_id=task.id))
+    if len(files) > 5:
+        flash("Envie no máximo 5 arquivos por comentário.", "warning")
+        return redirect(url_for("tasks.detail", task_id=task.id))
+
+    comment = TaskComment(
+        user_id=current_user.id,
+        task_id=task.id,
+        body=body,
+    )
+    db.session.add(comment)
+    db.session.flush()
+    try:
+        attachments = _save_uploaded_files(task, files, comment=comment)
+    except ValueError as exc:
+        db.session.rollback()
+        flash(str(exc), "danger")
+        return redirect(url_for("tasks.detail", task_id=task.id))
+    db.session.add_all(attachments)
+    db.session.commit()
+    flash("Comentário adicionado.", "success")
+    return redirect(url_for("tasks.detail", task_id=task.id) + "#atividade")
+
+
+@tasks_bp.post("/tarefas/<int:task_id>/anexos")
+@login_required
+def add_attachments(task_id: int):
+    task = _get_task(task_id)
+    files = _uploaded_files()
+    if not files:
+        flash("Escolha ao menos um arquivo.", "warning")
+        return redirect(url_for("tasks.detail", task_id=task.id))
+    if len(files) > 5:
+        flash("Envie no máximo 5 arquivos por vez.", "warning")
+        return redirect(url_for("tasks.detail", task_id=task.id))
+    try:
+        attachments = _save_uploaded_files(task, files)
+    except ValueError as exc:
+        db.session.rollback()
+        flash(str(exc), "danger")
+        return redirect(url_for("tasks.detail", task_id=task.id))
+    db.session.add_all(attachments)
+    db.session.commit()
+    flash("Anexo adicionado.", "success")
+    return redirect(url_for("tasks.detail", task_id=task.id) + "#anexos")
+
+
+@tasks_bp.post("/tarefas/<int:task_id>/anexos/<int:attachment_id>/excluir")
+@login_required
+def delete_attachment(task_id: int, attachment_id: int):
+    task = _get_task(task_id)
+    attachment = TaskAttachment.query.filter_by(
+        id=attachment_id, task_id=task.id, user_id=current_user.id
+    ).first_or_404()
+    delete_attachment_file(attachment)
+    db.session.delete(attachment)
+    db.session.commit()
+    flash("Anexo removido.", "info")
+    return redirect(url_for("tasks.detail", task_id=task.id) + "#anexos")
+
+
+@tasks_bp.post("/tarefas/<int:task_id>/comentarios/<int:comment_id>/excluir")
+@login_required
+def delete_comment(task_id: int, comment_id: int):
+    task = _get_task(task_id)
+    comment = TaskComment.query.filter_by(
+        id=comment_id, task_id=task.id, user_id=current_user.id
+    ).first_or_404()
+    for attachment in comment.attachments.all():
+        delete_attachment_file(attachment)
+    db.session.delete(comment)
+    db.session.commit()
+    flash("Comentário removido.", "info")
+    return redirect(url_for("tasks.detail", task_id=task.id) + "#atividade")
+
+
 @tasks_bp.get("/tarefas/<int:task_id>/editar")
 @login_required
 def edit(task_id: int):
@@ -446,7 +595,7 @@ def update(task_id: int):
         task.move_to(explicit_status)
     db.session.commit()
     flash("Tarefa atualizada.", "success")
-    return _redirect_back()
+    return redirect(url_for("tasks.detail", task_id=task.id))
 
 
 @tasks_bp.post("/tarefas/<int:task_id>/status")
@@ -1029,6 +1178,8 @@ def plan_today(task_id: int):
 @login_required
 def delete(task_id: int):
     task = _get_task(task_id)
+    for attachment in task.attachments.all():
+        delete_attachment_file(attachment)
     # Mantém rascunhos como histórico, mas desvincula a tarefa removida.
     Scratchpad.query.filter_by(
         user_id=current_user.id, converted_task_id=task.id

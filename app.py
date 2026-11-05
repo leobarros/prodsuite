@@ -242,6 +242,9 @@ def create_app(config_override: dict | None = None) -> Flask:
 
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
     _ensure_sqlite_directory(app)
+    Path(app.config.get("UPLOAD_FOLDER", app.instance_path)).mkdir(
+        parents=True, exist_ok=True
+    )
     configure_app_logging(app)
     # Registre o request_id antes do CSRF: erros de CSRF também precisam
     # carregar o mesmo identificador no log.

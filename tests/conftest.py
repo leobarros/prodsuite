@@ -36,6 +36,7 @@ def app(tmp_path):
             "PASSWORD_HASH_METHOD": "pbkdf2:sha256:1000",
             "CREATE_DB_ON_START": True,
             "APP_TIMEZONE": "America/Sao_Paulo",
+            "UPLOAD_FOLDER": str(tmp_path / "uploads"),
             "LOGIN_ATTEMPT_LIMIT": 5,
             "LOGIN_ATTEMPT_WINDOW_SECONDS": 300,
             "SERVER_NAME": None,

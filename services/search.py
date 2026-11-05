@@ -80,7 +80,7 @@ def global_search(user, query: str, limit_per_kind: int = MAX_PER_KIND) -> dict:
                     {
                         "title": task.title,
                         "snippet": _snippet(task.description or task.tags, term),
-                        "url": f"/tarefas/{task.id}/editar",
+                        "url": f"/tarefas/{task.id}",
                         "meta": task.status,
                     }
                     for task in tasks

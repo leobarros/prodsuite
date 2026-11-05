@@ -93,7 +93,7 @@
       <div>
         <span class="focus-task-label" data-focus-label>uma boa escolha para começar</span>
         <h3 class="focus-task-title mt-1">
-          <a href="{{ url_for('tasks.edit', task_id=focus_task.id) }}" data-focus-title-link><span data-focus-title>{{ focus_task.title }}</span></a>
+          <a href="{{ url_for('tasks.detail', task_id=focus_task.id) }}" data-focus-title-link><span data-focus-title>{{ focus_task.title }}</span></a>
         </h3>
         <div class="focus-task-meta" data-focus-meta>
           <span class="chip">
@@ -144,7 +144,7 @@
     {% if mit_tasks %}
     <div class="dashboard-mit-list dashboard-scroll-list">
       {% for task in mit_tasks %}
-      <a class="dashboard-mit-item" href="{{ url_for('tasks.edit', task_id=task.id) }}">
+      <a class="dashboard-mit-item" href="{{ url_for('tasks.detail', task_id=task.id) }}">
         <span class="mit-number">{{ loop.index }}</span>
         <span class="mit-main">
           <span class="mit-title">{{ task.title }}</span>
@@ -249,7 +249,7 @@
       <div class="due-row">
         <span class="due-dot {{ 'is-overdue' if task.is_overdue }}"></span>
         <span class="due-main">
-          <a class="due-title" href="{{ url_for('tasks.edit', task_id=task.id) }}">{{ task.title }}</a>
+          <a class="due-title" href="{{ url_for('tasks.detail', task_id=task.id) }}">{{ task.title }}</a>
           <span class="due-date {{ 'is-overdue' if task.is_overdue }}">{{ task.due_date|datebr }}{% if task.is_overdue %} · atrasada{% endif %}</span>
         </span>
       </div>

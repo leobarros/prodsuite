@@ -30,6 +30,16 @@ def _as_int(name: str, default: int) -> int:
         return default
 
 
+def _default_upload_folder() -> str:
+    explicit = os.environ.get("UPLOAD_FOLDER")
+    if explicit:
+        return explicit
+    database = _default_database_uri()
+    if database.startswith("sqlite:////data/"):
+        return "/data/uploads"
+    return str(BASE_DIR / "instance" / "uploads")
+
+
 def _default_database_uri() -> str:
     """SQLite local em ``instance/``; no container o volume fica em ``/data``."""
     explicit = os.environ.get("DATABASE_URL")
@@ -74,7 +84,20 @@ class Config:
     WTF_CSRF_ENABLED = True
     WTF_CSRF_TIME_LIMIT = None  # o token vive enquanto a sessão viver
     WTF_CSRF_SSL_STRICT = False  # compatível com tailnet em HTTP/HTTPS
-    MAX_CONTENT_LENGTH = 2 * 1024 * 1024  # 2 MB por request
+    MAX_CONTENT_LENGTH = 12 * 1024 * 1024  # 12 MB por request
+    ATTACHMENT_MAX_BYTES = 8 * 1024 * 1024  # 8 MB por arquivo
+    UPLOAD_FOLDER = _default_upload_folder()
+    ALLOWED_ATTACHMENT_EXTENSIONS = {
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".gif": "image/gif",
+        ".webp": "image/webp",
+        ".pdf": "application/pdf",
+        ".txt": "text/plain",
+        ".csv": "text/csv",
+        ".md": "text/markdown",
+    }
 
     # ------------------------------------------------------------- domínio
     APP_TIMEZONE = os.environ.get("APP_TIMEZONE", "America/Sao_Paulo")
