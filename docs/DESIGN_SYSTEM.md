@@ -30,6 +30,27 @@ Os tokens e componentes existentes ficam em `static/css/theme.css` e
 - Cores de dados em gráficos podem usar os tokens semânticos ou a paleta já
   definida no componente, nunca cores soltas na template quando houver token.
 
+## Botões
+
+- Use os componentes `.btn`, `.btn-sm` ou `.btn-xs`; não crie um botão com
+  altura ou raio próprios sem necessidade.
+- Botões de texto têm **34 px de altura** e cantos arredondados pelo
+  `--radius-sm`.
+- A largura é automática e depende do ícone e do texto. Não use largura fixa
+  nem estique o botão para preencher a linha, salvo um CTA de formulário
+  explicitamente full-width.
+- Botões na mesma linha ou grupo devem compartilhar a mesma altura.
+- Ícones dentro de botões devem ter tamanho relativo ao texto e herdar a cor do
+  botão; não podem desaparecer por regras globais de estado vazio.
+- `icon-btn`, `icon-btn-sm` e `btn-close` são utilitários de ícone e não seguem
+  a largura de um botão de texto, mas mantêm o raio do sistema.
+- `mode-btn` (segmentos) e `md-btn` (barra do editor) seguem a altura e o raio
+  do sistema; `water-quick-btn` é um tile de ação, não um botão de texto.
+- Não use `w-100`, `flex-grow`, `white-space: normal` ou `flex-shrink` em
+  botões de texto: a largura deve vir do conteúdo e o texto deve permanecer em
+  uma linha. Largura total só é permitida em um CTA de formulário explicitamente
+  projetado para isso.
+
 ## Validação mínima
 
 - Abrir as páginas alteradas em `data-theme="light"` e `data-theme="dark"`.

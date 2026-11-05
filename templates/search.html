@@ -11,10 +11,14 @@
 </div>
 
 <form class="search-box" method="get" action="{{ url_for('main.search') }}" role="search">
-  <label class="visually-hidden" for="globalSearch">Buscar</label>
-  <input class="form-control" type="search" id="globalSearch" name="q" value="{{ query }}"
-         placeholder="O que você está procurando?" autocomplete="off" autofocus>
-  <button class="btn btn-neon" type="submit"><i class="bi bi-search"></i> Buscar</button>
+  <div class="search-field">
+    <label class="visually-hidden" for="globalSearch">Buscar</label>
+    <input class="form-control" type="search" id="globalSearch" name="q" value="{{ query }}"
+           placeholder="O que você está procurando?" autocomplete="off" autofocus>
+    <button class="search-submit" type="submit" aria-label="Buscar" title="Buscar">
+      <i class="bi bi-search" aria-hidden="true"></i>
+    </button>
+  </div>
 </form>
 
 {% if query %}

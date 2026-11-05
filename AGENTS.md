@@ -45,3 +45,5 @@ explicar o bloqueio real.
 - Não introduza cores literais em superfícies, textos, bordas ou botões web.
   Use tokens. PDF e ilustrações têm exceções documentadas.
 - Relatório = dados; Revisão = decisões. Não duplique gráficos na revisão.
+- Botões: 34 px de altura, cantos arredondados e largura automática pelo
+  conteúdo. Não crie alturas/larguras fixas por tela sem justificativa.

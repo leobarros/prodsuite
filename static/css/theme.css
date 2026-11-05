@@ -7619,3 +7619,219 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
 .review-layout .review-side .review-completed {
   min-width: 0;
 }
+
+/* Ícones dentro de botões em estados vazios devem herdar a cor do botão. */
+.empty-state .btn i {
+  color: inherit;
+  font-size: 1em;
+  opacity: 1;
+}
+
+.review-empty .btn {
+  min-height: 36px;
+  font-size: .8rem;
+}
+
+/* Padrão de botões: mesma altura, raio do design system e largura pelo conteúdo. */
+.btn,
+.btn-sm,
+.btn-xs {
+  display: inline-flex;
+  width: auto;
+  height: 34px;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: .35rem;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.btn i,
+.btn-sm i,
+.btn-xs i {
+  line-height: 1;
+}
+
+.btn-sm {
+  padding-inline: 11px;
+}
+
+.btn-xs {
+  padding-inline: 9px;
+  border-radius: var(--radius-sm);
+}
+
+.btn-timer {
+  height: 34px;
+  min-height: 34px;
+  padding: 0 18px;
+  border-radius: 999px;
+}
+
+.review-empty .btn {
+  height: 34px;
+  min-height: 34px;
+  font-size: .78rem;
+}
+
+.report-actions .report-download,
+.report-actions .report-week-nav {
+  height: 34px;
+  min-height: 34px;
+}
+
+@media (max-width: 767.98px) {
+  .page-head .btn,
+  .page-head > .d-flex .btn {
+    width: auto;
+    flex: 0 0 auto;
+  }
+
+  .page-head > .d-flex {
+    width: auto;
+    max-width: 100%;
+  }
+}
+
+/* Botões não podem ser comprimidos pelo campo flexível ao lado. */
+.btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.search-box .form-control {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.search-box .btn {
+  flex: 0 0 auto;
+}
+
+/* Controles especiais que também são botões seguem o mesmo padrão. */
+.profile-grid .btn {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+.filter-selects .btn {
+  padding-block: 0;
+  padding-inline: 12px;
+}
+
+.md-btn {
+  display: inline-flex;
+  height: 34px;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+}
+
+.mode-btn {
+  display: inline-flex;
+  height: 34px;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  line-height: 1;
+}
+
+/* Últimos overrides de contexto: nenhum botão de texto quebra ou estica. */
+.page-head > .d-flex .btn {
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.task-actions .btn {
+  width: auto;
+}
+
+.btn-timer {
+  min-width: 0;
+}
+
+@media (max-width: 767.98px) {
+  .task-actions .btn,
+  .welcome-actions .btn,
+  .onboarding-modal .modal-footer .btn {
+    width: auto;
+  }
+}
+
+/* Busca integrada: campo e ação têm a mesma altura. */
+.search-box {
+  display: block;
+  max-width: 760px;
+  margin-bottom: 24px;
+}
+
+.search-field {
+  display: flex;
+  width: 100%;
+  height: 36px;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+
+.search-field:focus-within {
+  border-color: var(--emerald);
+  box-shadow: 0 0 0 0.2rem var(--emerald-dim);
+}
+
+.search-field .form-control {
+  height: 34px;
+  min-width: 0;
+  flex: 1;
+  align-self: center;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: .9rem;
+}
+
+.search-field .form-control:focus {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.search-submit {
+  display: grid;
+  width: 38px;
+  height: 34px;
+  flex: 0 0 38px;
+  place-items: center;
+  align-self: center;
+  border: 0;
+  border-radius: 0 9px 9px 0;
+  background: var(--emerald);
+  color: var(--on-accent);
+  font-size: 1rem;
+  line-height: 1;
+  transition: background .16s ease, color .16s ease;
+}
+
+.search-submit:hover,
+.search-submit:focus-visible {
+  background: color-mix(in srgb, var(--emerald) 88%, #000 12%);
+  color: var(--on-accent);
+}
+
+.search-submit:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: -3px;
+}

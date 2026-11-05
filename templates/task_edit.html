@@ -121,7 +121,7 @@
       {% if task.is_done %}
       <p class="form-hint mb-0">Reabra a tarefa para voltar a focar nela.</p>
       {% else %}
-      <a class="btn btn-cyan btn-sm w-100" href="{{ url_for('pomodoro.focus', tarefa=task.id) }}">
+      <a class="btn btn-cyan btn-sm" href="{{ url_for('pomodoro.focus', tarefa=task.id) }}">
         <span class="emoji-icon tomato-glyph" aria-hidden="true"></span> Começar foco nesta tarefa
       </a>
       {% endif %}
@@ -153,7 +153,7 @@
       <form method="post" action="{{ url_for('tasks.delete', task_id=task.id) }}"
             data-confirm="Excluir definitivamente «{{ task.title }}»?">
         {{ csrf() }}
-        <button class="btn btn-danger-ghost btn-sm w-100" type="submit"><i class="bi bi-trash3"></i> Excluir tarefa</button>
+        <button class="btn btn-danger-ghost btn-sm" type="submit"><i class="bi bi-trash3"></i> Excluir tarefa</button>
       </form>
     </section>
   </div>

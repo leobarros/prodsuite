@@ -93,9 +93,6 @@
 
     <nav class="side-section" aria-label="Sistema">
       <span class="side-label">ferramentas</span>
-      <a class="side-link {{ 'active' if ep == 'main.search' }}" href="{{ url_for('main.search') }}" aria-keyshortcuts="Alt+F">
-        <i class="bi bi-search"></i><span>Buscar</span>
-      </a>
       <a class="side-link {{ 'active' if ep == 'review.weekly' }}" href="{{ url_for('review.weekly') }}" aria-keyshortcuts="Alt+E">
         <i class="bi bi-journal-check"></i><span>Revisão</span>
       </a>
