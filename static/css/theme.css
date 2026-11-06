@@ -9370,3 +9370,44 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
   height: 6px;
   border-radius: 2px;
 }
+
+.water-composition {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.water-composition-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--dim);
+  font-size: .54rem;
+  margin-bottom: 5px;
+}
+
+.water-composition-head b {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: .51rem;
+  font-weight: 500;
+}
+
+.water-composition-track {
+  display: flex;
+  height: 7px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--line);
+}
+
+.water-composition-track > span {
+  display: block;
+  height: 100%;
+  min-width: 1px;
+  border-right: 1px solid color-mix(in srgb, var(--bg) 55%, transparent);
+}
+
+.water-composition-track > span:last-child {
+  border-right: 0;
+}

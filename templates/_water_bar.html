@@ -20,3 +20,19 @@
     {% endfor %}
   </div>
 </div>
+  <div class="water-composition">
+    <div class="water-composition-head">
+      <span>Composição das bebidas</span>
+      <b>{{ summary.bar_consumed_total }} ml registrados</b>
+    </div>
+    <div class="water-composition-track">
+      {% for segment in summary.bar_consumption %}
+      <span class="water-bar-{{ segment.key }}" style="width: {{ segment.percent }}%" title="{{ segment.label }}: {{ segment.display }} ml"></span>
+      {% endfor %}
+    </div>
+    <div class="water-bar-legend">
+      {% for segment in summary.bar_consumption %}
+      <span><i class="water-bar-dot water-bar-{{ segment.key }}"></i>{{ segment.label }} <b>{{ segment.display }} ml</b></span>
+      {% endfor %}
+    </div>
+  </div>

@@ -258,6 +258,23 @@ def summary_for(user, day=None):
     positive_total = sum(positive_by_kind.values())
     debit_total = sum(debit_by_kind.values())
     bar_max = max(target, positive_total, 1)
+    consumed_total = sum(volume_by_kind.values())
+    bar_consumption = []
+    for item in BEVERAGE_TYPES:
+        key = item["key"]
+        volume = volume_by_kind.get(key, 0)
+        if volume:
+            bar_consumption.append(
+                {
+                    "key": key,
+                    "label": item["label"],
+                    "volume": volume,
+                    "display": format_ml(volume),
+                    "percent": round(volume / consumed_total * 100, 2)
+                    if consumed_total
+                    else 0,
+                }
+            )
     for item in BEVERAGE_TYPES:
         key = item["key"]
         if positive_by_kind.get(key):
@@ -303,6 +320,8 @@ def summary_for(user, day=None):
         "other_summary": other_summary,
         "bar_positive": bar_positive,
         "bar_debit": bar_debit,
+        "bar_consumption": bar_consumption,
+        "bar_consumed_total": consumed_total,
         "bar_positive_total": round(positive_total, 1),
         "bar_debit_total": round(debit_total, 1),
         "bar_net_percent": round(max(0, net_hydration) / bar_max * 100, 2),
