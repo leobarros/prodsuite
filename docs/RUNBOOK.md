@@ -638,6 +638,13 @@ PY
 Sem os dois resultados, a entrega não está concluída. Para alterações de
 relatório/PDF, valide também o PDF dentro do Docker, não apenas no host.
 
+### Dados e relatório
+
+Toda funcionalidade que registre ou apresente dados deve atualizar o relatório
+semanal web e o PDF correspondente. Se houver comparação temporal relevante,
+ela deve aparecer no relatório. Dados não podem ficar disponíveis apenas na
+tela de origem.
+
 ### Validação visual obrigatória
 
 Toda mudança de interface deve ser conferida em **tema claro e tema escuro**.

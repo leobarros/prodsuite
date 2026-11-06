@@ -50,5 +50,8 @@ explicar o bloqueio real.
 - Não introduza cores literais em superfícies, textos, bordas ou botões web.
   Use tokens. PDF e ilustrações têm exceções documentadas.
 - Relatório = dados; Revisão = decisões. Não duplique gráficos na revisão.
+- Toda métrica ou dado registrado/exibido no app deve ter representação no
+  relatório semanal web e no PDF. Inclua comparação com período anterior quando
+  isso ajudar a leitura. Não crie dados órfãos no relatório.
 - Botões: 34 px de altura, cantos arredondados e largura automática pelo
   conteúdo. Não crie alturas/larguras fixas por tela sem justificativa.
