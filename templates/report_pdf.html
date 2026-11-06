@@ -150,7 +150,7 @@
   <h1>Sua semana<br>em perspectiva.</h1>
   <p class="lead">
     {% if current.focus_minutes or current.tasks or current.water_total or current.mood_count %}
-    Uma leitura dos seus registros entre {{ report.week_start.strftime('%d/%m') }} e {{ report.week_end.strftime('%d/%m') }}. Foco, tarefas e cuidado pessoal no mesmo lugar, para perceber evolução — não para gerar uma nota.
+    Uma leitura dos seus registros entre {{ report.week_start.strftime('%d/%m/%Y') }} e {{ report.week_end.strftime('%d/%m/%Y') }}. Foco, tarefas e cuidado pessoal no mesmo lugar, para perceber evolução — não para gerar uma nota.
     {% else %}
     Ainda há pouco movimento registrado nesta semana. Quando você registrar foco, tarefas, água ou humor, este relatório ganha forma.
     {% endif %}
@@ -169,10 +169,10 @@
       <table class="chart-table"><tr>
         <td class="chart-y" style="width:8mm"><span class="chart-y-label">{{ ((current.focus_max or 60) * 1.0)|round|int }}</span><span class="chart-y-label">{{ ((current.focus_max or 60) * 0.75)|round|int }}</span><span class="chart-y-label">{{ ((current.focus_max or 60) * 0.5)|round|int }}</span><span class="chart-y-label">{{ ((current.focus_max or 60) * 0.25)|round|int }}</span><span class="chart-y-label">0</span></td>
         {% for day in current.days %}
-        <td><div class="chart-stack"><span class="chart-bar bar-focus" style="height: {{ day.focus_height }}%"></span><span class="chart-bar bar-tasks" style="height: {{ day.task_height }}%"></span></div><div class="chart-day {{ 'today' if day.is_today }}">{{ day.label }}</div></td>
+        <td><div class="chart-stack"><span class="chart-bar bar-focus" style="height: {{ day.focus_height }}%"></span><span class="chart-bar bar-tasks" style="height: {{ day.task_height }}%"></span></div><div class="chart-day {{ 'today' if day.is_today }}">{{ day.label_full }}</div></td>
         {% endfor %}
       </tr></table>
-      <div class="chart-foot">{% if current.focus_minutes %}<strong>Melhor dia:</strong> {{ report.best_day.label }}, {{ report.best_day.focus_minutes }} min de foco em {{ report.best_day.focus_sessions }} {{ 'sessão' if report.best_day.focus_sessions == 1 else 'sessões' }}.{% else %}Ainda não há sessões de foco nesta semana.{% endif %}</div>
+      <div class="chart-foot">{% if current.focus_minutes %}<strong>Melhor dia:</strong> {{ report.best_day.label_full }}, {{ report.best_day.focus_minutes }} min de foco em {{ report.best_day.focus_sessions }} {{ 'sessão' if report.best_day.focus_sessions == 1 else 'sessões' }}.{% else %}Ainda não há sessões de foco nesta semana.{% endif %}</div>
     </div>
   </div>
 
@@ -204,7 +204,7 @@
   <div class="section">
     <div class="card">
       <table class="heat">
-        <tr><th class="label"></th>{% for day in current.days %}<th>{{ day.label }}</th>{% endfor %}</tr>
+        <tr><th class="label"></th>{% for day in current.days %}<th>{{ day.label_full }}</th>{% endfor %}</tr>
         <tr><th class="label">Foco</th>{% for day in current.days %}<td class="heat-focus-{{ day.focus_level }}">{{ day.focus_minutes }}m</td>{% endfor %}</tr>
         <tr><th class="label">Tarefas</th>{% for day in current.days %}<td class="heat-task-{{ day.task_level }}">{{ day.tasks }}</td>{% endfor %}</tr>
         <tr><th class="label">Água</th>{% for day in current.days %}<td class="heat-water-{{ day.water_level }}">{{ ('%.1f'|format(day.water_ml / 1000)).replace('.', ',') }}L</td>{% endfor %}</tr>

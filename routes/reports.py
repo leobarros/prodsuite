@@ -38,7 +38,9 @@ def pdf():
         generated_at=datetime.now(app_timezone()),
     )
     pdf_bytes = HTML(string=html, base_url=request.url_root).write_pdf()
-    filename = f"prodsuite-relatorio-{report['week_start'].isoformat()}.pdf"
+    filename = (
+        f"prodsuite-relatorio-{report['week_start'].strftime('%d-%m-%Y')}.pdf"
+    )
     response = make_response(pdf_bytes)
     response.headers["Content-Type"] = "application/pdf"
     response.headers["Content-Disposition"] = f'attachment; filename="{filename}"'

@@ -12,6 +12,15 @@ from services.timeutils import day_start_utc, format_minutes, local_today, to_lo
 from services.water import goal_range, settings_for
 
 DAY_LABELS = ("seg", "ter", "qua", "qui", "sex", "sáb", "dom")
+DAY_LABELS_FULL = (
+    "segunda",
+    "terça",
+    "quarta",
+    "quinta",
+    "sexta",
+    "sábado",
+    "domingo",
+)
 
 
 def normalize_week(raw: str | None) -> date:
@@ -133,6 +142,7 @@ def _collect(user, start: date) -> dict:
             {
                 "date": day,
                 "label": DAY_LABELS[index],
+                "label_full": DAY_LABELS_FULL[index],
                 "is_today": day == local_today(),
                 "focus_minutes": data["focus_minutes"],
                 "focus_sessions": data["focus_sessions"],
@@ -247,8 +257,12 @@ def report_for(user, raw_week: str | None = None) -> dict:
         insights.append(
             {
                 "kind": "focus",
-                "title": f"Seu melhor dia foi {best_day['label']}.",
-                "text": f"{best_day['focus_minutes']} minutos de foco em {best_day['focus_sessions']} sessões.",
+                "title": f"Seu melhor dia foi {best_day['label_full']}.",
+                "text": (
+                    f"{best_day['focus_minutes']} minutos de foco em "
+                    f"{best_day['focus_sessions']} "
+                    f"{'sessão' if best_day['focus_sessions'] == 1 else 'sessões'}."
+                ),
             }
         )
     if top_category:

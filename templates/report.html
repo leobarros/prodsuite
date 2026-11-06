@@ -12,7 +12,7 @@
   <div class="report-actions">
     <div class="report-week-nav" aria-label="Navegação entre semanas">
       <a href="{{ url_for('reports.weekly', semana=report.previous_start.isoformat()) }}" aria-label="Semana anterior" title="Semana anterior"><i class="bi bi-chevron-left"></i></a>
-      <span>{{ report.week_start.strftime('%d/%m') }} – {{ report.week_end.strftime('%d/%m') }}</span>
+      <span>{{ report.week_start.strftime('%d/%m/%Y') }} – {{ report.week_end.strftime('%d/%m/%Y') }}</span>
       {% if report.next_start %}
       <a href="{{ url_for('reports.weekly', semana=report.next_start.isoformat()) }}" aria-label="Próxima semana" title="Próxima semana"><i class="bi bi-chevron-right"></i></a>
       {% else %}
@@ -75,17 +75,17 @@
         {% for day in current.days %}
         <div class="report-day-column">
           <div class="report-day-bars">
-            <span class="report-bar report-bar-focus {{ 'is-today' if day.is_today }}" style="height: {{ day.focus_height }}%" title="{{ day.label }}: {{ day.focus_minutes }} min de foco"></span>
-            <span class="report-bar report-bar-tasks" style="height: {{ day.task_height }}%" title="{{ day.label }}: {{ day.tasks }} tarefas concluídas"></span>
+            <span class="report-bar report-bar-focus {{ 'is-today' if day.is_today }}" style="height: {{ day.focus_height }}%" title="{{ day.label_full }}: {{ day.focus_minutes }} min de foco"></span>
+            <span class="report-bar report-bar-tasks" style="height: {{ day.task_height }}%" title="{{ day.label_full }}: {{ day.tasks }} tarefas concluídas"></span>
           </div>
-          <span class="report-day-label {{ 'is-today' if day.is_today }}">{{ day.label }}</span>
+          <span class="report-day-label {{ 'is-today' if day.is_today }}">{{ day.label_full }}</span>
         </div>
         {% endfor %}
       </div>
     </div>
     <div class="report-chart-foot">
       {% if current.focus_minutes %}
-      <span><strong>Melhor dia:</strong> {{ report.best_day.label }}, {{ report.best_day.focus_minutes }} min de foco</span>
+      <span><strong>Melhor dia:</strong> {{ report.best_day.label_full }}, {{ report.best_day.focus_minutes }} min de foco</span>
       {% else %}
       <span>Ainda não há sessões de foco nesta semana.</span>
       {% endif %}
@@ -122,10 +122,10 @@
 
 <div class="report-bottom-grid">
   <section class="bento-card report-heatmap-card">
-    <div class="card-head"><h2 class="card-title"><i class="bi bi-grid-3x3-gap"></i> Semana em detalhe</h2><span class="card-link">{{ report.week_start.strftime('%d/%m') }} – {{ report.week_end.strftime('%d/%m') }}</span></div>
+    <div class="card-head"><h2 class="card-title"><i class="bi bi-grid-3x3-gap"></i> Semana em detalhe</h2><span class="card-link">{{ report.week_start.strftime('%d/%m/%Y') }} – {{ report.week_end.strftime('%d/%m/%Y') }}</span></div>
     <div class="report-heatmap">
       <span></span>
-      {% for day in current.days %}<span class="report-heat-day">{{ day.label }}</span>{% endfor %}
+      {% for day in current.days %}<span class="report-heat-day">{{ day.label_full }}</span>{% endfor %}
       <span class="report-heat-label">Foco</span>
       {% for day in current.days %}<span class="report-heat-cell heat-focus-{{ day.focus_level }}" title="{{ day.focus_minutes }} min">{{ day.focus_minutes }}</span>{% endfor %}
       <span class="report-heat-label">Tarefas</span>

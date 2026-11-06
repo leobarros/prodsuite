@@ -3169,6 +3169,8 @@ class TestReports:
         assert "Estudos" in html
         assert "2,0" in html
         assert "4,0" in html
+        assert "segunda" in html
+        assert "2026" in html
         assert 'href="/relatorio/pdf?semana=' in html
         assert 'href="/foco"' in html
         assert 'href="/agua/"' in html
