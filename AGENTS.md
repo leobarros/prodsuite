@@ -25,8 +25,8 @@ explicar o bloqueio real.
 
 7. Quando o usuário solicitar uma implementação, depois de concluir e validar
    localmente e no Docker, crie o commit automaticamente. Use uma mensagem
-   objetiva em português. Não peça permissão adicional para o commit e não faça
-   push sem pedido explícito.
+   objetiva em português. Em seguida, faça push para `origin/main` sem force.
+   Não peça permissão adicional para commit ou push.
 
 ## Segurança e dados
 
