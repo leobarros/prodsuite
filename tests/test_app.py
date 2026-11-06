@@ -1769,13 +1769,16 @@ class TestMood:
         assert html.count('data-mood-radar="frequency"') >= 2
         assert 'data-mood-radar="impact"' not in html
         assert 'mood-radar-chart' in html
-        assert "análise de frequência" in html
+        assert "análise de impacto" in html
+        assert "Como cada contexto aparece" in html
+        assert "mood-impact-list" in html
         with app.app_context():
             from services.mood import summary_for
             from models import User
             summary = summary_for(db.session.get(User, user_id))
             assert sum(item["share_percent"] for item in summary["context_summary"]) == pytest.approx(100, abs=0.2)
-        assert "Um check-in pode ter mais de um contexto" in html
+        assert "Associação descritiva" in html
+        assert "Amostra insuficiente" in html
         assert html.count("mood-context-item") == 6
         assert "alimenta o radar" not in html
         assert "bi-moon-stars" in html and "bi-house-heart" in html
@@ -1811,8 +1814,9 @@ class TestMood:
         html = client.get("/humor/").get_data(as_text=True)
         assert "Semana anterior" in html
         assert "mood-radar-compare-legend" in html
-        assert "mood-context-delta" in html
-        assert "Comparação descritiva" in html
+        assert "mood-impact-list" in html
+        assert "Associação descritiva" in html
+        assert "Amostra insuficiente" in html
 
     def test_mood_rejects_invalid_scale(self, client, app, make_user):
         make_user()

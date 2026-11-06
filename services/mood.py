@@ -6,6 +6,7 @@ from datetime import timedelta
 
 from extensions import db
 from models import MoodEntry, utcnow
+from services.mood_correlation import analyze_mood_correlation
 from services.mood_metrics import CheckIn, aggregate_mood_contexts
 from services.timeutils import day_start_utc, local_today, to_local
 
@@ -163,6 +164,25 @@ def summary_for(user):
         for entry in entries
     ]
     mood_metrics = aggregate_mood_contexts(metric_checkins)
+    impact_analysis = []
+    if metric_checkins:
+        correlation = analyze_mood_correlation(metric_checkins)
+        key_by_label = {label: key for key, label in CONTEXTS}
+        impact_analysis = [
+            {
+                "key": key_by_label[item.nome_contexto],
+                "label": item.nome_contexto,
+                "icon": CONTEXT_ICONS[key_by_label[item.nome_contexto]],
+                "frequencia": item.frequencia,
+                "media_humor": item.humor_medio_com_contexto,
+                "media_energia": item.media_energia,
+                "media_tensao": item.media_tensao,
+                "diagnostico": item.diagnostico,
+                "diagnostico_classe": item.diagnostico_classe,
+                "amostra_suficiente": item.amostra_suficiente,
+            }
+            for item in correlation.analise_contextos
+        ]
     metric_percentages = {
         item.contexto: item.percentual
         for item in mood_metrics.contextos_ordenados
@@ -234,6 +254,7 @@ def summary_for(user):
         "week_count": len(entries),
         "average_mood": average_mood,
         "context_summary": context_summary,
+        "impact_analysis": impact_analysis,
         "context_radar": context_radar,
         "frequency_max": max_context_count,
         "comparison_frequency_max": comparison_frequency_max,

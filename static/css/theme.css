@@ -9444,3 +9444,94 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
 .mood-context-item:has(input:checked) .mood-context-check {
   opacity: 1;
 }
+
+/* Dashboard de impacto dos contextos. */
+.mood-impact-list {
+  display: flex;
+  max-height: 315px;
+  flex-direction: column;
+  gap: 5px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.mood-impact-row {
+  display: block;
+  min-height: 0;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--dim);
+  border-radius: 7px;
+  background: var(--surface-soft);
+}
+
+.mood-impact-row.mood-impact-stress {
+  border-left-color: var(--coral);
+  background: color-mix(in srgb, var(--coral) 5%, var(--surface-soft));
+}
+
+.mood-impact-row.mood-impact-drain {
+  border-left-color: var(--amber);
+  background: color-mix(in srgb, var(--amber) 5%, var(--surface-soft));
+}
+
+.mood-impact-row.mood-impact-positive {
+  border-left-color: var(--green);
+  background: color-mix(in srgb, var(--green) 5%, var(--surface-soft));
+}
+
+.mood-impact-row.mood-impact-low {
+  border-left-color: var(--line-strong);
+  background: var(--surface-soft);
+  opacity: .7;
+}
+
+.mood-impact-row.mood-impact-low .mood-impact-badge {
+  color: var(--dim);
+}
+
+.mood-impact-head {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: .64rem;
+}
+
+.mood-impact-head > i {
+  color: var(--lav);
+  font-size: .72rem;
+}
+
+.mood-impact-head strong {
+  flex: 1;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.mood-impact-head > span {
+  color: var(--dim);
+  font-family: var(--font-mono);
+  font-size: .5rem;
+}
+
+.mood-impact-metrics {
+  display: flex;
+  gap: 9px;
+  margin: 4px 0 3px 22px;
+  color: var(--dim);
+  font-family: var(--font-mono);
+  font-size: .52rem;
+}
+
+.mood-impact-badge {
+  display: inline-block;
+  margin-left: 22px;
+  color: var(--muted);
+  font-size: .55rem;
+  line-height: 1.35;
+}
+
+.mood-impact-stress .mood-impact-badge { color: var(--coral); }
+.mood-impact-drain .mood-impact-badge { color: var(--amber); }
+.mood-impact-positive .mood-impact-badge { color: var(--green); }

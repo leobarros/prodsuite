@@ -157,7 +157,7 @@
       <div class="modal-header">
         <div>
           <h2 class="modal-title" id="moodRadarModalLabel"><i class="bi bi-pentagon text-emerald"></i> Contextos da semana</h2>
-          <p class="form-hint mb-0">Frequência nos check-ins dos últimos 7 dias.</p>
+          <p class="form-hint mb-0">Frequência e impacto dos check-ins dos últimos 7 dias.</p>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
@@ -170,8 +170,8 @@
             {% endif %}
           </div>
           <aside class="mood-radar-analysis">
-            <span class="mood-radar-kicker"><i class="bi bi-bar-chart"></i> análise de frequência</span>
-            <h3>O que mais apareceu</h3>
+            <span class="mood-radar-kicker"><i class="bi bi-activity"></i> análise de impacto</span>
+            <h3>Como cada contexto aparece</h3>
             <div class="mood-week-compare">
               <div><span>Humor médio agora</span><strong>{{ '%.1f'|format(summary.average_mood)|replace('.', ',') }} <small>/5</small></strong></div>
               <div><span>Semana anterior</span><strong>{{ '%.1f'|format(summary.previous_average_mood)|replace('.', ',') if summary.has_previous_data else '—' }}</strong></div>
@@ -179,21 +179,27 @@
                 {% if summary.mood_delta is not none %}{{ '%+.1f'|format(summary.mood_delta)|replace('.', ',') }}{% else %}sem base{% endif %}
               </em>
             </div>
-            <p class="mood-radar-analysis-note mood-compare-note"><i class="bi bi-info-circle"></i> Comparação descritiva com a semana anterior. Não é uma medida clínica de melhora.</p>
-            {% if summary.context_summary %}
-            <p class="mood-radar-analysis-lead">{{ summary.context_summary[0].label }} apareceu em <strong>{{ summary.context_summary[0].count }} de {{ summary.context_entry_count }}</strong> check-ins com contexto.</p>
-            <div class="mood-context-frequency-list">
-              {% for context in summary.context_summary %}
-              <div class="mood-context-frequency-row">
-                <span>{{ context.label }}</span>
-                <div class="mood-context-frequency-track"><i style="width: {{ context.share_percent }}%"></i></div>
-                <b>{{ context.count }}×</b>
-                <small>{{ ('%.1f'|format(context.share_percent)).replace('.', ',') }}%</small>
-                {% if summary.has_previous_data %}<em class="mood-context-delta {{ 'up' if context.count_delta > 0 else 'down' if context.count_delta < 0 else 'flat' }}">{{ '%+d'|format(context.count_delta) }}</em>{% endif %}
+            <p class="mood-radar-analysis-lead">Média de humor, energia e tensão quando o contexto esteve presente.</p>
+            {% if summary.impact_analysis %}
+            <div class="mood-impact-list">
+              {% for item in summary.impact_analysis %}
+              <div class="mood-impact-row mood-impact-{{ item.diagnostico_classe if item.amostra_suficiente else 'low' }}">
+                <div class="mood-impact-head">
+                  <i class="bi {{ item.icon }}"></i>
+                  <strong>{{ item.label }}</strong>
+                  {% if item.amostra_suficiente %}<span>{{ item.frequencia }}×</span>{% else %}<span>poucos dados</span>{% endif %}
+                </div>
+                <div class="mood-impact-metrics">
+                  <span>H {{ '%.1f'|format(item.media_humor)|replace('.', ',') }}</span>
+                  <span>E {{ '%.1f'|format(item.media_energia)|replace('.', ',') }}</span>
+                  <span>T {{ '%.1f'|format(item.media_tensao)|replace('.', ',') }}</span>
+                </div>
+                {% set diagnostic_labels = {'stress': 'Estresse alto', 'drain': 'Dreno de energia', 'positive': 'Bem-estar', 'neutral': 'Sem impacto crítico'} %}
+                <span class="mood-impact-badge" title="{{ item.diagnostico }}">{% if item.amostra_suficiente %}{{ diagnostic_labels.get(item.diagnostico_classe, item.diagnostico) }}{% else %}Amostra insuficiente{% endif %}</span>
               </div>
               {% endfor %}
             </div>
-            <p class="mood-radar-analysis-note"><i class="bi bi-info-circle"></i> As porcentagens somam 100% das menções de contexto. Um check-in pode ter mais de um contexto; frequência não mede impacto.</p>
+            <p class="mood-radar-analysis-note"><i class="bi bi-info-circle"></i> Associação descritiva no período. Não é diagnóstico clínico nem prova de causa.</p>
             {% else %}
             <p class="form-hint mb-0">Ainda não há contextos suficientes para analisar.</p>
             {% endif %}

@@ -21,8 +21,12 @@ class ContextStats:
     nome_contexto: str
     frequencia: int
     humor_medio_com_contexto: float
+    media_energia: float
+    media_tensao: float
     diferenca_para_media_geral: float
     classificacao_impacto: str
+    diagnostico: str
+    diagnostico_classe: str
     amostra_suficiente: bool
 
 
@@ -43,8 +47,12 @@ class CorrelationResult:
                 "nomeContexto": item.nome_contexto,
                 "frequencia": item.frequencia,
                 "humorMedioComContexto": item.humor_medio_com_contexto,
+                "mediaEnergia": item.media_energia,
+                "mediaTensao": item.media_tensao,
                 "diferencaParaMediaGeral": item.diferenca_para_media_geral,
                 "classificacaoImpacto": item.classificacao_impacto,
+                "diagnostico": item.diagnostico,
+                "diagnosticoClasse": item.diagnostico_classe,
                 "amostraSuficiente": item.amostra_suficiente,
             }
 
@@ -88,12 +96,17 @@ def analyze_mood_correlation(
 
     humor_total = 0
     context_sums: Counter[str] = Counter()
+    energy_sums: Counter[str] = Counter()
+    tension_sums: Counter[str] = Counter()
     context_counts: Counter[str] = Counter()
 
     for checkin in checkins:
         humor = int(checkin.humor)
-        if not 1 <= humor <= 5:
-            raise ValueError("Humor deve estar entre 1 e 5.")
+        energy = int(checkin.energia)
+        tension = int(checkin.tensao)
+        for name, value in (("humor", humor), ("energia", energy), ("tensão", tension)):
+            if not 1 <= value <= 5:
+                raise ValueError(f"{name.capitalize()} deve estar entre 1 e 5.")
         humor_total += humor
 
         contextos = {
@@ -103,6 +116,8 @@ def analyze_mood_correlation(
         }
         for contexto in contextos:
             context_sums[contexto] += humor
+            energy_sums[contexto] += energy
+            tension_sums[contexto] += tension
             context_counts[contexto] += 1
 
     media_geral = round(humor_total / len(checkins), 2)
@@ -110,6 +125,8 @@ def analyze_mood_correlation(
 
     for contexto, frequencia in context_counts.items():
         media_contexto = round(context_sums[contexto] / frequencia, 2)
+        media_energia = round(energy_sums[contexto] / frequencia, 2)
+        media_tensao = round(tension_sums[contexto] / frequencia, 2)
         diferenca = round(media_contexto - media_geral, 2)
         amostra_suficiente = frequencia >= min_sample
 
@@ -122,13 +139,30 @@ def analyze_mood_correlation(
         else:
             classificacao = "Neutro"
 
+        if media_tensao >= 3.8 and media_contexto <= 2.5:
+            diagnostico = "Gatilho de Estresse Alto"
+            diagnostico_classe = "stress"
+        elif media_energia <= 2.0 and media_contexto <= 2.5:
+            diagnostico = "Dreno de Energia (Sono/Cansaço Ruim)"
+            diagnostico_classe = "drain"
+        elif media_contexto >= 4.0 and media_energia >= 3.5:
+            diagnostico = "Fonte de Bem-Estar e Energia"
+            diagnostico_classe = "positive"
+        else:
+            diagnostico = "Neutro / Sem impacto crítico"
+            diagnostico_classe = "neutral"
+
         stats.append(
             ContextStats(
                 nome_contexto=contexto,
                 frequencia=frequencia,
                 humor_medio_com_contexto=media_contexto,
+                media_energia=media_energia,
+                media_tensao=media_tensao,
                 diferenca_para_media_geral=diferenca,
                 classificacao_impacto=classificacao,
+                diagnostico=diagnostico,
+                diagnostico_classe=diagnostico_classe,
                 amostra_suficiente=amostra_suficiente,
             )
         )

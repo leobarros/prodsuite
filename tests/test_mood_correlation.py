@@ -93,8 +93,32 @@ def test_json_contract_uses_expected_field_names():
         "nomeContexto": "Sono",
         "frequencia": 1,
         "humorMedioComContexto": 4.0,
+        "mediaEnergia": 3.0,
+        "mediaTensao": 3.0,
         "diferencaParaMediaGeral": 0.0,
         "classificacaoImpacto": "Neutro",
+        "diagnostico": "Neutro / Sem impacto crítico",
+        "diagnosticoClasse": "neutral",
         "amostraSuficiente": True,
     }
     assert "não implica causalidade" in payload["aviso"]
+
+
+def test_context_diagnosis_uses_energy_tension_and_humor_thresholds():
+    result = analyze_mood_correlation(
+        [
+            CheckIn(1, 1, 5, ("Trabalho",)),
+            CheckIn(2, 1, 4, ("Trabalho",)),
+            CheckIn(5, 5, 1, ("Família",)),
+            CheckIn(4, 4, 2, ("Família",)),
+        ],
+        min_sample=2,
+    )
+
+    by_name = {item.nome_contexto: item for item in result.analise_contextos}
+    assert by_name["Trabalho"].diagnostico == "Gatilho de Estresse Alto"
+    assert by_name["Trabalho"].diagnostico_classe == "stress"
+    assert by_name["Trabalho"].media_tensao == 4.5
+    assert by_name["Família"].diagnostico == "Fonte de Bem-Estar e Energia"
+    assert by_name["Família"].diagnostico_classe == "positive"
+    assert by_name["Família"].media_energia == 4.5
