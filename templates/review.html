@@ -37,7 +37,7 @@
   <div class="review-snapshot-grid">
     <a class="review-snapshot-item" href="{{ url_for('pomodoro.focus') }}"><span>Foco</span><strong>{{ report_snapshot.focus_display }}</strong><small>{{ report_snapshot.current.cycles }} sessões</small></a>
     <a class="review-snapshot-item" href="{{ url_for('tasks.index', filtro='hoje') }}"><span>Tarefas concluídas</span><strong>{{ report_snapshot.current.tasks }}</strong><small>na semana</small></a>
-    <a class="review-snapshot-item" href="{{ url_for('water.index') }}"><span>Água · média</span><strong>{{ report_snapshot.water_display }}</strong><small>{{ report_snapshot.current.water_days }}/7 dias na faixa</small></a>
+    <a class="review-snapshot-item" href="{{ url_for('water.index') }}"><span>Água pura · média</span><strong>{{ report_snapshot.water_display }}</strong><small>{{ report_snapshot.current.water_days }}/7 dias na faixa</small></a>
     <a class="review-snapshot-item" href="{{ url_for('mood.index') }}"><span>Humor · média</span><strong>{{ report_snapshot.mood_display }}<em>/5</em></strong><small>{{ report_snapshot.current.mood_count }} check-in{{ 's' if report_snapshot.current.mood_count != 1 }}</small></a>
   </div>
 </section>

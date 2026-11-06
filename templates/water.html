@@ -31,7 +31,7 @@
      data-water-goal-reached="{{ 1 if summary.status_key in ['in_range', 'above'] else 0 }}">
   <section class="bento-card water-hero">
     <div class="card-head">
-      <h2 class="card-title"><i class="bi bi-droplet-half"></i> Sua água de hoje</h2>
+      <h2 class="card-title"><i class="bi bi-droplet-half"></i> Sua hidratação de hoje</h2>
       <span class="card-link">{{ summary.day|datebr }}</span>
     </div>
     <div class="water-glass-stage">
@@ -81,15 +81,15 @@
         </svg>
       </div>
       <div class="water-glass-caption">
-        <strong data-water-total>{{ summary.total }}</strong> <span>ml de</span> <strong>{{ summary.goal.target }} ml</strong>
+        <strong data-water-total>{{ summary.net_hydration_display }}</strong> <span>ml líquidos de</span> <strong>{{ summary.goal.target }} ml</strong>
       </div>
     </div>
-    <div class="water-progress" role="progressbar" aria-label="Progresso de água" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ summary.percent }}">
+    <div class="water-progress" role="progressbar" aria-label="Progresso de hidratação líquida" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ summary.percent }}">
       <span data-water-percent style="width: {{ summary.percent }}%"></span>
     </div>
     <div class="water-meta-line">
-      <span><strong data-water-percent-label>{{ summary.percent }}%</strong> da faixa de hoje</span>
-      <span data-water-remaining-wrap>{% if summary.remaining %}faltam {{ summary.remaining }} ml{% else %}faixa atingida{% endif %}</span>
+      <span><strong data-water-percent-label>{{ summary.percent }}%</strong> da meta de hoje</span>
+      <span data-water-remaining-wrap>{% if summary.remaining %}faltam {{ summary.remaining_display }} ml{% else %}faixa atingida{% endif %}</span>
     </div>
     <div class="water-range-line">
       <div>
@@ -102,6 +102,12 @@
       <i class="bi bi-heart-pulse"></i>
       <p><strong>Sem exagero:</strong> a meta é uma referência, não uma prova. Pare quando saciar a sede, distribua ao longo do dia e evite grandes volumes em pouco tempo.</p>
     </div>
+    <div class="water-intake-breakdown">
+      <div><span>Água pura</span><strong data-water-water>{{ summary.water_display }} ml</strong></div>
+      <div><span>Outras bebidas</span><strong data-water-other-stat>{{ summary.other_display }} ml</strong></div>
+      <div><span>Compensação alcoólica</span><strong>{{ summary.compensation_display }} ml</strong></div>
+    </div>
+    <p class="water-algorithm-note"><i class="bi bi-info-circle"></i> Estimativa pelo algoritmo: água ×1,0; chá ×0,9; café coado ×0,8; espresso ×0,6; cerveja ×−0,5; vinho e destilado ×−1,2. Não é diagnóstico.</p>
   </section>
 
   <section class="bento-card water-add-card">
@@ -111,9 +117,12 @@
     </div>
     <div class="water-type-chips" data-water-types>
       <button class="water-type is-active" type="button" data-water-kind="water"><i class="bi bi-droplet"></i> Água</button>
-      <button class="water-type" type="button" data-water-kind="coffee"><i class="bi bi-cup-hot"></i> Café</button>
+      <button class="water-type" type="button" data-water-kind="coffee"><i class="bi bi-cup-hot"></i> Café coado</button>
       <button class="water-type" type="button" data-water-kind="tea"><i class="bi bi-cup-straw"></i> Chá</button>
+      <button class="water-type" type="button" data-water-kind="espresso"><i class="bi bi-cup-hot"></i> Espresso</button>
       <button class="water-type" type="button" data-water-kind="beer"><i class="bi bi-cup"></i> Cerveja</button>
+      <button class="water-type" type="button" data-water-kind="wine"><i class="bi bi-cup"></i> Vinho</button>
+      <button class="water-type" type="button" data-water-kind="spirits"><i class="bi bi-cup"></i> Destilado</button>
       <button class="water-type" type="button" data-water-kind="other"><i class="bi bi-plus"></i> Outro</button>
     </div>
     <div class="water-quick-grid">

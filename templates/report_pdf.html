@@ -159,7 +159,7 @@
   <table class="kpis"><tr>
     <td><div class="kpi"><span class="kpi-label">Foco</span><span class="kpi-value">{{ report.focus_display }}</span><span class="kpi-foot"><span class="{{ 'up' if report.focus_change and report.focus_change > 0 else 'down' if report.focus_change and report.focus_change < 0 else 'flat' }}">{{ report.focus_change_text }}</span> · {{ current.cycles }} sessões</span></div></td>
     <td><div class="kpi"><span class="kpi-label">Tarefas concluídas</span><span class="kpi-value">{{ current.tasks }}</span><span class="kpi-foot"><span class="{{ 'up' if report.task_change > 0 else 'down' if report.task_change < 0 else 'flat' }}">{{ report.task_change_text }}</span> · na semana</span></div></td>
-    <td><div class="kpi"><span class="kpi-label">Água · média diária</span><span class="kpi-value">{{ report.water_display }}</span><span class="kpi-foot">{{ current.water_days }}/7 dias na faixa</span></div></td>
+    <td><div class="kpi"><span class="kpi-label">Água pura · média diária</span><span class="kpi-value">{{ report.water_display }}</span><span class="kpi-foot">{{ current.water_days }}/7 dias na faixa</span></div></td>
     <td><div class="kpi"><span class="kpi-label">Humor · média</span><span class="kpi-value">{{ report.mood_display }}<small>/5</small></span><span class="kpi-foot">{{ current.mood_count }} check-in{{ 's' if current.mood_count != 1 }} · {{ report.mood_change_text }}</span></div></td>
   </tr></table>
 

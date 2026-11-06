@@ -1624,6 +1624,8 @@ class TestWater:
         payload = beer.get_json()
         assert payload["total"] == 0
         assert payload["other_total"] == 480
+        assert payload["net_hydration"] == -45.0
+        assert payload["compensation_ml"] == 495.0
         assert {item["key"] for item in payload["other_summary"]} == {"coffee", "beer"}
 
         with app.app_context():
@@ -1640,6 +1642,33 @@ class TestWater:
         assert "Hidratação, no seu ritmo" in page
         assert "Café" in page and "Cerveja" in page
         assert "data-water-other-total" in page
+
+    def test_hydration_algorithm_uses_coefficients_and_compensation(
+        self, client, app, make_user
+    ):
+        user_id = make_user()
+        login(client)
+        for amount, kind in (
+            (1000, "water"),
+            (200, "coffee"),
+            (700, "beer"),
+        ):
+            response = client.post(
+                "/agua/registrar",
+                json={"amount_ml": amount, "kind": kind},
+                headers={"X-Requested-With": "fetch"},
+            )
+            assert response.status_code == 200
+        with app.app_context():
+            from services.water import summary_for
+            from models import User
+
+            summary = summary_for(db.session.get(User, user_id))
+            assert summary["net_hydration"] == 810.0
+            assert summary["compensation_ml"] == 1050.0
+            assert summary["total"] == 1000
+            assert summary["other_total"] == 900
+            assert summary["net_percent"] == 36.8
 
     def test_water_hourly_safety_warning(self, client, app, make_user):
         make_user()
@@ -3285,8 +3314,9 @@ class TestReports:
         login(client)
         html = client.get("/relatorio/").get_data(as_text=True)
         assert "Outras bebidas" in html
-        assert "Café 300 ml" in html
-        assert "não conta como hidratação" in html
+        assert "Café coado 300 ml" in html
+        assert "álcool reduz a hidratação líquida" in html
+        assert "Hidratação líquida média" in html
 
     def test_report_hands_off_to_review(self, client, make_user):
         make_user()

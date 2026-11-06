@@ -8,6 +8,7 @@
   const toast = window.PSUITE?.toast;
   const glassFill = document.querySelector("[data-water-fill]");
   const totalNode = document.querySelector("[data-water-total]");
+  const waterNode = document.querySelector("[data-water-water]");
   const percentNode = document.querySelector("[data-water-percent]");
   const percentLabel = document.querySelector("[data-water-percent-label]");
   const remainingNode = document.querySelector("[data-water-remaining-wrap]");
@@ -16,6 +17,7 @@
   const warningNode = document.querySelector("[data-water-hourly-warning]");
   const otherTotalNode = document.querySelector("[data-water-other-total]");
   const otherListNode = document.querySelector("[data-water-other-list]");
+  const otherStatNode = document.querySelector("[data-water-other-stat]");
   const typeButtons = [...document.querySelectorAll("[data-water-kind]")];
   let selectedKind = "water";
 
@@ -36,13 +38,21 @@
   });
   selectBeverageKind("water");
 
+  function formatMl(value) {
+    return new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 }).format(
+      Number(value) || 0
+    );
+  }
+
   function updateWaterUI(data) {
     if (!data) return;
     if (glassFill) {
       const offset = 236 * (1 - Math.min(100, data.percent) / 100);
       glassFill.style.setProperty("--water-offset", `${Math.round(offset * 10) / 10}px`);
     }
-    if (totalNode) totalNode.textContent = data.total;
+    if (totalNode) totalNode.textContent = formatMl(data.net_hydration);
+    if (waterNode) waterNode.textContent = `${formatMl(data.total)} ml`;
+    if (otherStatNode) otherStatNode.textContent = `${formatMl(data.other_total)} ml`;
     if (percentNode) {
       percentNode.style.width = `${data.percent}%`;
       percentNode.parentElement?.setAttribute("aria-valuenow", data.percent);
@@ -50,7 +60,7 @@
     if (percentLabel) percentLabel.textContent = `${data.percent}%`;
     if (remainingNode) {
       remainingNode.textContent = data.remaining
-        ? `faltam ${data.remaining} ml`
+        ? `faltam ${formatMl(data.remaining)} ml`
         : "faixa atingida";
     }
     if (statusNode) {
@@ -59,7 +69,7 @@
     }
     if (recentNode && data.recent_html) recentNode.innerHTML = data.recent_html;
     if (otherTotalNode && data.other_total !== undefined) {
-      otherTotalNode.textContent = `${data.other_total} ml`;
+      otherTotalNode.textContent = `${formatMl(data.other_total)} ml`;
     }
     if (otherListNode && data.other_html) otherListNode.innerHTML = data.other_html;
     if (warningNode) warningNode.hidden = !data.hourly_warning;

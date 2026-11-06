@@ -9078,3 +9078,52 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
     grid-template-columns: 1fr;
   }
 }
+
+.water-intake-breakdown {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 9px;
+}
+
+.water-intake-breakdown > div {
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-soft);
+}
+
+.water-intake-breakdown span {
+  display: block;
+  color: var(--dim);
+  font-size: .53rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.water-intake-breakdown strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: .66rem;
+  font-weight: 500;
+}
+
+.water-algorithm-note {
+  margin: 7px 0 0;
+  color: var(--dim);
+  font-size: .57rem;
+  line-height: 1.45;
+}
+
+.water-algorithm-note i {
+  color: var(--cyan);
+  margin-right: 3px;
+}
+
+@media (max-width: 767.98px) {
+  .water-intake-breakdown {
+    grid-template-columns: 1fr;
+  }
+}

@@ -62,6 +62,10 @@ def _json_summary(extra=None):
     payload = {
         "ok": True,
         "total": summary["total"],
+        "net_hydration": summary["net_hydration"],
+        "net_percent": summary["net_percent"],
+        "water_percent": summary["water_percent"],
+        "compensation_ml": summary["compensation_ml"],
         "other_total": summary["other_total"],
         "other_summary": summary["other_summary"],
         "other_html": _other_html(),

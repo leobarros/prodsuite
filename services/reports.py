@@ -9,7 +9,14 @@ from models import MoodEntry, PomodoroCycle, Task, WaterLog
 from services.categories import ensure_categories
 from services.planning import week_start_for
 from services.timeutils import day_start_utc, format_minutes, local_today, to_local
-from services.water import BEVERAGE_LABELS, goal_range, settings_for
+from services.water import (
+    BEVERAGE_COEFFICIENTS,
+    BEVERAGE_LABELS,
+    format_ml,
+    goal_range,
+    hydration_balance,
+    settings_for,
+)
 
 DAY_LABELS = ("seg", "ter", "qua", "qui", "sex", "sáb", "dom")
 DAY_LABELS_FULL = (
@@ -164,6 +171,21 @@ def _collect(user, start: date) -> dict:
     total_focus = sum(cycle.duration_minutes or 0 for cycle in cycles)
     total_water = sum(log.amount_ml or 0 for log in water_only_logs)
     other_total = sum(log.amount_ml or 0 for log in other_logs)
+    balance = hydration_balance(water_logs, goal["target"])
+    net_total = balance["net_ml"]
+    compensation_total = balance["compensation_ml"]
+    net_by_day = defaultdict(float)
+    for log in water_logs:
+        local = to_local(log.logged_at)
+        if local is not None and local.date() in by_day:
+            net_by_day[local.date()] += (log.amount_ml or 0) * BEVERAGE_COEFFICIENTS.get(
+                log.kind, 1.0
+            )
+    net_days = sum(
+        1
+        for value in net_by_day.values()
+        if goal["low"] <= value <= goal["high"]
+    )
     other_by_kind: dict[str, dict] = {}
     for log in other_logs:
         row = other_by_kind.setdefault(
@@ -242,6 +264,10 @@ def _collect(user, start: date) -> dict:
         "water_days": water_days,
         "other_total": other_total,
         "other_summary": other_summary,
+        "net_total": net_total,
+        "net_average": round(net_total / 7),
+        "net_days": net_days,
+        "compensation_total": compensation_total,
         "mood_average": mood_average,
         "mood_count": len(mood_values),
         "categories": category_rows,
@@ -289,12 +315,18 @@ def report_for(user, raw_week: str | None = None) -> dict:
                 "text": f"{top_category['percent']}% do tempo de foco ficou nessa categoria.",
             }
         )
-    if current["water_days"]:
+    if current["water_total"] or current["other_total"]:
+        water_avg = f"{current['water_average'] / 1000:.1f}".replace(".", ",")
+        net_avg = f"{current['net_average'] / 1000:.1f}".replace(".", ",")
         insights.append(
             {
                 "kind": "water",
-                "title": f"Água dentro da faixa em {current['water_days']} de 7 dias.",
-                "text": "A faixa é uma referência pessoal, não uma cobrança.",
+                "title": f"Hidratação líquida média de {net_avg} L/dia.",
+                "text": (
+                    f"Água pura: {water_avg} L/dia; "
+                    f"{current['water_days']}/7 dias na faixa de água. "
+                    f"Compensação alcoólica estimada: {format_ml(current['compensation_total'])} ml."
+                ),
             }
         )
     if current["other_total"]:
@@ -305,7 +337,7 @@ def report_for(user, raw_week: str | None = None) -> dict:
             {
                 "kind": "water",
                 "title": f"Outras bebidas: {parts}.",
-                "text": "Registradas à parte da meta de água; álcool não conta como hidratação.",
+                "text": "Entram no saldo com coeficientes próprios; álcool reduz a hidratação líquida.",
             }
         )
     if current["mood_count"]:

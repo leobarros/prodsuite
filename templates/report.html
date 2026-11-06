@@ -41,7 +41,7 @@
     </span>
   </a>
   <a class="bento-card report-kpi" href="{{ url_for('water.index') }}">
-    <span class="report-kpi-label"><span>Água · média diária</span><i class="bi bi-droplet"></i></span>
+    <span class="report-kpi-label"><span>Água pura · média diária</span><i class="bi bi-droplet"></i></span>
     <strong>{{ report.water_display }}</strong>
     <span class="report-kpi-foot">
       <span class="report-change {{ 'up' if report.water_change and report.water_change > 0 else 'down' if report.water_change and report.water_change < 0 else 'flat' }}">{{ report.water_change_text }}</span>

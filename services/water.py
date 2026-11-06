@@ -14,17 +14,24 @@ DEFAULT_HIGH_ML = 2200
 MAX_AMOUNT_ML = 1000
 MAX_HOURLY_ML = 1000
 
+# Coeficientes de saldo líquido definidos no algoritmo de hidratação.
 BEVERAGE_TYPES = (
-    {"key": "water", "label": "Água", "icon": "bi-droplet"},
-    {"key": "coffee", "label": "Café", "icon": "bi-cup-hot"},
-    {"key": "tea", "label": "Chá", "icon": "bi-cup-straw"},
-    {"key": "beer", "label": "Cerveja", "icon": "bi-cup"},
-    {"key": "other", "label": "Outro", "icon": "bi-cup"},
+    {"key": "water", "label": "Água", "icon": "bi-droplet", "coefficient": 1.0},
+    {"key": "coffee", "label": "Café coado", "icon": "bi-cup-hot", "coefficient": 0.8},
+    {"key": "tea", "label": "Chá", "icon": "bi-cup-straw", "coefficient": 0.9},
+    {"key": "espresso", "label": "Café espresso", "icon": "bi-cup-hot", "coefficient": 0.6},
+    {"key": "beer", "label": "Cerveja", "icon": "bi-cup", "coefficient": -0.5},
+    {"key": "wine", "label": "Vinho", "icon": "bi-cup", "coefficient": -1.2},
+    {"key": "spirits", "label": "Destilado", "icon": "bi-cup", "coefficient": -1.2},
+    {"key": "other", "label": "Outro", "icon": "bi-cup", "coefficient": 1.0},
 )
 BEVERAGE_KEYS = {item["key"] for item in BEVERAGE_TYPES}
 BEVERAGE_LABELS = {item["key"]: item["label"] for item in BEVERAGE_TYPES}
 BEVERAGE_ICONS = {item["key"]: item["icon"] for item in BEVERAGE_TYPES}
-ALCOHOL_KEYS = {"beer"}
+BEVERAGE_COEFFICIENTS = {
+    item["key"]: item["coefficient"] for item in BEVERAGE_TYPES
+}
+ALCOHOL_KEYS = {"beer", "wine", "spirits"}
 
 
 def settings_for(user, create: bool = False) -> WaterSettings | None:
@@ -55,6 +62,13 @@ def goal_range(settings: WaterSettings | None) -> dict:
         "extra": extra,
         "personalized": bool(settings and settings.weight_kg),
     }
+
+
+def format_ml(amount_ml: float) -> str:
+    value = float(amount_ml or 0)
+    if abs(value - round(value)) < 0.05:
+        return str(int(round(value)))
+    return f"{value:.1f}".replace(".", ",")
 
 
 def format_liters(amount_ml: int) -> str:
@@ -100,6 +114,28 @@ def add_log(user, amount_ml: int, kind: str = "water") -> WaterLog:
     return log
 
 
+def hydration_balance(logs, target_ml: int) -> dict:
+    """Saldo líquido e compensação, conforme coeficientes do algoritmo."""
+    net = 0.0
+    water_total = 0
+    compensation = 0.0
+    for log in logs:
+        coefficient = BEVERAGE_COEFFICIENTS.get(log.kind, 1.0)
+        net += (log.amount_ml or 0) * coefficient
+        if log.kind == "water":
+            water_total += log.amount_ml or 0
+        if coefficient < 0:
+            compensation += (log.amount_ml or 0) * (1 + abs(coefficient))
+    progress = (net / target_ml * 100) if target_ml else 0
+    return {
+        "net_ml": round(net, 1),
+        "water_ml": water_total,
+        "compensation_ml": round(compensation, 1),
+        "percent": round(max(0.0, progress), 1),
+        "percent_capped": min(100, max(0, round(progress))),
+    }
+
+
 def summary_for(user, day=None):
     day = day or local_today()
     settings = settings_for(user)
@@ -112,11 +148,14 @@ def summary_for(user, day=None):
     target = goal["target"]
     low = goal["low"]
     high = goal["high"]
-    percent = min(100, round(total / target * 100)) if target else 0
+    balance = hydration_balance(logs, target)
+    net_hydration = balance["net_ml"]
+    percent = balance["percent_capped"]
+    net_percent = balance["percent"]
 
-    if total > high:
+    if net_hydration > high:
         status_key, status_label = "above", "acima da faixa"
-    elif total >= low:
+    elif net_hydration >= low:
         status_key, status_label = "in_range", "na faixa"
     else:
         status_key, status_label = "below", "abaixo da faixa"
@@ -192,6 +231,14 @@ def summary_for(user, day=None):
                 "count": data["count"],
                 "ml": data["ml"],
                 "is_alcohol": key in ALCOHOL_KEYS,
+                "coefficient": BEVERAGE_COEFFICIENTS.get(key, 1.0),
+                "net_ml": round(data["ml"] * BEVERAGE_COEFFICIENTS.get(key, 1.0), 1),
+                "compensation_ml": round(
+                    data["ml"] * (1 + abs(BEVERAGE_COEFFICIENTS.get(key, 1.0))),
+                    1,
+                )
+                if key in ALCOHOL_KEYS
+                else 0,
             }
         )
 
@@ -214,7 +261,16 @@ def summary_for(user, day=None):
         "other_summary": other_summary,
         "other_week_total": other_week_total,
         "percent": percent,
-        "remaining": max(0, target - total),
+        "net_hydration": net_hydration,
+        "net_hydration_display": format_ml(net_hydration),
+        "net_percent": net_percent,
+        "water_percent": round(total / target * 100, 1) if target else 0,
+        "water_display": format_ml(total),
+        "other_display": format_ml(other_total),
+        "compensation_ml": balance["compensation_ml"],
+        "compensation_display": format_ml(balance["compensation_ml"]),
+        "remaining": max(0, target - net_hydration),
+        "remaining_display": format_ml(max(0, target - net_hydration)),
         "status_key": status_key,
         "status_label": status_label,
         "recent": recent,
@@ -226,6 +282,7 @@ def summary_for(user, day=None):
         "in_range_days": in_range_days,
         "kind_labels": BEVERAGE_LABELS,
         "kind_icons": BEVERAGE_ICONS,
+        "kind_coefficients": BEVERAGE_COEFFICIENTS,
         "beverage_types": BEVERAGE_TYPES,
         "water_log_count": len(water_logs),
         "other_log_count": len(other_logs),
