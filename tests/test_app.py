@@ -1775,8 +1775,7 @@ class TestMood:
             summary = summary_for(db.session.get(User, user_id))
             assert sum(item["share_percent"] for item in summary["context_summary"]) == 100
         assert "Um check-in pode ter mais de um contexto" in html
-        assert html.count("mood-context-card") == 6
-        assert "mood-context-priority" in html
+        assert html.count("mood-context-item") == 6
         assert "alimenta o radar" in html
         assert "bi-moon-stars" in html and "bi-house-heart" in html
 

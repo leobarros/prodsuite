@@ -9351,7 +9351,7 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
   border-radius: 2px;
 }
 
-/* Contextos do check-in: escolhas que alimentam o radar. */
+/* Contextos do check-in: seleção discreta, no padrão de formulário. */
 .mood-context {
   margin: 15px 0 12px;
 }
@@ -9365,17 +9365,9 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
   margin: 0;
 }
 
-.mood-context-priority {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 7px;
-  border: 1px solid color-mix(in srgb, var(--lav) 28%, var(--line));
-  border-radius: 99px;
+.mood-context-legend .chip {
   color: var(--lav);
-  font-size: .54rem;
-  letter-spacing: .02em;
-  white-space: nowrap;
+  border-color: color-mix(in srgb, var(--lav) 24%, var(--line));
 }
 
 .mood-context-help {
@@ -9385,96 +9377,103 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
   line-height: 1.45;
 }
 
-.mood-contexts {
+.mood-context-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 7px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 9px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface-soft);
 }
 
-.mood-context-chip {
-  display: block;
-  min-width: 0;
+.mood-context-item {
+  position: relative;
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
   cursor: pointer;
+  transition: background .15s ease, color .15s ease;
 }
 
-.mood-context-chip input {
+.mood-context-item:nth-child(odd) {
+  border-right: 1px solid var(--line);
+}
+
+.mood-context-item:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.mood-context-item:hover {
+  background: color-mix(in srgb, var(--lav) 5%, transparent);
+  color: var(--text);
+}
+
+.mood-context-item input {
   position: absolute;
   width: 1px;
   height: 1px;
   opacity: 0;
 }
 
-.mood-context-card {
-  display: flex;
-  min-height: 47px;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 9px;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  background: var(--surface-soft);
-  color: var(--muted);
-  transition: border-color .15s ease, background .15s ease, color .15s ease, transform .15s ease;
-}
-
-.mood-context-chip:hover .mood-context-card {
-  border-color: var(--line-strong);
-  color: var(--text);
+.mood-context-item:has(input:focus-visible) {
+  outline: 2px solid var(--lav);
+  outline-offset: -2px;
 }
 
 .mood-context-icon {
-  display: grid;
-  width: 25px;
-  height: 25px;
-  flex: 0 0 25px;
-  place-items: center;
-  border-radius: 7px;
-  background: color-mix(in srgb, var(--lav) 9%, transparent);
+  width: 20px;
+  flex: 0 0 20px;
   color: var(--lav);
-  font-size: .8rem;
+  font-size: .78rem;
+  text-align: center;
 }
 
-.mood-context-chip:nth-child(2) .mood-context-icon { color: var(--cyan); background: color-mix(in srgb, var(--cyan) 9%, transparent); }
-.mood-context-chip:nth-child(3) .mood-context-icon { color: var(--amber); background: color-mix(in srgb, var(--amber) 9%, transparent); }
-.mood-context-chip:nth-child(4) .mood-context-icon { color: var(--coral); background: color-mix(in srgb, var(--coral) 9%, transparent); }
-.mood-context-chip:nth-child(5) .mood-context-icon { color: var(--green); background: color-mix(in srgb, var(--green) 9%, transparent); }
-.mood-context-chip:nth-child(6) .mood-context-icon { color: var(--lav); background: color-mix(in srgb, var(--lav) 9%, transparent); }
+.mood-context-item:nth-child(2) .mood-context-icon { color: var(--cyan); }
+.mood-context-item:nth-child(3) .mood-context-icon { color: var(--amber); }
+.mood-context-item:nth-child(4) .mood-context-icon { color: var(--coral); }
+.mood-context-item:nth-child(5) .mood-context-icon { color: var(--green); }
+.mood-context-item:nth-child(6) .mood-context-icon { color: var(--lav); }
 
 .mood-context-label {
   flex: 1;
   min-width: 0;
-  font-size: .72rem;
-  font-weight: 550;
+  font-size: .68rem;
 }
 
 .mood-context-check {
   color: var(--lav);
-  font-size: .78rem;
+  font-size: .72rem;
   opacity: 0;
-  transform: scale(.7);
-  transition: opacity .15s ease, transform .15s ease;
 }
 
-.mood-context-chip input:checked + .mood-context-card {
-  border-color: color-mix(in srgb, var(--lav) 52%, var(--line));
-  background: color-mix(in srgb, var(--lav) 13%, var(--surface-soft));
+.mood-context-item:has(input:checked) {
+  background: var(--lav2);
   color: var(--text);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lav) 12%, transparent);
 }
 
-.mood-context-chip input:checked + .mood-context-card .mood-context-check {
+.mood-context-item:has(input:checked) .mood-context-check {
   opacity: 1;
-  transform: scale(1);
-}
-
-.mood-context-chip input:focus-visible + .mood-context-card {
-  outline: 2px solid var(--lav);
-  outline-offset: 2px;
 }
 
 @media (max-width: 575.98px) {
-  .mood-contexts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .mood-context-list {
+    grid-template-columns: 1fr;
+  }
+
+  .mood-context-item:nth-child(odd) {
+    border-right: 0;
+  }
+
+  .mood-context-item:nth-last-child(-n + 2) {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .mood-context-item:last-child {
+    border-bottom: 0;
   }
 }

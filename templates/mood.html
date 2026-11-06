@@ -58,17 +58,15 @@
       </div>
 
       <fieldset class="mood-context">
-        <legend class="form-label mood-context-legend">O que está por perto? <span class="mood-context-priority"><i class="bi bi-pentagon"></i> alimenta o radar</span></legend>
+        <legend class="form-label mood-context-legend">O que está por perto? <span class="chip">alimenta o radar</span></legend>
         <p class="mood-context-help">Marque o que estiver presente. Sem esses contextos, a teia da semana não ganha forma.</p>
-        <div class="mood-contexts">
+        <div class="mood-context-list">
           {% for key, label in summary.contexts %}
-          <label class="mood-context-chip">
+          <label class="mood-context-item">
             <input type="checkbox" name="contexts" value="{{ key }}" {{ 'checked' if key in values.contexts }}>
-            <span class="mood-context-card">
-              <i class="bi {{ summary.context_icons.get(key, 'bi-circle') }} mood-context-icon" aria-hidden="true"></i>
-              <span class="mood-context-label">{{ label }}</span>
-              <i class="bi bi-check2 mood-context-check" aria-hidden="true"></i>
-            </span>
+            <i class="bi {{ summary.context_icons.get(key, 'bi-circle') }} mood-context-icon" aria-hidden="true"></i>
+            <span class="mood-context-label">{{ label }}</span>
+            <i class="bi bi-check2 mood-context-check" aria-hidden="true"></i>
           </label>
           {% endfor %}
         </div>
