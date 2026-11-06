@@ -23,6 +23,11 @@ Antes de responder ao usuário:
 Local e Docker são obrigatórios. Se uma etapa falhar, não finalize a entrega sem
 explicar o bloqueio real.
 
+7. Quando o usuário solicitar uma implementação, depois de concluir e validar
+   localmente e no Docker, crie o commit automaticamente. Use uma mensagem
+   objetiva em português. Não peça permissão adicional para o commit e não faça
+   push sem pedido explícito.
+
 ## Segurança e dados
 
 - Não apague `instance/` nem `backups/`.
