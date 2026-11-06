@@ -1678,10 +1678,10 @@ class TestMood:
             db.session.commit()
         html = client.get("/humor/").get_data(as_text=True)
         assert 'data-mood-radar="frequency"' in html
-        assert 'id="moodImpactModal"' in html
-        assert 'data-bs-target="#moodImpactModal"' in html
-        assert "poucos dados" in html
-        assert "teia ainda está incompleta" in html
+        assert 'id="moodRadarModal"' in html
+        assert 'data-bs-target="#moodRadarModal"' in html
+        assert html.count('data-mood-radar="frequency"') >= 2
+        assert 'data-mood-radar="impact"' not in html
         assert 'mood-radar-chart' in html
 
     def test_mood_rejects_invalid_scale(self, client, app, make_user):

@@ -8712,3 +8712,13 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
 .mood-radar-preview .mood-radar-chart {
   height: 190px;
 }
+
+.mood-radar-chart-modal {
+  height: 390px;
+}
+
+@media (max-width: 767.98px) {
+  .mood-radar-chart-modal {
+    height: 300px;
+  }
+}
