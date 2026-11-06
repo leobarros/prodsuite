@@ -25,7 +25,7 @@ from services.water import (
     valid_kind,
 )
 
-water_bp = Blueprint("water", __name__, url_prefix="/agua")
+water_bp = Blueprint("water", __name__)
 
 
 def _wants_json() -> bool:
@@ -94,7 +94,7 @@ def _json_summary(extra=None):
     return jsonify(payload)
 
 
-@water_bp.get("/")
+@water_bp.get("/hidratacao/")
 @login_required
 def index():
     summary = summary_for(current_user)
@@ -105,7 +105,13 @@ def index():
     )
 
 
-@water_bp.post("/registrar")
+@water_bp.get("/agua/")
+@login_required
+def legacy_index():
+    return redirect(url_for("water.index"), code=301)
+
+
+@water_bp.post("/hidratacao/registrar")
 @login_required
 def register():
     payload = _payload()
@@ -130,7 +136,7 @@ def register():
     return redirect(url_for("water.index"))
 
 
-@water_bp.post("/desfazer/<int:log_id>")
+@water_bp.post("/hidratacao/desfazer/<int:log_id>")
 @login_required
 def undo(log_id: int):
     log = WaterLog.query.filter_by(
@@ -145,7 +151,7 @@ def undo(log_id: int):
     return redirect(url_for("water.index"))
 
 
-@water_bp.post("/configurar")
+@water_bp.post("/hidratacao/configurar")
 @login_required
 def configure():
     settings = settings_for(current_user, create=True)
@@ -173,3 +179,22 @@ def configure():
     db.session.commit()
     flash("Meta de hidratação atualizada.", "success")
     return redirect(url_for("water.index"))
+
+
+# Compatibilidade com links e formulários antigos. A URL canônica é /hidratacao/.
+@water_bp.post("/agua/registrar")
+@login_required
+def legacy_register():
+    return register()
+
+
+@water_bp.post("/agua/desfazer/<int:log_id>")
+@login_required
+def legacy_undo(log_id: int):
+    return undo(log_id)
+
+
+@water_bp.post("/agua/configurar")
+@login_required
+def legacy_configure():
+    return configure()

@@ -19,7 +19,7 @@ Para a apresentação do app, o tour visual e o guia de uso, volte ao **[README]
 | Banco | `/data/prodsuite.db` |
 | Limite de memória | 512 MB |
 | Healthcheck | `GET /healthz` |
-| Testes | 133 Pytest |
+| Testes | 134 Pytest |
 | Dados no Git | nenhum (banco, `.env` e backups são ignorados) |
 
 ---
@@ -456,7 +456,7 @@ source .venv/bin/activate
 pytest -q
 ```
 
-Resultado esperado: **133 testes passando**.
+Resultado esperado: **134 testes passando**.
 
 Cobertura:
 
@@ -563,7 +563,7 @@ prodsuite/
 ├── templates/              # Jinja
 ├── static/                 # CSS, JS, ícones, áudio, Bootstrap local
 ├── docs/images/            # imagens do README
-├── tests/test_app.py       # 133 testes
+├── tests/test_app.py       # 134 testes
 ├── Dockerfile
 ├── docker-compose.yml
 ├── gunicorn.conf.py
@@ -627,7 +627,7 @@ with app.app_context():
     db.session.commit()
 c = app.test_client()
 c.post("/entrar", data={"identifier": "smoke", "password": "x"})
-for path in ("/", "/relatorio/", "/revisao", "/agua/", "/humor/"):
+for path in ("/", "/relatorio/", "/revisao", "/hidratacao/", "/humor/"):
     r = c.get(path)
     print(path, r.status_code)
 r = c.get("/relatorio/pdf")

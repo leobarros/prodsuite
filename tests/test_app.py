@@ -1545,18 +1545,29 @@ class TestScratchpad:
 # HIDRATAÇÃO
 # ==========================================================================
 class TestWater:
+    def test_hydration_canonical_url_and_legacy_redirect(self, client, app, make_user):
+        make_user()
+        login(client)
+        canonical = client.get("/hidratacao/")
+        assert canonical.status_code == 200
+        page = canonical.get_data(as_text=True)
+        assert 'href="/hidratacao/"' in page
+        legacy = client.get("/agua/")
+        assert legacy.status_code == 301
+        assert legacy.headers["Location"].endswith("/hidratacao/")
+
     def test_water_tracks_quick_add_and_personal_range(self, client, app, make_user):
         make_user()
         login(client)
 
-        page = client.get("/agua/")
+        page = client.get("/hidratacao/")
         assert page.status_code == 200
         assert "Hidratação, no seu ritmo" in page.get_data(as_text=True)
         assert "Hidratação" in page.get_data(as_text=True)
         assert "cachoeiras" in page.get_data(as_text=True)
 
         added = client.post(
-            "/agua/registrar",
+            "/hidratacao/registrar",
             json={"amount_ml": 250},
             headers={"X-Requested-With": "fetch", "Accept": "application/json"},
         )
@@ -1567,14 +1578,14 @@ class TestWater:
         assert "recent_html" in payload
 
         # Regressão: a lista também precisa vir no carregamento normal.
-        refreshed = client.get("/agua/").get_data(as_text=True)
+        refreshed = client.get("/hidratacao/").get_data(as_text=True)
         assert "250 ml" in refreshed
         assert "Nenhum registro hoje" not in refreshed
 
         with app.app_context():
             log_id = WaterLog.query.one().id
         removed = client.post(
-            f"/agua/desfazer/{log_id}",
+            f"/hidratacao/desfazer/{log_id}",
             headers={"X-Requested-With": "fetch", "Accept": "application/json"},
         )
         assert removed.status_code == 200
@@ -1584,7 +1595,7 @@ class TestWater:
             assert WaterLog.query.count() == 0
 
         configured = client.post(
-            "/agua/configurar",
+            "/hidratacao/configurar",
             data={
                 "weight_kg": "70",
                 "extra_ml": "0",
@@ -1598,7 +1609,7 @@ class TestWater:
             assert db.session.get(WaterSettings, user_id).weight_kg == 70
             assert WaterLog.query.count() == 0
 
-        updated = client.get("/agua/")
+        updated = client.get("/hidratacao/")
         html = updated.get_data(as_text=True)
         assert "2.1" in html or "2,1" in html
         assert "2.5" in html or "2,5" in html
@@ -1610,12 +1621,12 @@ class TestWater:
         login(client)
 
         coffee = client.post(
-            "/agua/registrar",
+            "/hidratacao/registrar",
             json={"amount_ml": 150, "kind": "coffee"},
             headers={"X-Requested-With": "fetch"},
         )
         beer = client.post(
-            "/agua/registrar",
+            "/hidratacao/registrar",
             json={"amount_ml": 330, "kind": "beer"},
             headers={"X-Requested-With": "fetch"},
         )
@@ -1640,7 +1651,7 @@ class TestWater:
             assert summary["percent"] == 0
             assert summary["other_log_count"] == 2
 
-        page = client.get("/agua/").get_data(as_text=True)
+        page = client.get("/hidratacao/").get_data(as_text=True)
         assert "Hidratação, no seu ritmo" in page
         assert "Café" in page and "Cerveja" in page
         assert "data-water-other-total" in page
@@ -1660,7 +1671,7 @@ class TestWater:
             (700, "beer"),
         ):
             response = client.post(
-                "/agua/registrar",
+                "/hidratacao/registrar",
                 json={"amount_ml": amount, "kind": kind},
                 headers={"X-Requested-With": "fetch"},
             )
@@ -1681,11 +1692,11 @@ class TestWater:
         login(client)
         for _ in range(3):
             client.post(
-                "/agua/registrar",
+                "/hidratacao/registrar",
                 json={"amount_ml": 500},
                 headers={"X-Requested-With": "fetch", "Accept": "application/json"},
             )
-        response = client.get("/agua/")
+        response = client.get("/hidratacao/")
         assert response.status_code == 200
         assert "Ritmo alto" in response.get_data(as_text=True)
         with app.app_context():
@@ -3289,7 +3300,7 @@ class TestReports:
         assert "2026" in html
         assert 'href="/relatorio/pdf?semana=' in html
         assert 'href="/foco"' in html
-        assert 'href="/agua/"' in html
+        assert 'href="/hidratacao/"' in html
         assert 'href="/humor/"' in html
         assert 'href="/tarefas?filtro=hoje"' in html
 
@@ -3357,5 +3368,5 @@ class TestReports:
         assert "Onde foi seu foco" not in review
         assert "Escrever revisão" in review
         assert 'href="/foco"' in review
-        assert 'href="/agua/"' in review
+        assert 'href="/hidratacao/"' in review
         assert 'href="/humor/"' in review
