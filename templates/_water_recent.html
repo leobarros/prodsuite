@@ -1,11 +1,12 @@
 {% from "_macros.html" import csrf %}
+{% from "_beverage_icons.html" import beverage_icon %}
 {% if recent %}
 <div class="water-log-list">
   {% for log in recent %}
   <div class="water-log-row">
     <span class="water-log-dot {{ 'is-other' if log.kind != 'water' else '' }}" aria-hidden="true"></span>
     <span class="water-log-time">{{ log.logged_at|localtime('%H:%M') }}</span>
-    <span class="water-log-name"><i class="bi {{ log.kind_icon }}"></i> {{ log.kind_label }}</span>
+    <span class="water-log-name {{ 'is-alcohol' if log.is_alcohol }}">{{ beverage_icon(log.kind) }} {{ log.kind_label }}</span>
     <strong class="water-log-amount">{{ log.amount_ml }} ml</strong>
     <form method="post" action="{{ url_for('water.undo', log_id=log.id) }}" data-confirm="Remover este registro?" data-water-delete>
       {{ csrf() }}

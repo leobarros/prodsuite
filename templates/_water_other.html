@@ -1,8 +1,9 @@
+{% from "_beverage_icons.html" import beverage_icon %}
 {% if other_summary %}
 <div class="water-other-list">
   {% for item in other_summary %}
   <div class="water-other-row {{ 'is-alcohol' if item.is_alcohol }}">
-    <i class="bi {{ item.icon }}"></i>
+    {{ beverage_icon(item.key) }}
     <span>{{ item.label }}</span>
     <small>{{ item.count }} registro{{ 's' if item.count != 1 }}</small>
     <b>{{ item.ml }} ml</b>

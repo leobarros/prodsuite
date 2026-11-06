@@ -9127,3 +9127,46 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
     grid-template-columns: 1fr;
   }
 }
+
+.beverage-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  vertical-align: -3px;
+}
+
+.water-type .beverage-icon {
+  color: var(--cyan);
+}
+
+.water-type[data-water-kind="coffee"] .beverage-icon,
+.water-type[data-water-kind="espresso"] .beverage-icon {
+  color: var(--amber);
+}
+
+.water-type[data-water-kind="tea"] .beverage-icon {
+  color: var(--green);
+}
+
+.water-type[data-water-kind="beer"] .beverage-icon,
+.water-type[data-water-kind="wine"] .beverage-icon,
+.water-type[data-water-kind="spirits"] .beverage-icon {
+  color: var(--coral);
+}
+
+.water-other-row .beverage-icon {
+  color: var(--amber);
+}
+
+.water-other-row.is-alcohol .beverage-icon {
+  color: var(--coral);
+}
+
+.water-log-name .beverage-icon {
+  color: var(--cyan);
+  margin-right: 2px;
+}
+
+.water-log-name.is-alcohol .beverage-icon {
+  color: var(--coral);
+}

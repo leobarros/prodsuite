@@ -1,0 +1,33 @@
+{% macro beverage_icon(kind, extra_class='') -%}
+{% set bootstrap = {'water': 'bi-droplet', 'coffee': 'bi-cup-hot', 'espresso': 'bi-cup-hot', 'other': 'bi-plus'} %}
+{% if kind == 'beer' %}
+<svg class="beverage-icon beverage-icon-beer {{ extra_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  <path d="M6 9h9v9a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2z"></path>
+  <path d="M6 9V7a2 2 0 0 1 2-2h5a2 2 0 0 1 2 2v2"></path>
+  <path d="M15 11h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2"></path>
+  <path d="M9 11v6M12 11v6"></path>
+  <path d="M8.5 5.5h.01M11 4.5h.01M13 5.5h.01"></path>
+</svg>
+{% elif kind == 'tea' %}
+<svg class="beverage-icon beverage-icon-tea {{ extra_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  <path d="M5 10h11v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z"></path>
+  <path d="M16 11h1.5a2.5 2.5 0 0 1 0 5H16"></path>
+  <path d="M4 21h14"></path>
+  <path d="M9 7c0-1 1-1.5 1-2.5M13 7c0-1 1-1.5 1-2.5"></path>
+</svg>
+{% elif kind == 'wine' %}
+<svg class="beverage-icon beverage-icon-wine {{ extra_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  <path d="M7 3h10l-1 7a4 4 0 0 1-8 0z"></path>
+  <path d="M12 14v6M8 20h8"></path>
+  <path d="M7.8 7.5h8.4"></path>
+</svg>
+{% elif kind == 'spirits' %}
+<svg class="beverage-icon beverage-icon-spirits {{ extra_class }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  <path d="M9 3h6v3l2 2v12H7V8l2-2z"></path>
+  <path d="M9 3h6M9 13h6"></path>
+  <path d="M9 16h6"></path>
+</svg>
+{% else %}
+<i class="bi {{ bootstrap.get(kind, 'bi-cup') }} {{ extra_class }}" aria-hidden="true"></i>
+{% endif %}
+{%- endmacro %}

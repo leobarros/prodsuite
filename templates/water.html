@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf, field_errors %}
+{% from "_beverage_icons.html" import beverage_icon %}
 {% block title %}Hidratação{% endblock %}
 
 {% block content %}
@@ -116,14 +117,9 @@
       <span class="card-link">um toque</span>
     </div>
     <div class="water-type-chips" data-water-types>
-      <button class="water-type is-active" type="button" data-water-kind="water"><i class="bi bi-droplet"></i> Água</button>
-      <button class="water-type" type="button" data-water-kind="coffee"><i class="bi bi-cup-hot"></i> Café coado</button>
-      <button class="water-type" type="button" data-water-kind="tea"><i class="bi bi-cup-straw"></i> Chá</button>
-      <button class="water-type" type="button" data-water-kind="espresso"><i class="bi bi-cup-hot"></i> Espresso</button>
-      <button class="water-type" type="button" data-water-kind="beer"><i class="bi bi-cup"></i> Cerveja</button>
-      <button class="water-type" type="button" data-water-kind="wine"><i class="bi bi-cup"></i> Vinho</button>
-      <button class="water-type" type="button" data-water-kind="spirits"><i class="bi bi-cup"></i> Destilado</button>
-      <button class="water-type" type="button" data-water-kind="other"><i class="bi bi-plus"></i> Outro</button>
+      {% for item in summary.beverage_types %}
+      <button class="water-type {{ 'is-active' if item.key == 'water' }}" type="button" data-water-kind="{{ item.key }}">{{ beverage_icon(item.key) }} {{ item.label }}</button>
+      {% endfor %}
     </div>
     <div class="water-quick-grid">
       <form method="post" action="{{ url_for('water.register') }}" data-water-add>

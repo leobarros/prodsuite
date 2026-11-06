@@ -1642,6 +1642,10 @@ class TestWater:
         assert "Hidratação, no seu ritmo" in page
         assert "Café" in page and "Cerveja" in page
         assert "data-water-other-total" in page
+        assert "beverage-icon-beer" in page
+        assert "beverage-icon-tea" in page
+        assert "beverage-icon-wine" in page
+        assert "beverage-icon-spirits" in page
 
     def test_hydration_algorithm_uses_coefficients_and_compensation(
         self, client, app, make_user
