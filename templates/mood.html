@@ -152,7 +152,7 @@
   </section>
 </div>
 <div class="modal fade" id="moodRadarModal" tabindex="-1" aria-labelledby="moodRadarModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
     <div class="modal-content mood-radar-modal">
       <div class="modal-header">
         <div>
@@ -180,6 +180,11 @@
               </em>
             </div>
             <p class="mood-radar-analysis-lead">Média de humor, energia e tensão quando o contexto esteve presente.</p>
+            <div class="mood-impact-key" aria-label="Legenda das métricas">
+              <span><b>H</b> Humor</span>
+              <span><b>E</b> Energia</span>
+              <span><b>T</b> Tensão</span>
+            </div>
             {% if summary.impact_analysis %}
             <div class="mood-impact-list">
               {% for item in summary.impact_analysis %}

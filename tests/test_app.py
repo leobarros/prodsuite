@@ -1772,6 +1772,8 @@ class TestMood:
         assert "análise de impacto" in html
         assert "Como cada contexto aparece" in html
         assert "mood-impact-list" in html
+        assert "mood-impact-key" in html
+        assert "Energia" in html and "Tensão" in html
         with app.app_context():
             from services.mood import summary_for
             from models import User
@@ -1815,6 +1817,8 @@ class TestMood:
         assert "Semana anterior" in html
         assert "mood-radar-compare-legend" in html
         assert "mood-impact-list" in html
+        assert "mood-impact-key" in html
+        assert "Energia" in html and "Tensão" in html
         assert "Associação descritiva" in html
         assert "Amostra insuficiente" in html
 

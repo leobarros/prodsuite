@@ -9535,3 +9535,109 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
 .mood-impact-stress .mood-impact-badge { color: var(--coral); }
 .mood-impact-drain .mood-impact-badge { color: var(--amber); }
 .mood-impact-positive .mood-impact-badge { color: var(--green); }
+
+
+/* Modal maior e mais legível para a análise de impacto. */
+#moodRadarModal .modal-dialog {
+  max-width: min(1180px, 94vw);
+}
+
+#moodRadarModal .modal-body {
+  padding: 18px 22px 20px;
+  font-size: .78rem;
+}
+
+#moodRadarModal .mood-radar-modal-layout {
+  grid-template-columns: minmax(0, 1.22fr) minmax(330px, .78fr);
+  gap: 22px;
+}
+
+#moodRadarModal .mood-radar-chart-modal {
+  height: 460px;
+}
+
+#moodRadarModal .mood-radar-analysis {
+  padding: 17px 18px;
+}
+
+#moodRadarModal .mood-radar-analysis h3 {
+  font-size: 1.16rem;
+}
+
+#moodRadarModal .mood-radar-analysis-lead {
+  font-size: .76rem;
+}
+
+#moodRadarModal .mood-impact-list {
+  max-height: 390px;
+}
+
+#moodRadarModal .mood-impact-row {
+  padding: 8px 9px;
+}
+
+#moodRadarModal .mood-impact-head {
+  font-size: .72rem;
+}
+
+#moodRadarModal .mood-impact-head > i {
+  font-size: .82rem;
+}
+
+#moodRadarModal .mood-impact-metrics {
+  gap: 12px;
+  margin: 5px 0 4px 23px;
+  font-size: .63rem;
+}
+
+#moodRadarModal .mood-impact-badge {
+  margin-left: 23px;
+  font-size: .62rem;
+}
+
+.mood-impact-key {
+  display: flex;
+  gap: 12px;
+  margin: 0 0 9px;
+  color: var(--dim);
+  font-size: .55rem;
+}
+
+.mood-impact-key span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mood-impact-key b {
+  display: inline-grid;
+  width: 17px;
+  height: 17px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--lav);
+  font-family: var(--font-mono);
+  font-size: .53rem;
+  font-weight: 600;
+}
+
+@media (max-width: 991.98px) {
+  #moodRadarModal .mood-radar-modal-layout {
+    grid-template-columns: 1fr;
+  }
+
+  #moodRadarModal .mood-radar-chart-modal {
+    height: 340px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  #moodRadarModal .modal-body {
+    padding: 14px;
+  }
+
+  #moodRadarModal .mood-radar-chart-modal {
+    height: 290px;
+  }
+}
