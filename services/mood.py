@@ -6,6 +6,7 @@ from datetime import timedelta
 
 from extensions import db
 from models import MoodEntry, utcnow
+from services.mood_metrics import CheckIn, aggregate_mood_contexts
 from services.timeutils import day_start_utc, local_today, to_local
 
 MOOD_LABELS = {
@@ -74,23 +75,6 @@ def create_entry(user, *, mood, energy, tension, contexts, note) -> MoodEntry:
     db.session.add(entry)
     db.session.commit()
     return entry
-
-
-def _normalized_shares(counts: dict[str, int]) -> dict[str, int]:
-    """Distribui 100% entre contextos, sem perder a soma por arredondamento."""
-    total = sum(counts.values())
-    if not total:
-        return {}
-    raw = {key: count / total * 100 for key, count in counts.items()}
-    shares = {key: int(value) for key, value in raw.items()}
-    missing = 100 - sum(shares.values())
-    if missing:
-        ranked = sorted(
-            raw, key=lambda key: raw[key] - shares[key], reverse=True
-        )
-        for key in ranked[:missing]:
-            shares[key] += 1
-    return shares
 
 
 def summary_for(user):
@@ -165,28 +149,38 @@ def summary_for(user):
             if key in CONTEXT_KEYS:
                 previous_context_counts[key] = previous_context_counts.get(key, 0) + 1
 
-    all_moods = [entry.mood for entry in entries]
+    metric_checkins = [
+        CheckIn(
+            humor=entry.mood,
+            energia=entry.energy,
+            tensao=entry.tension,
+            contextos=tuple(
+                CONTEXT_LABELS[key]
+                for key in (entry.contexts or "").split(",")
+                if key in CONTEXT_LABELS
+            ),
+        )
+        for entry in entries
+    ]
+    mood_metrics = aggregate_mood_contexts(metric_checkins)
+    metric_percentages = {
+        item.contexto: item.percentual
+        for item in mood_metrics.contextos_ordenados
+    }
     previous_moods = [entry.mood for entry in previous_entries]
-    average_mood = (
-        round(sum(all_moods) / len(all_moods), 1) if all_moods else 0
-    )
+    average_mood = round(mood_metrics.media_humor, 1)
     previous_average_mood = (
         round(sum(previous_moods) / len(previous_moods), 1)
         if previous_moods
         else 0
     )
-    context_entry_count = sum(
-        1
-        for entry in entries
-        if any(key in CONTEXT_KEYS for key in (entry.contexts or "").split(","))
-    )
+    context_entry_count = mood_metrics.checkins_com_contexto
     previous_context_entry_count = sum(
         1
         for entry in previous_entries
         if any(key in CONTEXT_KEYS for key in (entry.contexts or "").split(","))
     )
-    context_tag_count = sum(context_counts.values())
-    context_shares = _normalized_shares(context_counts)
+    context_tag_count = mood_metrics.total_mencoes
     current_max_context_count = max(context_counts.values(), default=0)
     previous_max_context_count = max(previous_context_counts.values(), default=0)
     max_context_count = max(current_max_context_count, previous_max_context_count, 1)
@@ -214,7 +208,7 @@ def summary_for(user):
                 )
                 if previous_context_counts.get(key, 0)
                 else 0,
-                "share_percent": context_shares.get(key, 0),
+                "share_percent": metric_percentages.get(label, 0),
                 "previous_share_percent": round(
                     previous_context_counts.get(key, 0)
                     / previous_context_entry_count
@@ -228,7 +222,9 @@ def summary_for(user):
     context_summary = [
         item for item in context_radar if item["count"]
     ]
-    context_summary.sort(key=lambda item: item["count"], reverse=True)
+    context_summary.sort(
+        key=lambda item: (-item["count"], item["label"].casefold())
+    )
 
     return {
         "today": today,

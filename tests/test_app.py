@@ -1773,7 +1773,7 @@ class TestMood:
             from services.mood import summary_for
             from models import User
             summary = summary_for(db.session.get(User, user_id))
-            assert sum(item["share_percent"] for item in summary["context_summary"]) == 100
+            assert sum(item["share_percent"] for item in summary["context_summary"]) == pytest.approx(100, abs=0.2)
         assert "Um check-in pode ter mais de um contexto" in html
         assert html.count("mood-context-item") == 6
         assert "alimenta o radar" not in html

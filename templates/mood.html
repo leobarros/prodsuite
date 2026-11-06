@@ -188,7 +188,7 @@
                 <span>{{ context.label }}</span>
                 <div class="mood-context-frequency-track"><i style="width: {{ context.share_percent }}%"></i></div>
                 <b>{{ context.count }}×</b>
-                <small>{{ context.share_percent }}%</small>
+                <small>{{ ('%.1f'|format(context.share_percent)).replace('.', ',') }}%</small>
                 {% if summary.has_previous_data %}<em class="mood-context-delta {{ 'up' if context.count_delta > 0 else 'down' if context.count_delta < 0 else 'flat' }}">{{ '%+d'|format(context.count_delta) }}</em>{% endif %}
               </div>
               {% endfor %}
