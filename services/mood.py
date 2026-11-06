@@ -27,6 +27,14 @@ CONTEXTS = [
 ]
 CONTEXT_KEYS = {key for key, _ in CONTEXTS}
 CONTEXT_LABELS = dict(CONTEXTS)
+CONTEXT_ICONS = {
+    "sono": "bi-moon-stars",
+    "trabalho": "bi-briefcase",
+    "estudos": "bi-book",
+    "relacoes": "bi-people",
+    "corpo": "bi-activity",
+    "familia": "bi-house-heart",
+}
 
 
 def clamp_scale(value, default=3) -> int:
@@ -252,4 +260,5 @@ def summary_for(user):
         "labels": MOOD_LABELS,
         "colors": MOOD_COLORS,
         "contexts": CONTEXTS,
+        "context_icons": CONTEXT_ICONS,
     }
