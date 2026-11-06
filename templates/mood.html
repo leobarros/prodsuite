@@ -171,7 +171,7 @@
           </div>
           <aside class="mood-radar-analysis">
             <span class="mood-radar-kicker"><i class="bi bi-activity"></i> análise de impacto</span>
-            <h3>Como cada contexto aparece</h3>
+            <h3>O que pede atenção</h3>
             <div class="mood-week-compare">
               <div><span>Humor médio agora</span><strong>{{ '%.1f'|format(summary.average_mood)|replace('.', ',') }} <small>/5</small></strong></div>
               <div><span>Semana anterior</span><strong>{{ '%.1f'|format(summary.previous_average_mood)|replace('.', ',') if summary.has_previous_data else '—' }}</strong></div>
@@ -179,35 +179,86 @@
                 {% if summary.mood_delta is not none %}{{ '%+.1f'|format(summary.mood_delta)|replace('.', ',') }}{% else %}sem base{% endif %}
               </em>
             </div>
-            <p class="mood-radar-analysis-lead">Média de humor, energia e tensão quando o contexto esteve presente.</p>
+
+            <div class="mood-impact-summary">
+              <div class="mood-impact-summary-card is-attention">
+                <span>Pede atenção</span>
+                {% if summary.impact_attention %}
+                <strong>{{ summary.impact_attention[0].label }}</strong>
+                <small>{{ summary.impact_attention[0].diagnostico }}</small>
+                {% else %}
+                <strong>Sem sinal forte</strong>
+                <small>Nenhum contexto passou do limiar de atenção.</small>
+                {% endif %}
+              </div>
+              <div class="mood-impact-summary-card is-positive">
+                <span>Faz bem</span>
+                {% if summary.impact_positive %}
+                <strong>{{ summary.impact_positive[0].label }}</strong>
+                <small>{{ summary.impact_positive[0].diagnostico }}</small>
+                {% else %}
+                <strong>Nenhum destaque</strong>
+                <small>Nenhum contexto passou do limiar de bem-estar.</small>
+                {% endif %}
+              </div>
+            </div>
+
             <div class="mood-impact-key" aria-label="Legenda das métricas">
               <span><b>H</b> Humor</span>
               <span><b>E</b> Energia</span>
               <span><b>T</b> Tensão</span>
             </div>
-            {% if summary.impact_analysis %}
-            <div class="mood-impact-list">
-              {% for item in summary.impact_analysis %}
-              <div class="mood-impact-row mood-impact-{{ item.diagnostico_classe if item.amostra_suficiente else 'low' }}">
-                <div class="mood-impact-head">
+
+            {% if summary.impact_attention %}
+            <h4 class="mood-impact-section-title">Pedem atenção</h4>
+            <div class="mood-signal-list">
+              {% for item in summary.impact_attention %}
+              <div class="mood-signal-row mood-signal-{{ item.diagnostico_classe }}">
+                <div class="mood-signal-head">
                   <i class="bi {{ item.icon }}"></i>
                   <strong>{{ item.label }}</strong>
-                  {% if item.amostra_suficiente %}<span>{{ item.frequencia }}×</span>{% else %}<span>poucos dados</span>{% endif %}
+                  <span>{{ item.frequencia }}×</span>
                 </div>
-                <div class="mood-impact-metrics">
+                <div class="mood-signal-metrics">
                   <span>H {{ '%.1f'|format(item.media_humor)|replace('.', ',') }}</span>
                   <span>E {{ '%.1f'|format(item.media_energia)|replace('.', ',') }}</span>
                   <span>T {{ '%.1f'|format(item.media_tensao)|replace('.', ',') }}</span>
                 </div>
-                {% set diagnostic_labels = {'stress': 'Estresse alto', 'drain': 'Dreno de energia', 'positive': 'Bem-estar', 'neutral': 'Sem impacto crítico'} %}
-                <span class="mood-impact-badge" title="{{ item.diagnostico }}">{% if item.amostra_suficiente %}{{ diagnostic_labels.get(item.diagnostico_classe, item.diagnostico) }}{% else %}Amostra insuficiente{% endif %}</span>
+                <span class="mood-signal-badge">{{ 'Estresse alto' if item.diagnostico_classe == 'stress' else 'Dreno de energia' }}</span>
               </div>
               {% endfor %}
             </div>
-            <p class="mood-radar-analysis-note"><i class="bi bi-info-circle"></i> Associação descritiva no período. Não é diagnóstico clínico nem prova de causa.</p>
-            {% else %}
-            <p class="form-hint mb-0">Ainda não há contextos suficientes para analisar.</p>
             {% endif %}
+
+            {% if summary.impact_positive %}
+            <h4 class="mood-impact-section-title">Fazem bem</h4>
+            <div class="mood-signal-list">
+              {% for item in summary.impact_positive %}
+              <div class="mood-signal-row mood-signal-positive">
+                <div class="mood-signal-head">
+                  <i class="bi {{ item.icon }}"></i>
+                  <strong>{{ item.label }}</strong>
+                  <span>{{ item.frequencia }}×</span>
+                </div>
+                <div class="mood-signal-metrics">
+                  <span>H {{ '%.1f'|format(item.media_humor)|replace('.', ',') }}</span>
+                  <span>E {{ '%.1f'|format(item.media_energia)|replace('.', ',') }}</span>
+                  <span>T {{ '%.1f'|format(item.media_tensao)|replace('.', ',') }}</span>
+                </div>
+                <span class="mood-signal-badge">Bem-estar</span>
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if not summary.impact_attention and not summary.impact_positive %}
+            <p class="mood-impact-empty"><i class="bi bi-info-circle"></i> Ainda não há um sinal forte. Continue registrando para ganhar base.</p>
+            {% endif %}
+
+            <p class="mood-radar-analysis-note">
+              <i class="bi bi-info-circle"></i> Associação descritiva no período. Não é diagnóstico clínico nem prova de causa.
+              {% if summary.impact_neutral_count or summary.impact_low_count %} Neutros: {{ summary.impact_neutral_count }} · amostra insuficiente: {{ summary.impact_low_count }}.{% endif %}
+            </p>
           </aside>
         </div>
       </div>

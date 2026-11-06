@@ -9641,3 +9641,152 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
     height: 290px;
   }
 }
+
+/* Foco de impacto: o que pede atenção e o que faz bem. */
+.mood-impact-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 10px 0 9px;
+}
+
+.mood-impact-summary-card {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--dim);
+  border-radius: 7px;
+  background: var(--surface-soft);
+}
+
+.mood-impact-summary-card.is-attention {
+  border-left-color: var(--coral);
+}
+
+.mood-impact-summary-card.is-positive {
+  border-left-color: var(--green);
+}
+
+.mood-impact-summary-card span {
+  display: block;
+  color: var(--dim);
+  font-size: .5rem;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.mood-impact-summary-card strong {
+  display: block;
+  margin-top: 3px;
+  overflow: hidden;
+  color: var(--text);
+  font-size: .72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mood-impact-summary-card small {
+  display: -webkit-box;
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--dim);
+  font-size: .52rem;
+  line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.mood-impact-section-title {
+  margin: 9px 0 4px;
+  color: var(--muted);
+  font-size: .55rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.mood-signal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mood-signal-row {
+  padding: 6px 7px;
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--dim);
+  border-radius: 6px;
+  background: var(--surface-soft);
+}
+
+.mood-signal-row.mood-signal-stress {
+  border-left-color: var(--coral);
+  background: color-mix(in srgb, var(--coral) 5%, var(--surface-soft));
+}
+
+.mood-signal-row.mood-signal-drain {
+  border-left-color: var(--amber);
+  background: color-mix(in srgb, var(--amber) 5%, var(--surface-soft));
+}
+
+.mood-signal-row.mood-signal-positive {
+  border-left-color: var(--green);
+  background: color-mix(in srgb, var(--green) 5%, var(--surface-soft));
+}
+
+.mood-signal-head {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: .65rem;
+}
+
+.mood-signal-head > i {
+  color: var(--lav);
+  font-size: .7rem;
+}
+
+.mood-signal-head strong {
+  flex: 1;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.mood-signal-head span {
+  color: var(--dim);
+  font-family: var(--font-mono);
+  font-size: .5rem;
+}
+
+.mood-signal-metrics {
+  display: flex;
+  gap: 10px;
+  margin: 3px 0 2px 20px;
+  color: var(--dim);
+  font-family: var(--font-mono);
+  font-size: .56rem;
+}
+
+.mood-signal-badge {
+  display: block;
+  margin-left: 20px;
+  color: var(--muted);
+  font-size: .54rem;
+  line-height: 1.3;
+}
+
+.mood-signal-stress .mood-signal-badge { color: var(--coral); }
+.mood-signal-drain .mood-signal-badge { color: var(--amber); }
+.mood-signal-positive .mood-signal-badge { color: var(--green); }
+
+.mood-impact-empty {
+  margin: 9px 0;
+  color: var(--dim);
+  font-size: .6rem;
+  line-height: 1.45;
+}
+
+.mood-impact-empty i {
+  color: var(--lav);
+  margin-right: 3px;
+}

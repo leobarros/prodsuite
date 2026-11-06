@@ -183,6 +183,38 @@ def summary_for(user):
             }
             for item in correlation.analise_contextos
         ]
+    impact_rank = {"stress": 0, "drain": 1, "positive": 2, "neutral": 3}
+    impact_attention = sorted(
+        (
+            item
+            for item in impact_analysis
+            if item["amostra_suficiente"]
+            and item["diagnostico_classe"] in {"stress", "drain"}
+        ),
+        key=lambda item: (
+            impact_rank[item["diagnostico_classe"]],
+            item["media_humor"],
+            -item["frequencia"],
+        ),
+    )
+    impact_positive = sorted(
+        (
+            item
+            for item in impact_analysis
+            if item["amostra_suficiente"]
+            and item["diagnostico_classe"] == "positive"
+        ),
+        key=lambda item: (-item["media_humor"], -item["frequencia"]),
+    )
+    impact_neutral_count = sum(
+        1
+        for item in impact_analysis
+        if item["amostra_suficiente"]
+        and item["diagnostico_classe"] == "neutral"
+    )
+    impact_low_count = sum(
+        1 for item in impact_analysis if not item["amostra_suficiente"]
+    )
     metric_percentages = {
         item.contexto: item.percentual
         for item in mood_metrics.contextos_ordenados
@@ -255,6 +287,10 @@ def summary_for(user):
         "average_mood": average_mood,
         "context_summary": context_summary,
         "impact_analysis": impact_analysis,
+        "impact_attention": impact_attention[:3],
+        "impact_positive": impact_positive[:3],
+        "impact_neutral_count": impact_neutral_count,
+        "impact_low_count": impact_low_count,
         "context_radar": context_radar,
         "frequency_max": max_context_count,
         "comparison_frequency_max": comparison_frequency_max,
