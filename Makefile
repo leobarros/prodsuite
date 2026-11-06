@@ -3,8 +3,10 @@ SHELL := /bin/bash
 PYTHON ?= python3
 VENV := .venv
 COMPOSE := docker compose
+REGISTRY_IMAGE ?= nickolback/prodsuite
+PUSH_TARGET := $(word 2,$(MAKECMDGOALS))
 
-.PHONY: help install test coverage run init-db icons secret pull up down logs ps backup backup-local
+.PHONY: help install test coverage run init-db icons secret pull up down logs ps backup backup-local push push-tag FORCE
 
 help:
 	@echo "PRD//SUITE"
@@ -16,6 +18,8 @@ help:
 	@echo "  make icons     regenera os ícones PWA (requer Pillow)"
 	@echo "  make secret    gera um SECRET_KEY e atualiza .env"
 	@echo "  make pull      baixa a imagem latest do Docker Hub"
+	@echo "  make push      build + push da imagem latest"
+	@echo "  make push v1   build + push da imagem v1"
 	@echo "  make up        pull + sobe o Compose"
 	@echo "  make down      para o Compose"
 	@echo "  make logs      acompanha logs"
@@ -49,6 +53,26 @@ secret:
 	@test -f .env || cp .env.example .env
 	@chmod 600 .env
 	@$(PYTHON) -c "import pathlib,re,secrets; p=pathlib.Path('.env'); p.write_text(re.sub(r'^SECRET_KEY=.*$$', 'SECRET_KEY='+secrets.token_hex(32), p.read_text(), flags=re.M)); print('SECRET_KEY atualizado em .env')"
+
+# make push        -> nickolback/prodsuite:latest
+# make push v1     -> nickolback/prodsuite:v1
+ifeq ($(PUSH_TARGET),)
+push:
+	@$(MAKE) --no-print-directory push-tag TAG=latest
+else
+push:
+	@:
+endif
+
+v%: FORCE
+	@$(MAKE) --no-print-directory push-tag TAG=$@
+
+push-tag:
+	@test -n "$(TAG)" || { echo "Informe a tag: make push v1"; exit 1; }
+	docker build -t $(REGISTRY_IMAGE):$(TAG) .
+	docker push $(REGISTRY_IMAGE):$(TAG)
+
+FORCE:
 
 pull:
 	$(COMPOSE) pull

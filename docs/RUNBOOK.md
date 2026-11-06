@@ -24,6 +24,33 @@ Para a apresentação do app, o tour visual e o guia de uso, volte ao **[README]
 
 ---
 
+## Publicar imagem no registry
+
+A imagem padrão é `nickolback/prodsuite`. Entre no Docker Hub antes do primeiro push:
+
+```bash
+docker login
+```
+
+Publique a versão corrente como `latest`:
+
+```bash
+make push
+```
+
+Publique uma versão específica:
+
+```bash
+make push v1
+# envia nickolback/prodsuite:v1
+```
+
+O comando constrói a imagem a partir do Dockerfile antes de enviar. Para usar outro registry/repositório, sobrescreva `REGISTRY_IMAGE`:
+
+```bash
+make push v1 REGISTRY_IMAGE=usuario/prodsuite
+```
+
 ## 1. Antes de instalar
 
 Você precisa de:
