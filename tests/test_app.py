@@ -1656,6 +1656,33 @@ class TestMood:
         with app.app_context():
             assert MoodEntry.query.count() == 0
 
+    def test_mood_context_radar_and_impact_modal(self, client, app, make_user):
+        user_id = make_user()
+        login(client)
+        with app.app_context():
+            for mood, contexts in (
+                (4, "sono,familia"),
+                (3, "sono,trabalho"),
+                (4, "familia"),
+            ):
+                db.session.add(
+                    MoodEntry(
+                        user_id=user_id,
+                        mood=mood,
+                        energy=3,
+                        tension=2,
+                        contexts=contexts,
+                        created_at=utcnow(),
+                    )
+                )
+            db.session.commit()
+        html = client.get("/humor/").get_data(as_text=True)
+        assert 'data-mood-radar="frequency"' in html
+        assert 'id="moodImpactModal"' in html
+        assert "Ver impacto no humor" in html
+        assert "poucos dados" in html
+        assert 'mood-radar-chart' in html
+
     def test_mood_rejects_invalid_scale(self, client, app, make_user):
         make_user()
         login(client)

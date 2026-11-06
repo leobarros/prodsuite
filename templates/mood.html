@@ -125,18 +125,35 @@
     <div class="mood-week-foot"><span>média da semana <strong>{{ '%.1f'|format(summary.average_mood)|replace('.', ',') if summary.average_mood else '—' }} / 5</strong></span><span>sem sequência punitiva</span></div>
   </section>
 
-  <section class="bento-card mood-context-summary">
-    <div class="card-head"><h2 class="card-title"><i class="bi bi-tags"></i> O que influencia</h2><span class="card-link">7 dias</span></div>
-    {% if summary.context_summary %}
-    <div class="mood-context-tags">
-      {% for context in summary.context_summary %}
-      <span class="mood-context-tag">{{ context.label }} <b>{{ context.count }}×</b></span>
-      {% endfor %}
+  <section class="bento-card mood-radar-card">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-pentagon"></i> Contextos da semana</h2>
+      <span class="card-link">7 dias · frequência</span>
     </div>
+    {% if summary.has_context_data %}
+    <div class="mood-radar-layout">
+      <button class="mood-radar-preview" type="button" data-bs-toggle="modal" data-bs-target="#moodImpactModal" aria-label="Abrir análise de impacto do humor nos contextos">
+        <div class="mood-radar-chart" data-mood-radar="frequency" data-radar="{{ summary.context_radar|tojson|forceescape }}" data-overall="{{ summary.average_mood }}"></div>
+      </button>
+      <div class="mood-radar-side">
+        <span class="mood-radar-kicker"><i class="bi bi-arrow-repeat"></i> presença</span>
+        <h3>O que apareceu</h3>
+        <p>Frequência nos check-ins. Ainda não diz se o contexto ajudou ou pesou.</p>
+        <ul class="mood-radar-list">
+          {% for context in summary.context_summary[:4] %}
+          <li><span class="mood-context-dot"></span><span>{{ context.label }}</span><b>{{ context.count }}×</b></li>
+          {% endfor %}
+        </ul>
+        <button class="btn btn-ghost btn-sm mood-impact-open" type="button" data-bs-toggle="modal" data-bs-target="#moodImpactModal"><i class="bi bi-activity"></i> Ver impacto no humor</button>
+      </div>
+    </div>
+    <p class="mood-gentle-note"><i class="bi bi-info-circle"></i> Frequência é uma pista de presença, não uma explicação para tudo.</p>
     {% else %}
-    <p class="form-hint mb-0">Adicione contextos no check-in para encontrar pistas ao longo da semana.</p>
+    <div class="mood-radar-empty">
+      <i class="bi bi-pentagon"></i>
+      <span>Adicione contextos nos check-ins para desenhar sua teia da semana.</span>
+    </div>
     {% endif %}
-    <p class="mood-gentle-note">Contexto ajuda a observar padrões. Não é uma explicação para tudo.</p>
   </section>
 
   <section class="bento-card mood-care">
@@ -146,8 +163,51 @@
     <div class="mood-care-foot"><i class="bi bi-lock"></i> dados privados · exportáveis</div>
   </section>
 </div>
+<div class="modal fade" id="moodImpactModal" tabindex="-1" aria-labelledby="moodImpactModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content mood-impact-modal">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="moodImpactModalLabel"><i class="bi bi-pentagon text-emerald"></i> Impacto no humor</h2>
+          <p class="form-hint mb-0">Humor médio quando cada contexto esteve presente.</p>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        {% if summary.has_impact_data %}
+        <div class="mood-impact-layout">
+          <div class="mood-impact-chart">
+            <div class="mood-radar-chart" data-mood-radar="impact" data-radar="{{ summary.context_radar|tojson|forceescape }}" data-overall="{{ summary.average_mood }}"></div>
+            <div class="mood-impact-legend"><span><i></i> média por contexto</span><span><i class="baseline"></i> média geral {{ '%.1f'|format(summary.average_mood)|replace('.', ',') }}</span></div>
+          </div>
+          <div class="mood-impact-list">
+            <div class="card-head"><h3 class="card-title"><i class="bi bi-list-check"></i> Leitura</h3><span class="card-link">{{ summary.week_count }} check-ins</span></div>
+            {% for context in summary.context_radar %}
+            <div class="mood-impact-row {{ 'is-low' if not context.enough }}">
+              <span>{{ context.label }}</span>
+              {% if context.enough %}
+              <b>{{ '%.1f'|format(context.mood_avg)|replace('.', ',') }} / 5</b>
+              <em class="{{ 'up' if context.delta > 0 else 'down' if context.delta < 0 else 'flat' }}">{{ '%+.1f'|format(context.delta)|replace('.', ',') }}</em>
+              <small>{{ context.count }} registros</small>
+              {% else %}
+              <em>{{ context.count }} registro{{ 's' if context.count != 1 }} · poucos dados</em>
+              {% endif %}
+            </div>
+            {% endfor %}
+            <p class="mood-gentle-note mb-0"><i class="bi bi-info-circle"></i> Contextos com menos de 2 registros não entram na leitura principal. Isto é uma pista, não uma causa.</p>
+          </div>
+        </div>
+        {% else %}
+        <div class="empty-state mood-radar-empty"><i class="bi bi-activity"></i><span>Ainda não há registros suficientes para comparar humor e contexto. Continue registrando por alguns dias.</span></div>
+        {% endif %}
+        <div class="mood-impact-disclaimer"><i class="bi bi-heart-pulse"></i> Não é diagnóstico. Contexto e humor podem se sobrepor; o app não tenta provar causa.</div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/mood.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/mood-radar.js') }}" defer></script>
 {% endblock %}

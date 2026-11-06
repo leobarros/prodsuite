@@ -118,21 +118,42 @@ def summary_for(user):
         .all()
     )
     context_counts: dict[str, int] = {}
+    context_mood_sums: dict[str, int] = {}
     for entry in entries:
         for key in (entry.contexts or "").split(","):
             if key in CONTEXT_KEYS:
                 context_counts[key] = context_counts.get(key, 0) + 1
-    context_summary = [
-        {"key": key, "label": label, "count": context_counts.get(key, 0)}
-        for key, label in CONTEXTS
-        if context_counts.get(key, 0)
-    ]
-    context_summary.sort(key=lambda item: item["count"], reverse=True)
+                context_mood_sums[key] = context_mood_sums.get(key, 0) + entry.mood
 
     all_moods = [entry.mood for entry in entries]
     average_mood = (
         round(sum(all_moods) / len(all_moods), 1) if all_moods else 0
     )
+    max_context_count = max(context_counts.values(), default=0) or 1
+    context_radar = []
+    for key, label in CONTEXTS:
+        count = context_counts.get(key, 0)
+        mood_avg = (
+            round(context_mood_sums.get(key, 0) / count, 1) if count else 0
+        )
+        enough = count >= 2
+        context_radar.append(
+            {
+                "key": key,
+                "label": label,
+                "count": count,
+                "mood_avg": mood_avg,
+                "delta": round(mood_avg - average_mood, 1) if enough else 0,
+                "enough": enough,
+                "frequency_value": round(count / max_context_count * 100) if count else 0,
+                "impact_value": round(mood_avg / 5 * 100) if enough else 0,
+            }
+        )
+    context_summary = [
+        item for item in context_radar if item["count"]
+    ]
+    context_summary.sort(key=lambda item: item["count"], reverse=True)
+
     return {
         "today": today,
         "week_days": week_days,
@@ -141,6 +162,10 @@ def summary_for(user):
         "week_count": len(entries),
         "average_mood": average_mood,
         "context_summary": context_summary,
+        "context_radar": context_radar,
+        "frequency_max": max_context_count,
+        "has_context_data": bool(context_summary),
+        "has_impact_data": any(item["enough"] for item in context_radar),
         "labels": MOOD_LABELS,
         "colors": MOOD_COLORS,
         "contexts": CONTEXTS,
