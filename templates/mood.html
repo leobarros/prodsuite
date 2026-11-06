@@ -131,23 +131,9 @@
       <span class="card-link">7 dias · frequência</span>
     </div>
     {% if summary.has_context_data %}
-    <div class="mood-radar-layout">
-      <button class="mood-radar-preview" type="button" data-bs-toggle="modal" data-bs-target="#moodImpactModal" aria-label="Abrir análise de impacto do humor nos contextos">
-        <div class="mood-radar-chart" data-mood-radar="frequency" data-radar="{{ summary.context_radar|tojson|forceescape }}" data-overall="{{ summary.average_mood }}"></div>
-      </button>
-      <div class="mood-radar-side">
-        <span class="mood-radar-kicker"><i class="bi bi-arrow-repeat"></i> presença</span>
-        <h3>O que apareceu</h3>
-        <p>Frequência nos check-ins. Ainda não diz se o contexto ajudou ou pesou.</p>
-        <ul class="mood-radar-list">
-          {% for context in summary.context_summary[:4] %}
-          <li><span class="mood-context-dot"></span><span>{{ context.label }}</span><b>{{ context.count }}×</b></li>
-          {% endfor %}
-        </ul>
-        <button class="btn btn-ghost btn-sm mood-impact-open" type="button" data-bs-toggle="modal" data-bs-target="#moodImpactModal"><i class="bi bi-activity"></i> Ver impacto no humor</button>
-      </div>
-    </div>
-    <p class="mood-gentle-note"><i class="bi bi-info-circle"></i> Frequência é uma pista de presença, não uma explicação para tudo.</p>
+    <button class="mood-radar-preview" type="button" data-bs-toggle="modal" data-bs-target="#moodImpactModal" aria-label="Ver impacto do humor nos contextos" title="Ver impacto no humor">
+      <div class="mood-radar-chart" data-mood-radar="frequency" data-radar="{{ summary.context_radar|tojson|forceescape }}" data-overall="{{ summary.average_mood }}"></div>
+    </button>
     {% else %}
     <div class="mood-radar-empty">
       <i class="bi bi-pentagon"></i>

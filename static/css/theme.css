@@ -8653,3 +8653,62 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
   margin-right: 4px;
   color: var(--amber);
 }
+
+/* Card de radar compacto: o gráfico é a própria ação. */
+.mood-radar-card {
+  min-height: 0;
+}
+
+.mood-bottom-grid {
+  align-items: stretch;
+}
+
+.mood-radar-preview {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 2px 0 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.mood-radar-preview .mood-radar-chart {
+  height: 200px;
+}
+
+.mood-radar-preview:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+
+.mood-bottom-grid {
+  align-items: start;
+}
+
+.mood-care {
+  min-height: 0;
+}
+
+@media (max-width: 1099.98px) {
+  .mood-radar-preview .mood-radar-chart {
+    height: 210px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .mood-radar-preview .mood-radar-chart {
+    height: 200px;
+  }
+}
+
+/* Final: os três cards da página de humor fecham na mesma linha. */
+.mood-bottom-grid {
+  align-items: stretch;
+}
+
+.mood-radar-preview .mood-radar-chart {
+  height: 190px;
+}

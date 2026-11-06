@@ -1679,7 +1679,7 @@ class TestMood:
         html = client.get("/humor/").get_data(as_text=True)
         assert 'data-mood-radar="frequency"' in html
         assert 'id="moodImpactModal"' in html
-        assert "Ver impacto no humor" in html
+        assert 'data-bs-target="#moodImpactModal"' in html
         assert "poucos dados" in html
         assert "teia ainda está incompleta" in html
         assert 'mood-radar-chart' in html
