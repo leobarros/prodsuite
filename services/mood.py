@@ -80,6 +80,16 @@ def summary_for(user):
         .order_by(MoodEntry.created_at.asc())
         .all()
     )
+    previous_start = day_start_utc(week_start - timedelta(days=7))
+    previous_entries = (
+        MoodEntry.query.filter(
+            MoodEntry.user_id == user.id,
+            MoodEntry.created_at >= previous_start,
+            MoodEntry.created_at < start,
+        )
+        .order_by(MoodEntry.created_at.asc())
+        .all()
+    )
 
     daily = {
         week_start + timedelta(days=index): []
@@ -119,22 +129,41 @@ def summary_for(user):
     )
     context_counts: dict[str, int] = {}
     context_mood_sums: dict[str, int] = {}
+    previous_context_counts: dict[str, int] = {}
     for entry in entries:
         for key in (entry.contexts or "").split(","):
             if key in CONTEXT_KEYS:
                 context_counts[key] = context_counts.get(key, 0) + 1
                 context_mood_sums[key] = context_mood_sums.get(key, 0) + entry.mood
+    for entry in previous_entries:
+        for key in (entry.contexts or "").split(","):
+            if key in CONTEXT_KEYS:
+                previous_context_counts[key] = previous_context_counts.get(key, 0) + 1
 
     all_moods = [entry.mood for entry in entries]
+    previous_moods = [entry.mood for entry in previous_entries]
     average_mood = (
         round(sum(all_moods) / len(all_moods), 1) if all_moods else 0
+    )
+    previous_average_mood = (
+        round(sum(previous_moods) / len(previous_moods), 1)
+        if previous_moods
+        else 0
     )
     context_entry_count = sum(
         1
         for entry in entries
         if any(key in CONTEXT_KEYS for key in (entry.contexts or "").split(","))
     )
-    max_context_count = max(context_counts.values(), default=0) or 1
+    previous_context_entry_count = sum(
+        1
+        for entry in previous_entries
+        if any(key in CONTEXT_KEYS for key in (entry.contexts or "").split(","))
+    )
+    current_max_context_count = max(context_counts.values(), default=0)
+    previous_max_context_count = max(previous_context_counts.values(), default=0)
+    max_context_count = max(current_max_context_count, previous_max_context_count, 1)
+    comparison_frequency_max = max_context_count
     context_radar = []
     for key, label in CONTEXTS:
         count = context_counts.get(key, 0)
@@ -150,9 +179,23 @@ def summary_for(user):
                 "mood_avg": mood_avg,
                 "delta": round(mood_avg - average_mood, 1) if enough else 0,
                 "enough": enough,
+                "previous_count": previous_context_counts.get(key, 0),
+                "count_delta": count - previous_context_counts.get(key, 0),
                 "frequency_value": round(count / max_context_count * 100) if count else 0,
+                "previous_frequency_value": round(
+                    previous_context_counts.get(key, 0) / max_context_count * 100
+                )
+                if previous_context_counts.get(key, 0)
+                else 0,
                 "share_percent": round(count / context_entry_count * 100)
                 if context_entry_count and count
+                else 0,
+                "previous_share_percent": round(
+                    previous_context_counts.get(key, 0)
+                    / previous_context_entry_count
+                    * 100
+                )
+                if previous_context_entry_count and previous_context_counts.get(key, 0)
                 else 0,
                 "impact_value": round(mood_avg / 5 * 100) if enough else 0,
             }
@@ -172,7 +215,19 @@ def summary_for(user):
         "context_summary": context_summary,
         "context_radar": context_radar,
         "frequency_max": max_context_count,
+        "comparison_frequency_max": comparison_frequency_max,
         "context_entry_count": context_entry_count,
+        "previous_context_entry_count": previous_context_entry_count,
+        "previous_week_count": len(previous_entries),
+        "previous_average_mood": previous_average_mood,
+        "mood_delta": (
+            round(average_mood - previous_average_mood, 1)
+            if previous_moods
+            else None
+        ),
+        "previous_week_start": week_start - timedelta(days=7),
+        "previous_week_end": week_start - timedelta(days=1),
+        "has_previous_data": bool(previous_entries),
         "has_context_data": bool(context_summary),
         "has_impact_data": any(item["enough"] for item in context_radar),
         "impact_context_count": sum(1 for item in context_radar if item["enough"]),

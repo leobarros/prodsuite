@@ -1686,6 +1686,40 @@ class TestMood:
         assert "análise de frequência" in html
         assert "Um check-in pode ter mais de um contexto" in html
 
+    def test_mood_context_compares_previous_week(self, client, app, make_user):
+        user_id = make_user()
+        login(client)
+        with app.app_context():
+            previous = utcnow() - timedelta(days=7)
+            for mood, contexts in ((3, "sono,trabalho"), (4, "familia")):
+                db.session.add(
+                    MoodEntry(
+                        user_id=user_id,
+                        mood=mood,
+                        energy=3,
+                        tension=2,
+                        contexts=contexts,
+                        created_at=previous,
+                    )
+                )
+            for mood, contexts in ((4, "sono"), (5, "familia")):
+                db.session.add(
+                    MoodEntry(
+                        user_id=user_id,
+                        mood=mood,
+                        energy=3,
+                        tension=2,
+                        contexts=contexts,
+                        created_at=utcnow(),
+                    )
+                )
+            db.session.commit()
+        html = client.get("/humor/").get_data(as_text=True)
+        assert "Semana anterior" in html
+        assert "mood-radar-compare-legend" in html
+        assert "mood-context-delta" in html
+        assert "Comparação descritiva" in html
+
     def test_mood_rejects_invalid_scale(self, client, app, make_user):
         make_user()
         login(client)

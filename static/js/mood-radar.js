@@ -86,6 +86,17 @@
       });
     }
 
+    const showPrevious = node.dataset.previous === "1";
+    if (showPrevious && items.some((item) => item.previous_frequency_value > 0)) {
+      const previousPoints = items.map((item, index) =>
+        point(index, clamp(Number(item.previous_frequency_value) / 100, 0, 1))
+      );
+      add("path", {
+        d: path(previousPoints),
+        class: "mood-radar-previous",
+      });
+    }
+
     const values = items.map((item) => {
       if (mode === "impact") {
         return item.enough ? clamp(Number(item.impact_value) / 100, 0, 1) : 0;

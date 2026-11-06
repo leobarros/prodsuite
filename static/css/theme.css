@@ -8842,3 +8842,109 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
     padding: 11px;
   }
 }
+
+.mood-radar-previous {
+  fill: color-mix(in srgb, var(--cyan) 7%, transparent);
+  stroke: var(--cyan);
+  stroke-width: 1.4;
+  stroke-dasharray: 4 3;
+  opacity: .85;
+}
+
+.mood-radar-compare-legend {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  color: var(--dim);
+  font-size: .58rem;
+  margin-top: -2px;
+}
+
+.mood-radar-compare-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mood-radar-compare-legend i {
+  width: 14px;
+  height: 2px;
+  border-radius: 9px;
+  display: inline-block;
+  background: var(--emerald);
+}
+
+.mood-radar-compare-legend i.previous {
+  height: 1px;
+  border-top: 1px dashed var(--cyan);
+  border-radius: 0;
+  background: transparent;
+}
+
+.mood-week-compare {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 8px 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.mood-week-compare > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.mood-week-compare span {
+  display: block;
+  color: var(--dim);
+  font-size: .52rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.mood-week-compare strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--text);
+  font-size: .78rem;
+  font-weight: 650;
+}
+
+.mood-week-compare strong small {
+  color: var(--muted);
+  font-size: .55rem;
+  font-weight: 400;
+}
+
+.mood-week-compare em {
+  flex: 0 0 auto;
+  font-style: normal;
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  font-weight: 600;
+}
+
+.mood-week-compare em.up { color: var(--green); }
+.mood-week-compare em.down { color: var(--coral); }
+.mood-week-compare em.flat { color: var(--dim); }
+
+.mood-compare-note {
+  margin-top: 6px !important;
+}
+
+.mood-context-delta {
+  width: 20px;
+  flex: 0 0 20px;
+  color: var(--dim);
+  font-family: var(--font-mono);
+  font-size: .52rem;
+  font-style: normal;
+  text-align: right;
+}
+
+.mood-context-delta.up { color: var(--green); }
+.mood-context-delta.down { color: var(--coral); }
+.mood-context-delta.flat { color: var(--dim); }

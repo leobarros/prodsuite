@@ -162,11 +162,22 @@
       <div class="modal-body">
         <div class="mood-radar-modal-layout">
           <div class="mood-radar-modal-chart">
-            <div class="mood-radar-chart mood-radar-chart-modal" data-mood-radar="frequency" data-radar="{{ summary.context_radar|tojson|forceescape }}" data-overall="{{ summary.average_mood }}"></div>
+            <div class="mood-radar-chart mood-radar-chart-modal" data-mood-radar="frequency" data-previous="1" data-radar="{{ summary.context_radar|tojson|forceescape }}" data-overall="{{ summary.average_mood }}"></div>
+            {% if summary.has_previous_data %}
+            <div class="mood-radar-compare-legend"><span><i></i> esta semana</span><span><i class="previous"></i> semana anterior</span></div>
+            {% endif %}
           </div>
           <aside class="mood-radar-analysis">
             <span class="mood-radar-kicker"><i class="bi bi-bar-chart"></i> análise de frequência</span>
             <h3>O que mais apareceu</h3>
+            <div class="mood-week-compare">
+              <div><span>Humor médio agora</span><strong>{{ '%.1f'|format(summary.average_mood)|replace('.', ',') }} <small>/5</small></strong></div>
+              <div><span>Semana anterior</span><strong>{{ '%.1f'|format(summary.previous_average_mood)|replace('.', ',') if summary.has_previous_data else '—' }}</strong></div>
+              <em class="{{ 'up' if summary.mood_delta and summary.mood_delta > 0 else 'down' if summary.mood_delta and summary.mood_delta < 0 else 'flat' }}">
+                {% if summary.mood_delta is not none %}{{ '%+.1f'|format(summary.mood_delta)|replace('.', ',') }}{% else %}sem base{% endif %}
+              </em>
+            </div>
+            <p class="mood-radar-analysis-note mood-compare-note"><i class="bi bi-info-circle"></i> Comparação descritiva com a semana anterior. Não é uma medida clínica de melhora.</p>
             {% if summary.context_summary %}
             <p class="mood-radar-analysis-lead">{{ summary.context_summary[0].label }} apareceu em <strong>{{ summary.context_summary[0].count }} de {{ summary.context_entry_count }}</strong> check-ins com contexto <strong>({{ summary.context_summary[0].share_percent }}%)</strong>.</p>
             <div class="mood-context-frequency-list">
@@ -176,6 +187,7 @@
                 <div class="mood-context-frequency-track"><i style="width: {{ context.share_percent }}%"></i></div>
                 <b>{{ context.count }}×</b>
                 <small>{{ context.share_percent }}%</small>
+                {% if summary.has_previous_data %}<em class="mood-context-delta {{ 'up' if context.count_delta > 0 else 'down' if context.count_delta < 0 else 'flat' }}">{{ '%+d'|format(context.count_delta) }}</em>{% endif %}
               </div>
               {% endfor %}
             </div>
