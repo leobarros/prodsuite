@@ -1,20 +1,21 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf, field_errors %}
-{% block title %}Água{% endblock %}
+{% block title %}Hidratação{% endblock %}
 
 {% block content %}
 <div class="page-head">
   <div>
     <p class="eyebrow"><i class="bi bi-droplet"></i> cuidado pessoal <span class="sep">·</span> hidratação <span class="sep">·</span> {{ summary.day|datebr }}</p>
-    <h1 class="page-title">Um copo por vez.</h1>
-    <p class="page-sub">Registre o que bebeu, veja sua faixa do dia e receba lembretes gentis — sem transformar água em cobrança.</p>
+    <h1 class="page-title">Hidratação, no seu ritmo.</h1>
+    <p class="page-sub">Registre água, café, chá e outras bebidas — com a água separada da meta.</p>
   </div>
   <div class="d-flex flex-wrap gap-2">
     <button class="btn btn-ghost btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#waterSettingsModal"><i class="bi bi-sliders"></i> Ajustar meta</button>
     <form method="post" action="{{ url_for('water.register') }}" data-water-add>
       {{ csrf() }}
       <input type="hidden" name="amount_ml" value="200">
-      <button class="btn btn-neon btn-sm" type="submit"><i class="bi bi-plus-lg"></i> Registrar água</button>
+      <input type="hidden" name="kind" value="water">
+      <button class="btn btn-neon btn-sm" type="submit"><i class="bi bi-plus-lg"></i> Registrar bebida</button>
     </form>
   </div>
 </div>
@@ -30,7 +31,7 @@
      data-water-goal-reached="{{ 1 if summary.status_key in ['in_range', 'above'] else 0 }}">
   <section class="bento-card water-hero">
     <div class="card-head">
-      <h2 class="card-title"><i class="bi bi-droplet-half"></i> Seu copo de hoje</h2>
+      <h2 class="card-title"><i class="bi bi-droplet-half"></i> Sua água de hoje</h2>
       <span class="card-link">{{ summary.day|datebr }}</span>
     </div>
     <div class="water-glass-stage">
@@ -108,26 +109,38 @@
       <h2 class="card-title"><i class="bi bi-plus-circle"></i> Registrar agora</h2>
       <span class="card-link">um toque</span>
     </div>
+    <div class="water-type-chips" data-water-types>
+      <button class="water-type is-active" type="button" data-water-kind="water"><i class="bi bi-droplet"></i> Água</button>
+      <button class="water-type" type="button" data-water-kind="coffee"><i class="bi bi-cup-hot"></i> Café</button>
+      <button class="water-type" type="button" data-water-kind="tea"><i class="bi bi-cup-straw"></i> Chá</button>
+      <button class="water-type" type="button" data-water-kind="beer"><i class="bi bi-cup"></i> Cerveja</button>
+      <button class="water-type" type="button" data-water-kind="other"><i class="bi bi-plus"></i> Outro</button>
+    </div>
     <div class="water-quick-grid">
       <form method="post" action="{{ url_for('water.register') }}" data-water-add>
         {{ csrf() }}<input type="hidden" name="amount_ml" value="200">
+        <input type="hidden" name="kind" value="water">
         <button class="water-quick-btn" type="submit"><i class="bi bi-cup"></i><span><strong>200 ml</strong><small>copo</small></span><b>+</b></button>
       </form>
       <form method="post" action="{{ url_for('water.register') }}" data-water-add>
         {{ csrf() }}<input type="hidden" name="amount_ml" value="300">
+        <input type="hidden" name="kind" value="water">
         <button class="water-quick-btn" type="submit"><i class="bi bi-cup-hot"></i><span><strong>300 ml</strong><small>caneca</small></span><b>+</b></button>
       </form>
       <form method="post" action="{{ url_for('water.register') }}" data-water-add>
         {{ csrf() }}<input type="hidden" name="amount_ml" value="500">
+        <input type="hidden" name="kind" value="water">
         <button class="water-quick-btn" type="submit"><i class="bi bi-cup-straw"></i><span><strong>500 ml</strong><small>garrafa</small></span><b>+</b></button>
       </form>
       <form method="post" action="{{ url_for('water.register') }}" data-water-add>
         {{ csrf() }}<input type="hidden" name="amount_ml" value="250">
+        <input type="hidden" name="kind" value="water">
         <button class="water-quick-btn" type="submit"><i class="bi bi-plus-lg"></i><span><strong>250 ml</strong><small>outro</small></span><b>+</b></button>
       </form>
     </div>
     <form class="water-custom-form" method="post" action="{{ url_for('water.register') }}" data-water-add>
       {{ csrf() }}
+      <input type="hidden" name="kind" value="water">
       <label class="visually-hidden" for="waterCustomAmount">Quantidade em mililitros</label>
       <input class="form-control" id="waterCustomAmount" type="number" name="amount_ml" min="10" max="1000" step="10" placeholder="Quantidade personalizada (ml)" required>
       <button class="btn btn-neon" type="submit" aria-label="Registrar quantidade personalizada"><i class="bi bi-plus-lg"></i></button>
@@ -146,6 +159,18 @@
 </div>
 
 <div class="water-bottom-grid">
+  <section class="bento-card water-other-card">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-cup-hot"></i> Outras bebidas</h2>
+      <span class="card-link" data-water-other-total>{{ summary.other_total }} ml</span>
+    </div>
+    <div data-water-other-list>
+      {% with other_summary = summary.other_summary, other_total = summary.other_total %}
+      {% include "_water_other.html" %}
+      {% endwith %}
+    </div>
+  </section>
+
   <section class="bento-card water-reminder-card">
     <div class="card-head">
       <h2 class="card-title"><i class="bi bi-bell"></i> Lembretes</h2>

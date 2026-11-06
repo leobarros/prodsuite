@@ -3,11 +3,11 @@
 <div class="water-log-list">
   {% for log in recent %}
   <div class="water-log-row">
-    <span class="water-log-dot" aria-hidden="true"></span>
+    <span class="water-log-dot {{ 'is-other' if log.kind != 'water' else '' }}" aria-hidden="true"></span>
     <span class="water-log-time">{{ log.logged_at|localtime('%H:%M') }}</span>
-    <span class="water-log-name">Registro</span>
+    <span class="water-log-name"><i class="bi {{ log.kind_icon }}"></i> {{ log.kind_label }}</span>
     <strong class="water-log-amount">{{ log.amount_ml }} ml</strong>
-    <form method="post" action="{{ url_for('water.undo', log_id=log.id) }}" data-confirm="Remover este registro de água?" data-water-delete>
+    <form method="post" action="{{ url_for('water.undo', log_id=log.id) }}" data-confirm="Remover este registro?" data-water-delete>
       {{ csrf() }}
       <button class="icon-btn-sm" type="submit" aria-label="Remover registro" title="Remover registro"><i class="bi bi-x-lg"></i></button>
     </form>

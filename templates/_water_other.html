@@ -1,0 +1,18 @@
+{% if other_summary %}
+<div class="water-other-list">
+  {% for item in other_summary %}
+  <div class="water-other-row {{ 'is-alcohol' if item.is_alcohol }}">
+    <i class="bi {{ item.icon }}"></i>
+    <span>{{ item.label }}</span>
+    <small>{{ item.count }} registro{{ 's' if item.count != 1 }}</small>
+    <b>{{ item.ml }} ml</b>
+  </div>
+  {% endfor %}
+</div>
+<p class="water-other-note"><i class="bi bi-info-circle"></i> Não contam para a meta de água. Álcool pode afetar a hidratação.</p>
+{% else %}
+<div class="water-log-empty water-other-empty">
+  <i class="bi bi-cup-hot"></i>
+  <span>Nenhuma outra bebida registrada hoje.</span>
+</div>
+{% endif %}

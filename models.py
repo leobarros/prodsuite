@@ -693,12 +693,33 @@ class WaterLog(db.Model):
         db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
     amount_ml = db.Column(db.Integer, nullable=False, default=200)
+    kind = db.Column(
+        db.String(20), nullable=False, default="water", index=True
+    )
     logged_at = db.Column(db.DateTime, nullable=False, default=utcnow, index=True)
+
+    @property
+    def kind_label(self) -> str:
+        from services.water import BEVERAGE_LABELS
+
+        return BEVERAGE_LABELS.get(self.kind, "Água")
+
+    @property
+    def kind_icon(self) -> str:
+        from services.water import BEVERAGE_ICONS
+
+        return BEVERAGE_ICONS.get(self.kind, "bi-droplet")
+
+    @property
+    def is_alcohol(self) -> bool:
+        return self.kind == "beer"
 
     def to_export_dict(self) -> dict:
         return {
             "id": self.id,
             "amount_ml": self.amount_ml,
+            "kind": self.kind,
+            "kind_label": self.kind_label,
             "logged_at": self.logged_at.isoformat() if self.logged_at else None,
         }
 

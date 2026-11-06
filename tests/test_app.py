@@ -1551,7 +1551,8 @@ class TestWater:
 
         page = client.get("/agua/")
         assert page.status_code == 200
-        assert "Um copo por vez" in page.get_data(as_text=True)
+        assert "Hidratação, no seu ritmo" in page.get_data(as_text=True)
+        assert "Hidratação" in page.get_data(as_text=True)
         assert "cachoeiras" in page.get_data(as_text=True)
 
         added = client.post(
@@ -1601,6 +1602,44 @@ class TestWater:
         html = updated.get_data(as_text=True)
         assert "2.1" in html or "2,1" in html
         assert "2.5" in html or "2,5" in html
+
+    def test_other_beverages_do_not_count_toward_water_goal(
+        self, client, app, make_user
+    ):
+        user_id = make_user()
+        login(client)
+
+        coffee = client.post(
+            "/agua/registrar",
+            json={"amount_ml": 150, "kind": "coffee"},
+            headers={"X-Requested-With": "fetch"},
+        )
+        beer = client.post(
+            "/agua/registrar",
+            json={"amount_ml": 330, "kind": "beer"},
+            headers={"X-Requested-With": "fetch"},
+        )
+        assert coffee.status_code == 200 and coffee.get_json()["ok"]
+        assert beer.status_code == 200 and beer.get_json()["ok"]
+        payload = beer.get_json()
+        assert payload["total"] == 0
+        assert payload["other_total"] == 480
+        assert {item["key"] for item in payload["other_summary"]} == {"coffee", "beer"}
+
+        with app.app_context():
+            from services.water import summary_for
+            from models import User
+
+            summary = summary_for(db.session.get(User, user_id))
+            assert summary["total"] == 0
+            assert summary["other_total"] == 480
+            assert summary["percent"] == 0
+            assert summary["other_log_count"] == 2
+
+        page = client.get("/agua/").get_data(as_text=True)
+        assert "Hidratação, no seu ritmo" in page
+        assert "Café" in page and "Cerveja" in page
+        assert "data-water-other-total" in page
 
     def test_water_hourly_safety_warning(self, client, app, make_user):
         make_user()
@@ -3229,6 +3268,25 @@ class TestReports:
         assert response.data.startswith(b"%PDF")
         assert "attachment" in response.headers["Content-Disposition"]
         assert b"ProdSuite" in response.data or len(response.data) > 1000
+
+    def test_report_includes_other_beverages(self, client, app, make_user):
+        user_id = make_user()
+        self._seed_report_data(app, user_id)
+        with app.app_context():
+            db.session.add(
+                WaterLog(
+                    user_id=user_id,
+                    amount_ml=300,
+                    kind="coffee",
+                    logged_at=utcnow(),
+                )
+            )
+            db.session.commit()
+        login(client)
+        html = client.get("/relatorio/").get_data(as_text=True)
+        assert "Outras bebidas" in html
+        assert "Café 300 ml" in html
+        assert "não conta como hidratação" in html
 
     def test_report_hands_off_to_review(self, client, make_user):
         make_user()

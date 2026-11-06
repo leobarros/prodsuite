@@ -104,6 +104,9 @@ def ensure_schema() -> None:
         "scratchpads": {
             "completed_at": "DATETIME",
         },
+        "water_logs": {
+            "kind": "VARCHAR(20) NOT NULL DEFAULT 'water'",
+        },
         "board_columns": {
             "project_id": "INTEGER",
             "archived_at": "DATETIME",

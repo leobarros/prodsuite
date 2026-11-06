@@ -1,7 +1,8 @@
-"""Hidratação: faixa pessoal, registros e resumo diário."""
+"""Hidratação: água, outras bebidas, faixa pessoal e resumo diário."""
 
 from __future__ import annotations
 
+from collections import defaultdict
 from datetime import timedelta
 
 from extensions import db
@@ -12,6 +13,18 @@ DEFAULT_LOW_ML = 1800
 DEFAULT_HIGH_ML = 2200
 MAX_AMOUNT_ML = 1000
 MAX_HOURLY_ML = 1000
+
+BEVERAGE_TYPES = (
+    {"key": "water", "label": "Água", "icon": "bi-droplet"},
+    {"key": "coffee", "label": "Café", "icon": "bi-cup-hot"},
+    {"key": "tea", "label": "Chá", "icon": "bi-cup-straw"},
+    {"key": "beer", "label": "Cerveja", "icon": "bi-cup"},
+    {"key": "other", "label": "Outro", "icon": "bi-cup"},
+)
+BEVERAGE_KEYS = {item["key"] for item in BEVERAGE_TYPES}
+BEVERAGE_LABELS = {item["key"]: item["label"] for item in BEVERAGE_TYPES}
+BEVERAGE_ICONS = {item["key"]: item["icon"] for item in BEVERAGE_TYPES}
+ALCOHOL_KEYS = {"beer"}
 
 
 def settings_for(user, create: bool = False) -> WaterSettings | None:
@@ -24,7 +37,7 @@ def settings_for(user, create: bool = False) -> WaterSettings | None:
 
 
 def goal_range(settings: WaterSettings | None) -> dict:
-    """Faixa em ml. A fórmula é referência inicial, não prescrição."""
+    """Faixa de água em ml. A fórmula é referência inicial, não prescrição."""
     low = DEFAULT_LOW_ML
     high = DEFAULT_HIGH_ML
     extra = 0
@@ -66,11 +79,22 @@ def today_logs(user, day=None):
     )
 
 
-def add_log(user, amount_ml: int) -> WaterLog:
+def valid_kind(kind: str | None) -> str:
+    value = (kind or "water").strip().casefold()
+    return value if value in BEVERAGE_KEYS else "water"
+
+
+def add_log(user, amount_ml: int, kind: str = "water") -> WaterLog:
     amount = int(amount_ml)
     if amount < 10 or amount > MAX_AMOUNT_ML:
         raise ValueError("Informe entre 10 e 1000 ml.")
-    log = WaterLog(user_id=user.id, amount_ml=amount, logged_at=utcnow())
+    kind = valid_kind(kind)
+    log = WaterLog(
+        user_id=user.id,
+        amount_ml=amount,
+        kind=kind,
+        logged_at=utcnow(),
+    )
     db.session.add(log)
     db.session.commit()
     return log
@@ -80,7 +104,10 @@ def summary_for(user, day=None):
     day = day or local_today()
     settings = settings_for(user)
     logs = today_logs(user, day)
-    total = sum(log.amount_ml for log in logs)
+    water_logs = [log for log in logs if log.kind == "water"]
+    other_logs = [log for log in logs if log.kind != "water"]
+    total = sum(log.amount_ml for log in water_logs)
+    other_total = sum(log.amount_ml for log in other_logs)
     goal = goal_range(settings)
     target = goal["target"]
     low = goal["low"]
@@ -96,7 +123,7 @@ def summary_for(user, day=None):
 
     recent = (
         WaterLog.query.filter_by(user_id=user.id)
-        .order_by(WaterLog.logged_at.desc())
+        .order_by(WaterLog.logged_at.desc(), WaterLog.id.desc())
         .limit(8)
         .all()
     )
@@ -106,6 +133,7 @@ def summary_for(user, day=None):
         log.amount_ml
         for log in WaterLog.query.filter(
             WaterLog.user_id == user.id,
+            WaterLog.kind == "water",
             WaterLog.logged_at >= now - timedelta(hours=1),
         ).all()
     )
@@ -115,6 +143,7 @@ def summary_for(user, day=None):
     week_logs = (
         WaterLog.query.filter(
             WaterLog.user_id == user.id,
+            WaterLog.kind == "water",
             WaterLog.logged_at >= week_start_utc,
         )
         .order_by(WaterLog.logged_at.asc())
@@ -144,11 +173,46 @@ def summary_for(user, day=None):
         1 for item in week_days if item["ml"] >= low and item["ml"] <= high
     )
 
+    other_by_kind = defaultdict(lambda: {"count": 0, "ml": 0})
+    for log in other_logs:
+        data = other_by_kind[log.kind]
+        data["count"] += 1
+        data["ml"] += log.amount_ml
+    other_summary = []
+    for item in BEVERAGE_TYPES:
+        key = item["key"]
+        if key == "water" or key not in other_by_kind:
+            continue
+        data = other_by_kind[key]
+        other_summary.append(
+            {
+                "key": key,
+                "label": item["label"],
+                "icon": item["icon"],
+                "count": data["count"],
+                "ml": data["ml"],
+                "is_alcohol": key in ALCOHOL_KEYS,
+            }
+        )
+
+    other_week_logs = (
+        WaterLog.query.filter(
+            WaterLog.user_id == user.id,
+            WaterLog.kind != "water",
+            WaterLog.logged_at >= week_start_utc,
+        )
+        .all()
+    )
+    other_week_total = sum(log.amount_ml for log in other_week_logs)
+
     return {
         "day": day,
         "settings": settings,
         "goal": goal,
         "total": total,
+        "other_total": other_total,
+        "other_summary": other_summary,
+        "other_week_total": other_week_total,
         "percent": percent,
         "remaining": max(0, target - total),
         "status_key": status_key,
@@ -160,4 +224,9 @@ def summary_for(user, day=None):
         "week_total": week_total,
         "week_average": week_average,
         "in_range_days": in_range_days,
+        "kind_labels": BEVERAGE_LABELS,
+        "kind_icons": BEVERAGE_ICONS,
+        "beverage_types": BEVERAGE_TYPES,
+        "water_log_count": len(water_logs),
+        "other_log_count": len(other_logs),
     }

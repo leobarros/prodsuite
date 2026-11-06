@@ -14,6 +14,27 @@
   const statusNode = document.querySelector("[data-water-status]");
   const recentNode = document.querySelector("[data-water-recent]");
   const warningNode = document.querySelector("[data-water-hourly-warning]");
+  const otherTotalNode = document.querySelector("[data-water-other-total]");
+  const otherListNode = document.querySelector("[data-water-other-list]");
+  const typeButtons = [...document.querySelectorAll("[data-water-kind]")];
+  let selectedKind = "water";
+
+  function selectBeverageKind(kind) {
+    selectedKind = kind || "water";
+    typeButtons.forEach((button) => {
+      const active = button.dataset.waterKind === selectedKind;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+    document.querySelectorAll('form[data-water-add] input[name="kind"]').forEach((input) => {
+      input.value = selectedKind;
+    });
+  }
+
+  typeButtons.forEach((button) => {
+    button.addEventListener("click", () => selectBeverageKind(button.dataset.waterKind));
+  });
+  selectBeverageKind("water");
 
   function updateWaterUI(data) {
     if (!data) return;
@@ -37,6 +58,10 @@
       statusNode.textContent = data.status_label;
     }
     if (recentNode && data.recent_html) recentNode.innerHTML = data.recent_html;
+    if (otherTotalNode && data.other_total !== undefined) {
+      otherTotalNode.textContent = `${data.other_total} ml`;
+    }
+    if (otherListNode && data.other_html) otherListNode.innerHTML = data.other_html;
     if (warningNode) warningNode.hidden = !data.hourly_warning;
     if (Array.isArray(data.week_days)) {
       const weekMax = Math.max(Number(data.high) || 0, ...data.week_days.map((day) => day.ml), 1);
@@ -85,7 +110,8 @@
         updateWaterUI(data);
         const input = form.querySelector('input[name="amount_ml"]');
         if (input && input.type === "number") input.value = "";
-        toast?.(`${data.amount} ml registrados.`, "success");
+        const kindLabel = (data.kind_label || "Água").toLowerCase();
+        toast?.(`${data.amount} ml de ${kindLabel} registrados.`, "success");
       } catch (_error) {
         toast?.("Não foi possível conectar. Tente novamente.", "error");
       } finally {

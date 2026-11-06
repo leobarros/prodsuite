@@ -8948,3 +8948,133 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
 .mood-context-delta.up { color: var(--green); }
 .mood-context-delta.down { color: var(--coral); }
 .mood-context-delta.flat { color: var(--dim); }
+
+/* Tipos de bebida */
+.water-type-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 0 0 9px;
+}
+
+.water-type {
+  display: inline-flex;
+  height: 34px;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: .64rem;
+  cursor: pointer;
+}
+
+.water-type i {
+  color: var(--cyan);
+  font-size: .75rem;
+}
+
+.water-type:nth-child(2) i { color: var(--amber); }
+.water-type:nth-child(3) i { color: var(--green); }
+.water-type:nth-child(4) i { color: var(--coral); }
+
+.water-type.is-active {
+  border-color: var(--line-strong);
+  background: var(--lav2);
+  color: var(--text);
+}
+
+.water-type:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 2px;
+}
+
+.water-other-card {
+  padding: 16px 17px;
+}
+
+.water-other-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.water-other-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: .65rem;
+}
+
+.water-other-row > i {
+  width: 18px;
+  color: var(--amber);
+}
+
+.water-other-row.is-alcohol > i {
+  color: var(--coral);
+}
+
+.water-other-row span {
+  flex: 1;
+}
+
+.water-other-row small {
+  color: var(--dim);
+  font-size: .54rem;
+}
+
+.water-other-row b {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: .58rem;
+  font-weight: 500;
+}
+
+.water-other-note {
+  margin: 8px 0 0;
+  color: var(--dim);
+  font-size: .58rem;
+  line-height: 1.45;
+}
+
+.water-other-note i {
+  color: var(--amber);
+  margin-right: 3px;
+}
+
+.water-other-empty {
+  min-height: 55px;
+}
+
+.water-log-row .water-log-name i {
+  color: var(--cyan);
+  margin-right: 3px;
+  font-size: .62rem;
+}
+
+.water-log-dot.is-other {
+  background: var(--amber);
+}
+
+.water-bottom-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.water-limit-card {
+  grid-column: auto;
+}
+
+@media (max-width: 767.98px) {
+  .water-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}

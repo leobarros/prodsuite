@@ -16,11 +16,13 @@ from flask_login import current_user, login_required
 from extensions import db
 from models import WaterLog
 from services.water import (
+    BEVERAGE_LABELS,
     add_log,
     goal_range,
     settings_for,
     summary_for,
     today_logs,
+    valid_kind,
 )
 
 water_bp = Blueprint("water", __name__, url_prefix="/agua")
@@ -46,11 +48,23 @@ def _recent_html():
     )
 
 
+def _other_html():
+    summary = summary_for(current_user)
+    return render_template(
+        "_water_other.html",
+        other_summary=summary["other_summary"],
+        other_total=summary["other_total"],
+    )
+
+
 def _json_summary(extra=None):
     summary = summary_for(current_user)
     payload = {
         "ok": True,
         "total": summary["total"],
+        "other_total": summary["other_total"],
+        "other_summary": summary["other_summary"],
+        "other_html": _other_html(),
         "target": summary["goal"]["target"],
         "low": summary["goal"]["low"],
         "high": summary["goal"]["high"],
@@ -86,9 +100,12 @@ def index():
 def register():
     payload = _payload()
     raw_amount = payload.get("amount_ml") or payload.get("amount") or 200
+    kind = valid_kind(
+        payload.get("kind") or payload.get("beverage_type") or "water"
+    )
     try:
         amount = int(raw_amount)
-        add_log(current_user, amount)
+        add_log(current_user, amount, kind)
     except (TypeError, ValueError) as exc:
         if _wants_json():
             return jsonify(ok=False, error=str(exc)), 400
@@ -96,8 +113,10 @@ def register():
         return redirect(url_for("water.index"))
 
     if _wants_json():
-        return _json_summary({"amount": amount})
-    flash(f"{amount} ml registrados.", "success")
+        return _json_summary(
+            {"amount": amount, "kind": kind, "kind_label": BEVERAGE_LABELS[kind]}
+        )
+    flash(f"{amount} ml de {BEVERAGE_LABELS[kind].lower()} registrados.", "success")
     return redirect(url_for("water.index"))
 
 
