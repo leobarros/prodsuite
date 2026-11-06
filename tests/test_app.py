@@ -1627,6 +1627,8 @@ class TestWater:
         assert payload["net_hydration"] == -45.0
         assert payload["compensation_ml"] == 495.0
         assert {item["key"] for item in payload["other_summary"]} == {"coffee", "beer"}
+        assert "water-bar-beer" in payload["bar_html"]
+        assert "water-bar-debit" in payload["bar_html"]
 
         with app.app_context():
             from services.water import summary_for

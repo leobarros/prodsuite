@@ -242,6 +242,48 @@ def summary_for(user, day=None):
             }
         )
 
+    bar_positive = []
+    bar_debit = []
+    positive_by_kind: dict[str, float] = {}
+    debit_by_kind: dict[str, float] = {}
+    volume_by_kind: dict[str, int] = {}
+    for log in logs:
+        coefficient = BEVERAGE_COEFFICIENTS.get(log.kind, 1.0)
+        contribution = (log.amount_ml or 0) * coefficient
+        volume_by_kind[log.kind] = volume_by_kind.get(log.kind, 0) + (log.amount_ml or 0)
+        if contribution > 0:
+            positive_by_kind[log.kind] = positive_by_kind.get(log.kind, 0) + contribution
+        elif contribution < 0:
+            debit_by_kind[log.kind] = debit_by_kind.get(log.kind, 0) + abs(contribution)
+    positive_total = sum(positive_by_kind.values())
+    debit_total = sum(debit_by_kind.values())
+    bar_max = max(target, positive_total, 1)
+    for item in BEVERAGE_TYPES:
+        key = item["key"]
+        if positive_by_kind.get(key):
+            bar_positive.append(
+                {
+                    "key": key,
+                    "label": item["label"],
+                    "icon": item["icon"],
+                    "ml": round(positive_by_kind[key], 1),
+                    "display": format_ml(positive_by_kind[key]),
+                    "percent": round(positive_by_kind[key] / bar_max * 100, 2),
+                }
+            )
+        if debit_by_kind.get(key):
+            bar_debit.append(
+                {
+                    "key": key,
+                    "label": item["label"],
+                    "icon": item["icon"],
+                    "volume": volume_by_kind.get(key, 0),
+                    "ml": round(debit_by_kind[key], 1),
+                    "display": format_ml(debit_by_kind[key]),
+                    "percent": round(debit_by_kind[key] / bar_max * 100, 2),
+                }
+            )
+
     other_week_logs = (
         WaterLog.query.filter(
             WaterLog.user_id == user.id,
@@ -259,6 +301,15 @@ def summary_for(user, day=None):
         "total": total,
         "other_total": other_total,
         "other_summary": other_summary,
+        "bar_positive": bar_positive,
+        "bar_debit": bar_debit,
+        "bar_positive_total": round(positive_total, 1),
+        "bar_debit_total": round(debit_total, 1),
+        "bar_net_percent": round(max(0, net_hydration) / bar_max * 100, 2),
+        "bar_positive_percent": round(positive_total / bar_max * 100, 2),
+        "bar_debit_percent": round(debit_total / bar_max * 100, 2),
+        "bar_target_percent": round(target / bar_max * 100, 2),
+        "bar_max": round(bar_max, 1),
         "other_week_total": other_week_total,
         "percent": percent,
         "net_hydration": net_hydration,

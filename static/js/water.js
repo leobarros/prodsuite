@@ -16,6 +16,7 @@
   const warningNode = document.querySelector("[data-water-hourly-warning]");
   const otherTotalNode = document.querySelector("[data-water-other-total]");
   const otherListNode = document.querySelector("[data-water-other-list]");
+  const barNode = document.querySelector("[data-water-bar]");
   const otherStatNode = document.querySelector("[data-water-other-stat]");
   const typeButtons = [...document.querySelectorAll("[data-water-kind]")];
   let selectedKind = "water";
@@ -67,6 +68,7 @@
       otherTotalNode.textContent = `${formatMl(data.other_total)} ml`;
     }
     if (otherListNode && data.other_html) otherListNode.innerHTML = data.other_html;
+    if (barNode && data.bar_html) barNode.innerHTML = data.bar_html;
     if (warningNode) warningNode.hidden = !data.hourly_warning;
     if (Array.isArray(data.week_days)) {
       const weekMax = Math.max(Number(data.high) || 0, ...data.week_days.map((day) => day.ml), 1);

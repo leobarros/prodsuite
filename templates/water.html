@@ -45,9 +45,7 @@
         <span>ml</span>
         <em data-water-percent-label>{{ summary.percent }}%</em>
       </div>
-      <div class="water-progress water-progress-hero" role="progressbar" aria-label="Progresso de hidratação líquida" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ summary.percent }}">
-        <span data-water-percent style="width: {{ summary.percent }}%"></span>
-      </div>
+      {% include "_water_bar.html" %}
       <div class="water-hero-scale">
         <span>0 ml</span>
         <span>{{ summary.goal.low }}–{{ summary.goal.high }} ml</span>

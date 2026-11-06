@@ -57,6 +57,11 @@ def _other_html():
     )
 
 
+def _bar_html():
+    summary = summary_for(current_user)
+    return render_template("_water_bar.html", summary=summary)
+
+
 def _json_summary(extra=None):
     summary = summary_for(current_user)
     payload = {
@@ -69,6 +74,7 @@ def _json_summary(extra=None):
         "other_total": summary["other_total"],
         "other_summary": summary["other_summary"],
         "other_html": _other_html(),
+        "bar_html": _bar_html(),
         "target": summary["goal"]["target"],
         "low": summary["goal"]["low"],
         "high": summary["goal"]["high"],

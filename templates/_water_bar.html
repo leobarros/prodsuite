@@ -1,0 +1,22 @@
+<div class="water-segmented" data-water-bar>
+  <div class="water-segmented-track" role="progressbar" aria-label="Hidratação líquida e contribuições das bebidas" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ summary.percent }}">
+    <div class="water-positive-stack" style="width: 100%">
+      {% for segment in summary.bar_positive %}
+      <span class="water-bar-seg water-bar-{{ segment.key }}" style="width: {{ segment.percent }}%" title="{{ segment.label }}: +{{ segment.display }} ml"></span>
+      {% endfor %}
+    </div>
+    {% if summary.bar_debit_percent %}
+    <span class="water-bar-debit" style="left: {{ summary.bar_net_percent }}%; width: {{ summary.bar_debit_percent }}%" title="Débito alcoólico: −{{ summary.bar_debit_total }} ml"></span>
+    {% endif %}
+    <span class="water-bar-target" style="left: {{ summary.bar_target_percent }}%" title="Meta: {{ summary.goal.target }} ml"></span>
+    <span class="water-bar-net" style="left: {{ summary.bar_net_percent }}%" title="Saldo líquido: {{ summary.net_hydration_display }} ml"></span>
+  </div>
+  <div class="water-bar-legend">
+    {% for segment in summary.bar_positive %}
+    <span><i class="water-bar-dot water-bar-{{ segment.key }}"></i>{{ segment.label }} <b>+{{ segment.display }} ml</b></span>
+    {% endfor %}
+    {% for segment in summary.bar_debit %}
+    <span class="is-debit"><i class="water-bar-dot water-bar-{{ segment.key }}"></i>{{ segment.label }} <b>−{{ segment.display }} ml</b></span>
+    {% endfor %}
+  </div>
+</div>

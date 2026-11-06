@@ -9259,3 +9259,114 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
     font-size: 42px;
   }
 }
+
+/* Barra segmentada por tipo de bebida. */
+.water-segmented {
+  margin-top: 4px;
+}
+
+.water-segmented-track {
+  position: relative;
+  height: 20px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--cyan) 16%, var(--line));
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--cyan) 7%, var(--line));
+}
+
+.water-positive-stack {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 6px 0 0 6px;
+}
+
+.water-bar-seg {
+  display: block;
+  height: 100%;
+  min-width: 1px;
+  border-right: 1px solid rgba(255, 255, 255, .18);
+}
+
+.water-bar-seg:last-child {
+  border-right: 0;
+}
+
+.water-bar-water { background: var(--cyan); }
+.water-bar-coffee,
+.water-bar-espresso { background: var(--amber); }
+.water-bar-tea { background: var(--green); }
+.water-bar-other { background: var(--lav); }
+.water-bar-beer,
+.water-bar-wine,
+.water-bar-spirits { background: var(--coral); }
+
+.water-bar-debit {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--coral) 0 4px,
+    color-mix(in srgb, var(--coral) 55%, transparent) 4px 7px
+  );
+  border-left: 1px solid color-mix(in srgb, var(--coral) 70%, var(--line));
+  border-right: 1px solid color-mix(in srgb, var(--coral) 70%, var(--line));
+  opacity: .9;
+}
+
+.water-bar-target {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  z-index: 3;
+  width: 1px;
+  background: var(--text);
+  opacity: .55;
+}
+
+.water-bar-net {
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  z-index: 4;
+  width: 2px;
+  transform: translateX(-1px);
+  background: var(--text);
+  box-shadow: 0 0 0 2px var(--bg);
+}
+
+.water-bar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 9px;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: .53rem;
+}
+
+.water-bar-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.water-bar-legend b {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: .51rem;
+  font-weight: 500;
+}
+
+.water-bar-legend .is-debit b {
+  color: var(--coral);
+}
+
+.water-bar-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+}
