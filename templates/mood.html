@@ -179,7 +179,7 @@
             </div>
             <p class="mood-radar-analysis-note mood-compare-note"><i class="bi bi-info-circle"></i> Comparação descritiva com a semana anterior. Não é uma medida clínica de melhora.</p>
             {% if summary.context_summary %}
-            <p class="mood-radar-analysis-lead">{{ summary.context_summary[0].label }} apareceu em <strong>{{ summary.context_summary[0].count }} de {{ summary.context_entry_count }}</strong> check-ins com contexto <strong>({{ summary.context_summary[0].share_percent }}%)</strong>.</p>
+            <p class="mood-radar-analysis-lead">{{ summary.context_summary[0].label }} apareceu em <strong>{{ summary.context_summary[0].count }} de {{ summary.context_entry_count }}</strong> check-ins com contexto.</p>
             <div class="mood-context-frequency-list">
               {% for context in summary.context_summary %}
               <div class="mood-context-frequency-row">
@@ -191,7 +191,7 @@
               </div>
               {% endfor %}
             </div>
-            <p class="mood-radar-analysis-note"><i class="bi bi-info-circle"></i> Um check-in pode ter mais de um contexto. Frequência não mede impacto.</p>
+            <p class="mood-radar-analysis-note"><i class="bi bi-info-circle"></i> As porcentagens somam 100% das menções de contexto. Um check-in pode ter mais de um contexto; frequência não mede impacto.</p>
             {% else %}
             <p class="form-hint mb-0">Ainda não há contextos suficientes para analisar.</p>
             {% endif %}

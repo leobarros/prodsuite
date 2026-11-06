@@ -68,6 +68,23 @@ def create_entry(user, *, mood, energy, tension, contexts, note) -> MoodEntry:
     return entry
 
 
+def _normalized_shares(counts: dict[str, int]) -> dict[str, int]:
+    """Distribui 100% entre contextos, sem perder a soma por arredondamento."""
+    total = sum(counts.values())
+    if not total:
+        return {}
+    raw = {key: count / total * 100 for key, count in counts.items()}
+    shares = {key: int(value) for key, value in raw.items()}
+    missing = 100 - sum(shares.values())
+    if missing:
+        ranked = sorted(
+            raw, key=lambda key: raw[key] - shares[key], reverse=True
+        )
+        for key in ranked[:missing]:
+            shares[key] += 1
+    return shares
+
+
 def summary_for(user):
     today = local_today()
     week_start = today - timedelta(days=6)
@@ -160,6 +177,8 @@ def summary_for(user):
         for entry in previous_entries
         if any(key in CONTEXT_KEYS for key in (entry.contexts or "").split(","))
     )
+    context_tag_count = sum(context_counts.values())
+    context_shares = _normalized_shares(context_counts)
     current_max_context_count = max(context_counts.values(), default=0)
     previous_max_context_count = max(previous_context_counts.values(), default=0)
     max_context_count = max(current_max_context_count, previous_max_context_count, 1)
@@ -187,9 +206,7 @@ def summary_for(user):
                 )
                 if previous_context_counts.get(key, 0)
                 else 0,
-                "share_percent": round(count / context_entry_count * 100)
-                if context_entry_count and count
-                else 0,
+                "share_percent": context_shares.get(key, 0),
                 "previous_share_percent": round(
                     previous_context_counts.get(key, 0)
                     / previous_context_entry_count
@@ -217,6 +234,7 @@ def summary_for(user):
         "frequency_max": max_context_count,
         "comparison_frequency_max": comparison_frequency_max,
         "context_entry_count": context_entry_count,
+        "context_tag_count": context_tag_count,
         "previous_context_entry_count": previous_context_entry_count,
         "previous_week_count": len(previous_entries),
         "previous_average_mood": previous_average_mood,

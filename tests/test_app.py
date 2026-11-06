@@ -1684,6 +1684,11 @@ class TestMood:
         assert 'data-mood-radar="impact"' not in html
         assert 'mood-radar-chart' in html
         assert "análise de frequência" in html
+        with app.app_context():
+            from services.mood import summary_for
+            from models import User
+            summary = summary_for(db.session.get(User, user_id))
+            assert sum(item["share_percent"] for item in summary["context_summary"]) == 100
         assert "Um check-in pode ter mais de um contexto" in html
 
     def test_mood_context_compares_previous_week(self, client, app, make_user):
