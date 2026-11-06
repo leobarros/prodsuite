@@ -129,6 +129,11 @@ def summary_for(user):
     average_mood = (
         round(sum(all_moods) / len(all_moods), 1) if all_moods else 0
     )
+    context_entry_count = sum(
+        1
+        for entry in entries
+        if any(key in CONTEXT_KEYS for key in (entry.contexts or "").split(","))
+    )
     max_context_count = max(context_counts.values(), default=0) or 1
     context_radar = []
     for key, label in CONTEXTS:
@@ -146,6 +151,9 @@ def summary_for(user):
                 "delta": round(mood_avg - average_mood, 1) if enough else 0,
                 "enough": enough,
                 "frequency_value": round(count / max_context_count * 100) if count else 0,
+                "share_percent": round(count / context_entry_count * 100)
+                if context_entry_count and count
+                else 0,
                 "impact_value": round(mood_avg / 5 * 100) if enough else 0,
             }
         )
@@ -164,6 +172,7 @@ def summary_for(user):
         "context_summary": context_summary,
         "context_radar": context_radar,
         "frequency_max": max_context_count,
+        "context_entry_count": context_entry_count,
         "has_context_data": bool(context_summary),
         "has_impact_data": any(item["enough"] for item in context_radar),
         "impact_context_count": sum(1 for item in context_radar if item["enough"]),

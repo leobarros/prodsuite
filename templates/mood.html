@@ -160,7 +160,31 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
       <div class="modal-body">
-        <div class="mood-radar-chart mood-radar-chart-modal" data-mood-radar="frequency" data-radar="{{ summary.context_radar|tojson|forceescape }}" data-overall="{{ summary.average_mood }}"></div>
+        <div class="mood-radar-modal-layout">
+          <div class="mood-radar-modal-chart">
+            <div class="mood-radar-chart mood-radar-chart-modal" data-mood-radar="frequency" data-radar="{{ summary.context_radar|tojson|forceescape }}" data-overall="{{ summary.average_mood }}"></div>
+          </div>
+          <aside class="mood-radar-analysis">
+            <span class="mood-radar-kicker"><i class="bi bi-bar-chart"></i> análise de frequência</span>
+            <h3>O que mais apareceu</h3>
+            {% if summary.context_summary %}
+            <p class="mood-radar-analysis-lead">{{ summary.context_summary[0].label }} apareceu em <strong>{{ summary.context_summary[0].count }} de {{ summary.context_entry_count }}</strong> check-ins com contexto <strong>({{ summary.context_summary[0].share_percent }}%)</strong>.</p>
+            <div class="mood-context-frequency-list">
+              {% for context in summary.context_summary %}
+              <div class="mood-context-frequency-row">
+                <span>{{ context.label }}</span>
+                <div class="mood-context-frequency-track"><i style="width: {{ context.share_percent }}%"></i></div>
+                <b>{{ context.count }}×</b>
+                <small>{{ context.share_percent }}%</small>
+              </div>
+              {% endfor %}
+            </div>
+            <p class="mood-radar-analysis-note"><i class="bi bi-info-circle"></i> Um check-in pode ter mais de um contexto. Frequência não mede impacto.</p>
+            {% else %}
+            <p class="form-hint mb-0">Ainda não há contextos suficientes para analisar.</p>
+            {% endif %}
+          </aside>
+        </div>
       </div>
     </div>
   </div>

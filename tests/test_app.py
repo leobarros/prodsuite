@@ -1683,6 +1683,8 @@ class TestMood:
         assert html.count('data-mood-radar="frequency"') >= 2
         assert 'data-mood-radar="impact"' not in html
         assert 'mood-radar-chart' in html
+        assert "análise de frequência" in html
+        assert "Um check-in pode ter mais de um contexto" in html
 
     def test_mood_rejects_invalid_scale(self, client, app, make_user):
         make_user()
