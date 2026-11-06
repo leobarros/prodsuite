@@ -8575,3 +8575,81 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
     display: none;
   }
 }
+
+/* Mantém a página de humor no grid original de três cards. */
+.mood-bottom-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.mood-week,
+.mood-radar-card,
+.mood-care {
+  grid-column: auto;
+}
+
+.mood-radar-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mood-radar-chart {
+  height: 220px;
+}
+
+.mood-radar-side {
+  padding: 0 2px;
+}
+
+.mood-radar-side > p {
+  max-width: 290px;
+}
+
+.mood-radar-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 10px;
+  margin: 8px 0;
+}
+
+.mood-radar-list li:nth-child(n + 5) {
+  display: none;
+}
+
+.mood-impact-open {
+  margin-top: 2px;
+}
+
+@media (max-width: 1099.98px) {
+  .mood-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mood-week,
+  .mood-radar-card,
+  .mood-care {
+    grid-column: 1;
+  }
+}
+
+@media (min-width: 1100px) {
+  .mood-care {
+    min-height: 100%;
+  }
+}
+
+.mood-impact-incomplete {
+  margin-bottom: 8px;
+  padding: 7px 9px;
+  border: 1px solid color-mix(in srgb, var(--amber) 22%, var(--line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--amber) 5%, transparent);
+  color: var(--dim);
+  font-size: .6rem;
+  line-height: 1.45;
+}
+
+.mood-impact-incomplete i {
+  margin-right: 4px;
+  color: var(--amber);
+}

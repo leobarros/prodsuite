@@ -1681,6 +1681,7 @@ class TestMood:
         assert 'id="moodImpactModal"' in html
         assert "Ver impacto no humor" in html
         assert "poucos dados" in html
+        assert "teia ainda está incompleta" in html
         assert 'mood-radar-chart' in html
 
     def test_mood_rejects_invalid_scale(self, client, app, make_user):

@@ -175,6 +175,9 @@
       </div>
       <div class="modal-body">
         {% if summary.has_impact_data %}
+        {% if summary.impact_context_count < 3 %}
+        <div class="mood-impact-incomplete"><i class="bi bi-info-circle"></i> A teia ainda está incompleta: só contextos com 2 ou mais registros entram nesta leitura.</div>
+        {% endif %}
         <div class="mood-impact-layout">
           <div class="mood-impact-chart">
             <div class="mood-radar-chart" data-mood-radar="impact" data-radar="{{ summary.context_radar|tojson|forceescape }}" data-overall="{{ summary.average_mood }}"></div>

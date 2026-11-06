@@ -166,6 +166,7 @@ def summary_for(user):
         "frequency_max": max_context_count,
         "has_context_data": bool(context_summary),
         "has_impact_data": any(item["enough"] for item in context_radar),
+        "impact_context_count": sum(1 for item in context_radar if item["enough"]),
         "labels": MOOD_LABELS,
         "colors": MOOD_COLORS,
         "contexts": CONTEXTS,
