@@ -9170,3 +9170,92 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
 .water-log-name.is-alcohol .beverage-icon {
   color: var(--coral);
 }
+
+/* Barra principal no lugar do copo. */
+.water-hero-reading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 215px;
+  padding: 12px 0 8px;
+}
+
+.water-hero-intro {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.water-hero-kicker {
+  color: var(--muted);
+  font-size: .7rem;
+  font-weight: 600;
+}
+
+.water-hero-target {
+  color: var(--dim);
+  font-family: var(--font-mono);
+  font-size: .58rem;
+}
+
+.water-hero-number {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 9px 0 12px;
+}
+
+.water-hero-number strong {
+  color: var(--text);
+  font-size: 52px;
+  line-height: .95;
+  letter-spacing: -.06em;
+  font-weight: 720;
+}
+
+.water-hero-number > span {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.water-hero-number em {
+  margin-left: auto;
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  font-style: normal;
+}
+
+.water-progress-hero {
+  height: 14px;
+  border: 1px solid color-mix(in srgb, var(--cyan) 16%, var(--line));
+  background: color-mix(in srgb, var(--cyan) 8%, var(--line));
+}
+
+.water-hero-scale {
+  display: flex;
+  justify-content: space-between;
+  color: var(--dim);
+  font-family: var(--font-mono);
+  font-size: .5rem;
+  margin-top: 7px;
+}
+
+.water-meta-label {
+  color: var(--muted);
+  font-size: .58rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+@media (max-width: 767.98px) {
+  .water-hero-reading {
+    min-height: 180px;
+  }
+
+  .water-hero-number strong {
+    font-size: 42px;
+  }
+}

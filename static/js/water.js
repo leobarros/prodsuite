@@ -6,7 +6,6 @@
   if (!page) return;
 
   const toast = window.PSUITE?.toast;
-  const glassFill = document.querySelector("[data-water-fill]");
   const totalNode = document.querySelector("[data-water-total]");
   const waterNode = document.querySelector("[data-water-water]");
   const percentNode = document.querySelector("[data-water-percent]");
@@ -46,10 +45,6 @@
 
   function updateWaterUI(data) {
     if (!data) return;
-    if (glassFill) {
-      const offset = 236 * (1 - Math.min(100, data.percent) / 100);
-      glassFill.style.setProperty("--water-offset", `${Math.round(offset * 10) / 10}px`);
-    }
     if (totalNode) totalNode.textContent = formatMl(data.net_hydration);
     if (waterNode) waterNode.textContent = `${formatMl(data.total)} ml`;
     if (otherStatNode) otherStatNode.textContent = `${formatMl(data.other_total)} ml`;

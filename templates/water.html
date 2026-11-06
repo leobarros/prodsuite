@@ -35,61 +35,27 @@
       <h2 class="card-title"><i class="bi bi-droplet-half"></i> Sua hidratação de hoje</h2>
       <span class="card-link">{{ summary.day|datebr }}</span>
     </div>
-    <div class="water-glass-stage">
-      <div class="water-glass-glow" aria-hidden="true"></div>
-      <div class="water-glass" aria-hidden="true">
-        <svg class="water-glass-svg" viewBox="0 0 220 290">
-          <defs>
-            <clipPath id="waterGlassClip">
-              <path d="M43 31 L58 245 Q60 258 75 260 L145 260 Q160 258 162 245 L177 31 Z"></path>
-            </clipPath>
-            <linearGradient id="waterFillGradient" x1="0" y1="0" x2="0.2" y2="1">
-              <stop offset="0" stop-color="#d5edf1" stop-opacity=".62"></stop>
-              <stop offset=".38" stop-color="#a9ced8" stop-opacity=".46"></stop>
-              <stop offset="1" stop-color="#7c91b4" stop-opacity=".3"></stop>
-            </linearGradient>
-            <linearGradient id="glassTint" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#f2fbff" stop-opacity=".18"></stop>
-              <stop offset=".42" stop-color="#d6f2f8" stop-opacity=".035"></stop>
-              <stop offset="1" stop-color="#b7dce8" stop-opacity=".12"></stop>
-            </linearGradient>
-            <linearGradient id="surfaceGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#f2fdff" stop-opacity=".72"></stop>
-              <stop offset="1" stop-color="#c5e8ee" stop-opacity=".24"></stop>
-            </linearGradient>
-            <linearGradient id="rimGradient" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stop-color="#ffffff" stop-opacity=".14"></stop>
-              <stop offset=".5" stop-color="#e9fbff" stop-opacity=".55"></stop>
-              <stop offset="1" stop-color="#ffffff" stop-opacity=".12"></stop>
-            </linearGradient>
-          </defs>
-          <path class="water-glass-inner" d="M43 31 L58 245 Q60 258 75 260 L145 260 Q160 258 162 245 L177 31 Z" fill="url(#glassTint)"></path>
-          <g clip-path="url(#waterGlassClip)">
-            <g class="water-fill-group" data-water-fill style="--water-offset: {{ ((1 - summary.percent / 100) * 236)|round(1) }}px">
-              <rect class="water-body" x="40" y="24" width="140" height="240" fill="url(#waterFillGradient)"></rect>
-              <ellipse class="water-surface" cx="110" cy="24" rx="68" ry="8" fill="url(#surfaceGradient)"></ellipse>
-              <ellipse class="water-surface-inner" cx="110" cy="25" rx="47" ry="3.5"></ellipse>
-              <circle class="water-bubble-svg" cx="82" cy="150" r="2"></circle>
-              <circle class="water-bubble-svg water-bubble-svg-b" cx="132" cy="205" r="1.4"></circle>
-            </g>
-          </g>
-          <path class="water-glass-outline-v" d="M31 30 L52 246 Q55 265 74 267 L146 267 Q165 265 168 246 L189 30"></path>
-          <ellipse class="water-glass-rim-v" cx="110" cy="30" rx="79" ry="12" fill="none" stroke="url(#rimGradient)"></ellipse>
-          <ellipse class="water-glass-rim-light" cx="110" cy="30" rx="66" ry="6.5"></ellipse>
-          <path class="water-glass-reflection" d="M51 48 Q45 70 51 132"></path>
-          <path class="water-glass-reflection water-glass-reflection-right" d="M170 54 Q175 78 170 125"></path>
-          <ellipse class="water-glass-base-v" cx="110" cy="263" rx="58" ry="6"></ellipse>
-        </svg>
+    <div class="water-hero-reading">
+      <div class="water-hero-intro">
+        <span class="water-hero-kicker">Hidratação líquida</span>
+        <span class="water-hero-target">meta {{ summary.goal.target }} ml</span>
       </div>
-      <div class="water-glass-caption">
-        <strong data-water-total>{{ summary.net_hydration_display }}</strong> <span>ml líquidos de</span> <strong>{{ summary.goal.target }} ml</strong>
+      <div class="water-hero-number">
+        <strong data-water-total>{{ summary.net_hydration_display }}</strong>
+        <span>ml</span>
+        <em data-water-percent-label>{{ summary.percent }}%</em>
       </div>
-    </div>
-    <div class="water-progress" role="progressbar" aria-label="Progresso de hidratação líquida" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ summary.percent }}">
-      <span data-water-percent style="width: {{ summary.percent }}%"></span>
+      <div class="water-progress water-progress-hero" role="progressbar" aria-label="Progresso de hidratação líquida" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ summary.percent }}">
+        <span data-water-percent style="width: {{ summary.percent }}%"></span>
+      </div>
+      <div class="water-hero-scale">
+        <span>0 ml</span>
+        <span>{{ summary.goal.low }}–{{ summary.goal.high }} ml</span>
+        <span>{{ summary.goal.target }} ml</span>
+      </div>
     </div>
     <div class="water-meta-line">
-      <span><strong data-water-percent-label>{{ summary.percent }}%</strong> da meta de hoje</span>
+      <span class="water-meta-label">Hoje</span>
       <span data-water-remaining-wrap>{% if summary.remaining %}faltam {{ summary.remaining_display }} ml{% else %}faixa atingida{% endif %}</span>
     </div>
     <div class="water-range-line">
