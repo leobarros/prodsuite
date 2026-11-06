@@ -347,6 +347,13 @@ def create_app(config_override: dict | None = None) -> Flask:
     def _initials(value: str):
         return (value or "?")[:2].upper()
 
+    def _asset_version(filename: str) -> int:
+        """Versão estável por arquivo; invalida cache sem depender de deploy manual."""
+        try:
+            return int(os.path.getmtime(os.path.join(app.static_folder, filename)))
+        except OSError:
+            return 0
+
     @app.context_processor
     def _inject_globals():
         data = {
@@ -358,6 +365,7 @@ def create_app(config_override: dict | None = None) -> Flask:
             "allow_registration": app.config.get("ALLOW_REGISTRATION", True),
             "show_onboarding": False,
             "request_id": getattr(g, "request_id", ""),
+            "asset_version": _asset_version,
         }
         if current_user.is_authenticated:
             from forms import ScratchpadForm, SearchForm

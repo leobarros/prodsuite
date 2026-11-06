@@ -1563,6 +1563,7 @@ class TestWater:
         page = client.get("/hidratacao/")
         assert page.status_code == 200
         assert "Hidratação, no seu ritmo" in page.get_data(as_text=True)
+        assert "css/theme.css?v=" in page.get_data(as_text=True)
         assert "Hidratação" in page.get_data(as_text=True)
         assert "cachoeiras" in page.get_data(as_text=True)
 

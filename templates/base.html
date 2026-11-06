@@ -29,8 +29,8 @@
   <!-- 100% local: nenhum CDN externo -->
   <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap-icons/bootstrap-icons.min.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v={{ asset_version('css/app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}?v={{ asset_version('css/theme.css') }}">
 
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta name="user-id" content="{{ current_user.id if current_user.is_authenticated else '' }}">
