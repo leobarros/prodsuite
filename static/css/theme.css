@@ -9360,52 +9360,36 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
   display: flex;
   width: 100%;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
   margin: 0;
 }
 
-.mood-context-legend .chip {
-  color: var(--lav);
-  border-color: color-mix(in srgb, var(--lav) 24%, var(--line));
-}
-
-.mood-context-help {
-  margin: 5px 0 0;
-  color: var(--dim);
-  font-size: .62rem;
-  line-height: 1.45;
-}
-
 .mood-context-list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: 9px;
-  overflow: hidden;
+  display: flex;
+  margin-top: 7px;
+  overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: 9px;
   background: var(--surface-soft);
+  scrollbar-width: thin;
 }
 
 .mood-context-item {
   position: relative;
   display: flex;
-  min-height: 38px;
+  min-width: 86px;
+  min-height: 34px;
+  flex: 1 1 0;
   align-items: center;
-  gap: 7px;
-  padding: 6px 10px;
-  border-bottom: 1px solid var(--line);
+  gap: 5px;
+  padding: 4px 7px;
+  border-right: 1px solid var(--line);
   color: var(--muted);
   cursor: pointer;
   transition: background .15s ease, color .15s ease;
 }
 
-.mood-context-item:nth-child(odd) {
-  border-right: 1px solid var(--line);
-}
-
-.mood-context-item:nth-last-child(-n + 2) {
-  border-bottom: 0;
+.mood-context-item:last-child {
+  border-right: 0;
 }
 
 .mood-context-item:hover {
@@ -9426,10 +9410,10 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
 }
 
 .mood-context-icon {
-  width: 20px;
-  flex: 0 0 20px;
+  width: 17px;
+  flex: 0 0 17px;
   color: var(--lav);
-  font-size: .78rem;
+  font-size: .72rem;
   text-align: center;
 }
 
@@ -9442,12 +9426,13 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
 .mood-context-label {
   flex: 1;
   min-width: 0;
-  font-size: .68rem;
+  font-size: .63rem;
+  white-space: nowrap;
 }
 
 .mood-context-check {
   color: var(--lav);
-  font-size: .72rem;
+  font-size: .65rem;
   opacity: 0;
 }
 
@@ -9458,22 +9443,4 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
 
 .mood-context-item:has(input:checked) .mood-context-check {
   opacity: 1;
-}
-
-@media (max-width: 575.98px) {
-  .mood-context-list {
-    grid-template-columns: 1fr;
-  }
-
-  .mood-context-item:nth-child(odd) {
-    border-right: 0;
-  }
-
-  .mood-context-item:nth-last-child(-n + 2) {
-    border-bottom: 1px solid var(--line);
-  }
-
-  .mood-context-item:last-child {
-    border-bottom: 0;
-  }
 }

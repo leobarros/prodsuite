@@ -38,6 +38,9 @@ explicar o bloqueio real.
 ## Produto
 
 - A interface é em português.
+- Não transporte frases do chat literalmente para a interface. Reescreva em
+  microcopy curta, profissional e consistente com o produto; se a informação
+  vier do usuário, adapte o sentido sem copiar o tom da conversa.
 - `Relatório` = dados e leitura; `Revisão` = decisões e fechamento da semana.
   Não duplique gráficos na revisão.
 

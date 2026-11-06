@@ -1776,7 +1776,7 @@ class TestMood:
             assert sum(item["share_percent"] for item in summary["context_summary"]) == 100
         assert "Um check-in pode ter mais de um contexto" in html
         assert html.count("mood-context-item") == 6
-        assert "alimenta o radar" in html
+        assert "alimenta o radar" not in html
         assert "bi-moon-stars" in html and "bi-house-heart" in html
 
     def test_mood_context_compares_previous_week(self, client, app, make_user):
