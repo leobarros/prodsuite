@@ -19,7 +19,7 @@ help:
 	@echo "  make secret    gera um SECRET_KEY e atualiza .env"
 	@echo "  make pull      baixa a imagem latest do Docker Hub"
 	@echo "  make push      build + push da imagem latest"
-	@echo "  make push v1   build + push da imagem v1"
+	@echo "  make push TAG  build + push da tag informada (ex.: v1)"
 	@echo "  make up        pull + sobe o Compose"
 	@echo "  make down      para o Compose"
 	@echo "  make logs      acompanha logs"
@@ -55,7 +55,7 @@ secret:
 	@$(PYTHON) -c "import pathlib,re,secrets; p=pathlib.Path('.env'); p.write_text(re.sub(r'^SECRET_KEY=.*$$', 'SECRET_KEY='+secrets.token_hex(32), p.read_text(), flags=re.M)); print('SECRET_KEY atualizado em .env')"
 
 # make push        -> nickolback/prodsuite:latest
-# make push v1     -> nickolback/prodsuite:v1
+# make push TAG    -> nickolback/prodsuite:TAG (ex.: make push v1)
 ifeq ($(PUSH_TARGET),)
 push:
 	@$(MAKE) --no-print-directory push-tag TAG=latest
@@ -64,8 +64,12 @@ push:
 	@:
 endif
 
-v%: FORCE
-	@$(MAKE) --no-print-directory push-tag TAG=$@
+# O segundo argumento é uma tag de imagem, não um alvo convencional.
+ifneq ($(PUSH_TARGET),)
+.PHONY: $(PUSH_TARGET)
+$(PUSH_TARGET): FORCE
+	@$(MAKE) --no-print-directory push-tag TAG=$(PUSH_TARGET)
+endif
 
 push-tag:
 	@test -n "$(TAG)" || { echo "Informe a tag: make push v1"; exit 1; }
