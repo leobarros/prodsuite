@@ -270,12 +270,14 @@ Mantenha o container fechado em localhost e deixe o Tailscale terminar o TLS.
 BIND_ADDR=127.0.0.1
 APP_PORT=8090
 COOKIE_SECURE=true
+PREFERRED_URL_SCHEME=https
+FORWARDED_ALLOW_IPS=*
 ```
 
 ```bash
 docker compose pull
-docker compose up -d
-sudo tailscale serve --bg 8090
+docker compose up -d --force-recreate
+sudo tailscale serve --bg --https=8443 http://127.0.0.1:8090
 sudo tailscale serve status
 ```
 

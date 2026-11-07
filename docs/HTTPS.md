@@ -77,7 +77,48 @@ Para instalar o PWA no celular com HTTPS:
 
 Sem a CA instalada no celular, o navegador mostrará aviso de certificado.
 
-## 5. Produção
+## 5. Tailscale Serve (recomendado para um app)
+
+Para um único app, use o próprio Tailscale como TLS. Não precisa de Caddy nem
+de `mkcert`. Ative no painel do Tailscale:
+
+- **MagicDNS**
+- **HTTPS certificates**
+
+No `.env` do Prodsuite:
+
+```env
+BIND_ADDR=127.0.0.1
+APP_PORT=8090
+COOKIE_SECURE=true
+PREFERRED_URL_SCHEME=https
+FORWARDED_ALLOW_IPS=*
+```
+
+Recrie o container:
+
+```bash
+docker compose pull
+docker compose up -d --force-recreate
+```
+
+Ative o Serve:
+
+```bash
+sudo tailscale serve --bg --https=8443 http://127.0.0.1:8090
+sudo tailscale serve status
+```
+
+Acesse:
+
+```text
+https://SEU-HOST.tailnet.ts.net:8443
+```
+
+Não acesse pelo IP `100.x.y.z`: o certificado é emitido para o nome MagicDNS.
+O Serve renova o certificado automaticamente.
+
+## 6. Produção
 
 Para acesso externo, prefira um proxy com certificado público ou Tailscale
 HTTPS. Não exponha o Caddy local diretamente na Internet sem uma camada de
