@@ -1,0 +1,9 @@
+{
+	auto_https off
+}
+
+:8443 {
+	tls /certs/local.pem /certs/local-key.pem
+	reverse_proxy app:5000
+	encode zstd gzip
+}

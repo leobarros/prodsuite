@@ -189,7 +189,7 @@ O ProdSuite foi pensado para caber na mão.
 
 Para instalar, abra o endereço no navegador do celular e procure **Adicionar à Tela de Início** no menu. No Safari, a opção fica em **Compartilhar**.
 
-> Para ter o app instalável e funcionar offline, o endereço precisa ser seguro (HTTPS). O runbook abaixo explica como fazer isso com Tailscale.
+> Para ter o app instalável e funcionar offline, o endereço precisa ser seguro (HTTPS). O runbook explica Tailscale; para HTTPS local, veja [docs/HTTPS.md](docs/HTTPS.md).
 
 ---
 

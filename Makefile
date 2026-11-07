@@ -8,7 +8,7 @@ TRIVY_IMAGE ?= aquasec/trivy:latest
 SCAN_IMAGE ?= prodsuite:1.0
 PUSH_TARGET := $(word 2,$(MAKECMDGOALS))
 
-.PHONY: help install test coverage run init-db icons secret pull up down logs ps backup backup-local push push-tag scan FORCE
+.PHONY: help install test coverage run run-https init-db icons secret certs pull up up-https down logs ps backup backup-local push push-tag scan FORCE
 
 help:
 	@echo "PRD//SUITE"
@@ -16,6 +16,8 @@ help:
 	@echo "  make test      roda a suíte Pytest"
 	@echo "  make coverage  testes com cobertura"
 	@echo "  make run       servidor de desenvolvimento em :5000"
+	@echo "  make certs     gera certificado local para HTTPS"
+	@echo "  make run-https servidor de desenvolvimento HTTPS em :5001"
 	@echo "  make init-db   cria as tabelas SQLite locais"
 	@echo "  make icons     regenera os ícones PWA (requer Pillow)"
 	@echo "  make secret    gera um SECRET_KEY e atualiza .env"
@@ -24,6 +26,7 @@ help:
 	@echo "  make push TAG  build + push da tag informada (ex.: v1)"
 	@echo "  make scan      Trivy HIGH/CRITICAL na imagem local"
 	@echo "  make up        pull + sobe o Compose"
+	@echo "  make up-https  sobe app + Caddy em https://localhost:8443"
 	@echo "  make down      para o Compose"
 	@echo "  make logs      acompanha logs"
 	@echo "  make ps        status + healthcheck"
@@ -40,6 +43,12 @@ test:
 
 coverage:
 	$(VENV)/bin/python -m pytest --cov=. --cov-report=term-missing
+
+run-https: certs
+	COOKIE_SECURE=true PREFERRED_URL_SCHEME=https $(VENV)/bin/flask --app app run --debug --port 5001 --cert certs/local.pem --key certs/local-key.pem
+
+certs:
+	./scripts/generate_dev_cert.sh
 
 run:
 	@test -x "$(VENV)/bin/flask" || { 		echo "Flask não encontrado em $(VENV)/bin/flask."; 		echo "O ambiente existe, mas as dependências não foram instaladas."; 		echo "Rode: make install"; 		exit 1; 	}
@@ -80,12 +89,22 @@ push-tag:
 	docker push $(REGISTRY_IMAGE):$(TAG)
 
 scan:
-	docker run --rm 		-v /var/run/docker.sock:/var/run/docker.sock 		-v "$(PWD)/.trivy-cache:/root/.cache/trivy" 		$(TRIVY_IMAGE) image 		--scanners vuln 		--severity HIGH,CRITICAL 		--exit-code 1 		$(SCAN_IMAGE)
+	docker run --rm \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v "$(PWD)/.trivy-cache:/root/.cache/trivy" \
+		$(TRIVY_IMAGE) image \
+		--scanners vuln \
+		--severity HIGH,CRITICAL \
+		--exit-code 1 \
+		$(SCAN_IMAGE)
 
 FORCE:
 
 pull:
 	$(COMPOSE) pull
+
+up-https: certs
+	docker compose -f docker-compose.yml -f docker-compose.https.yml up -d --wait
 
 up:
 	@test -f .env || (echo "Crie o .env: cp .env.example .env && make secret"; exit 1)

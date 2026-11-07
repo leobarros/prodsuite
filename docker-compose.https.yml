@@ -1,0 +1,37 @@
+# HTTPS local: Caddy termina TLS em 8443 e fala HTTP com o app na rede interna.
+# Use junto com docker-compose.yml:
+#   docker compose -f docker-compose.yml -f docker-compose.https.yml up -d
+services:
+  app:
+    pull_policy: missing
+    environment:
+      COOKIE_SECURE: "true"
+      PREFERRED_URL_SCHEME: https
+      FORWARDED_ALLOW_IPS: "*"
+
+  caddy:
+    image: caddy:2.10-alpine
+    container_name: prodsuite-caddy
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "${HTTPS_PORT:-8443}:8443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./certs:/certs:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+volumes:
+  caddy_data:
+    name: prodsuite_caddy_data
+  caddy_config:
+    name: prodsuite_caddy_config

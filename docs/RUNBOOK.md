@@ -51,6 +51,10 @@ O comando constrói a imagem a partir do Dockerfile antes de enviar. Para usar o
 make push v1 REGISTRY_IMAGE=usuario/prodsuite
 ```
 
+## HTTPS local
+
+Para HTTPS no host e no Docker, consulte [HTTPS.md](HTTPS.md).
+
 ## Segurança da imagem
 
 A imagem usa **Chainguard/Wolfi** e remove `pip`, `setuptools` e `wheel` do
