@@ -12,7 +12,7 @@ Convenções:
 from __future__ import annotations
 
 import secrets
-from datetime import datetime, timezone
+from datetime import datetime, time, timezone
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from flask import current_app
@@ -115,6 +115,28 @@ class User(UserMixin, db.Model):
         db.DateTime, nullable=False, default=utcnow, onupdate=utcnow
     )
     last_login_at = db.Column(db.DateTime, nullable=True)
+    timezone = db.Column(
+        db.String(64), nullable=False, default="America/Sao_Paulo"
+    )
+
+    notification_settings = db.relationship(
+        "NotificationSettings",
+        back_populates="owner",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+    push_subscriptions = db.relationship(
+        "PushSubscription",
+        back_populates="owner",
+        cascade="all, delete-orphan",
+        lazy="dynamic",
+    )
+    notifications = db.relationship(
+        "Notification",
+        back_populates="owner",
+        cascade="all, delete-orphan",
+        lazy="dynamic",
+    )
 
     tasks = db.relationship(
         "Task",
@@ -1042,3 +1064,111 @@ class WeeklyReview(db.Model):
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<WeeklyReview {self.week_start}>"
+
+
+class NotificationSettings(db.Model):
+    """Rotina e preferências de notificação por usuário."""
+
+    __tablename__ = "notification_settings"
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    workdays = db.Column(db.String(20), nullable=False, default="0,1,2,3,4")
+    work_start = db.Column(db.Time, nullable=False, default=lambda: time(8, 0))
+    work_end = db.Column(db.Time, nullable=False, default=lambda: time(17, 0))
+    quiet_start = db.Column(db.Time, nullable=False, default=lambda: time(22, 0))
+    quiet_end = db.Column(db.Time, nullable=False, default=lambda: time(7, 0))
+    mood_enabled = db.Column(db.Boolean, nullable=False, default=True)
+    mood_lead_minutes = db.Column(db.Integer, nullable=False, default=30)
+    mood_rest_enabled = db.Column(db.Boolean, nullable=False, default=False)
+    mood_rest_time = db.Column(db.Time, nullable=False, default=lambda: time(20, 0))
+    weekly_enabled = db.Column(db.Boolean, nullable=False, default=True)
+    weekly_day = db.Column(db.Integer, nullable=False, default=6)
+    weekly_time = db.Column(db.Time, nullable=False, default=lambda: time(18, 0))
+    task_enabled = db.Column(db.Boolean, nullable=False, default=True)
+    task_time = db.Column(db.Time, nullable=False, default=lambda: time(9, 0))
+    updated_at = db.Column(
+        db.DateTime, nullable=False, default=utcnow, onupdate=utcnow
+    )
+
+    owner = db.relationship("User", back_populates="notification_settings")
+
+    def workday_set(self) -> set[int]:
+        return {
+            int(value)
+            for value in (self.workdays or "").split(",")
+            if value.isdigit() and 0 <= int(value) <= 6
+        }
+
+    def checkin_time(self):
+        # 30 min antes do fim do expediente; nunca antes da meia-noite.
+        from datetime import datetime, timedelta
+
+        anchor = datetime.combine(datetime.today(), self.work_end)
+        return (anchor - timedelta(minutes=self.mood_lead_minutes)).time()
+
+
+class PushSubscription(db.Model):
+    """Subscription Web Push vinculada a um dispositivo."""
+
+    __tablename__ = "push_subscriptions"
+    __table_args__ = (
+        db.UniqueConstraint("endpoint", name="uq_push_subscription_endpoint"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    endpoint = db.Column(db.String(512), nullable=False)
+    p256dh = db.Column(db.String(255), nullable=False)
+    auth = db.Column(db.String(255), nullable=False)
+    user_agent = db.Column(db.String(255), nullable=False, default="")
+    created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
+    last_seen_at = db.Column(db.DateTime, nullable=False, default=utcnow)
+
+    owner = db.relationship("User", back_populates="push_subscriptions")
+
+
+class Notification(db.Model):
+    """Mensagem da central interna."""
+
+    __tablename__ = "notifications"
+    __table_args__ = (
+        db.Index("ix_notifications_user_created", "user_id", "created_at"),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    category = db.Column(db.String(24), nullable=False)
+    title = db.Column(db.String(120), nullable=False)
+    body = db.Column(db.String(240), nullable=False, default="")
+    url = db.Column(db.String(255), nullable=False, default="")
+    created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
+    read_at = db.Column(db.DateTime, nullable=True)
+
+    owner = db.relationship("User", back_populates="notifications")
+
+
+class NotificationDelivery(db.Model):
+    """Chave idempotente: evita push duplicado por categoria/período."""
+
+    __tablename__ = "notification_deliveries"
+    __table_args__ = (
+        db.UniqueConstraint(
+            "user_id", "category", "dedupe_key", name="uq_notification_delivery"
+        ),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    category = db.Column(db.String(24), nullable=False)
+    dedupe_key = db.Column(db.String(120), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=utcnow)

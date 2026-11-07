@@ -101,6 +101,9 @@ class Config:
 
     # ------------------------------------------------------------- domínio
     APP_TIMEZONE = os.environ.get("APP_TIMEZONE", "America/Sao_Paulo")
+    VAPID_PUBLIC_KEY = os.environ.get("VAPID_PUBLIC_KEY", "")
+    VAPID_PRIVATE_KEY = os.environ.get("VAPID_PRIVATE_KEY", "")
+    VAPID_SUBJECT = os.environ.get("VAPID_SUBJECT", "mailto:admin@localhost")
     PASSWORD_HASH_METHOD = os.environ.get(
         "PASSWORD_HASH_METHOD", "pbkdf2:sha256:600000"
     )

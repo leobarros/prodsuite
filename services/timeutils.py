@@ -5,17 +5,30 @@ from __future__ import annotations
 from datetime import date, datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from flask import current_app
+from flask import current_app, has_request_context
+from flask_login import current_user
 
 _UTC = timezone.utc
 
 
-def app_timezone() -> ZoneInfo:
-    name = current_app.config.get("APP_TIMEZONE", "America/Sao_Paulo")
+def timezone_for(user) -> ZoneInfo:
+    """Fuso do usuário, com fallback para o fuso global do app."""
+    name = getattr(user, "timezone", None) if user is not None else None
+    name = name or current_app.config.get("APP_TIMEZONE", "America/Sao_Paulo")
     try:
         return ZoneInfo(name)
     except ZoneInfoNotFoundError:  # pragma: no cover - ambiente sem tzdata
         return ZoneInfo("UTC")
+
+
+def app_timezone() -> ZoneInfo:
+    if has_request_context():
+        try:
+            if current_user.is_authenticated:
+                return timezone_for(current_user)
+        except (AttributeError, RuntimeError):
+            pass
+    return timezone_for(None)
 
 
 def to_local(value: datetime | None) -> datetime | None:

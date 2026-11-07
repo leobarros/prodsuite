@@ -10,7 +10,7 @@
  *
  * Ao alterar assets, incremente CACHE_VERSION para promover a limpeza.
  */
-const CACHE_VERSION = "v3.6.6";
+const CACHE_VERSION = "v3.6.7";
 const PRECACHE = `prodsuite-precache-${CACHE_VERSION}`;
 const RUNTIME = `prodsuite-runtime-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline";
@@ -129,4 +129,40 @@ self.addEventListener("fetch", (event) => {
     );
   }
   // Demais rotas (API, export, auth) vão direto à rede: nada é cacheado.
+});
+
+
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch (_error) {
+    data = {};
+  }
+  const title = data.title || "ProdSuite";
+  const body = data.body || "Você tem um novo lembrete.";
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: "/static/icons/icon-192.png",
+      badge: "/static/icons/icon-32.png",
+      tag: "prodsuite-notification",
+      data: { url: data.url || "/notificacoes/" },
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = event.notification.data?.url || "/notificacoes/";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      const existing = clients.find((client) => client.url.includes(self.location.origin));
+      if (existing) {
+        existing.focus();
+        return existing.navigate(target);
+      }
+      return self.clients.openWindow(target);
+    })
+  );
 });

@@ -19,7 +19,7 @@ Para a apresentação do app, o tour visual e o guia de uso, volte ao **[README]
 | Banco | `/data/prodsuite.db` |
 | Limite de memória | 512 MB |
 | Healthcheck | `GET /healthz` |
-| Testes | 146 Pytest |
+| Testes | 155 Pytest |
 | Dados no Git | nenhum (banco, `.env` e backups são ignorados) |
 
 ---
@@ -50,6 +50,22 @@ O comando constrói a imagem a partir do Dockerfile antes de enviar. Para usar o
 ```bash
 make push v1 REGISTRY_IMAGE=usuario/prodsuite
 ```
+
+## Notificações Web Push
+
+A central interna funciona sem configuração externa. Para envio com o app fechado:
+
+1. Defina `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` e `VAPID_SUBJECT` no `.env`.
+2. Use HTTPS. `localhost` é aceito pelo navegador; em rede, publique atrás de HTTPS.
+3. Instale o PWA no dispositivo.
+4. Abra **Notificações**, configure rotina/fuso e ative o push no dispositivo.
+5. Execute o agendador a cada 5–15 minutos:
+
+```bash
+docker compose exec -T app flask --app app notifications-run
+```
+
+Em produção, prefira um cron/systemd timer. O processo avalia cada usuário no fuso configurado, respeita o horário silencioso e usa chaves de entrega para não duplicar lembretes.
 
 ## 1. Antes de instalar
 
@@ -483,7 +499,7 @@ source .venv/bin/activate
 pytest -q
 ```
 
-Resultado esperado: **146 testes passando**.
+Resultado esperado: **155 testes passando**.
 
 Cobertura:
 

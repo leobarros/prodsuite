@@ -113,6 +113,7 @@ def ensure_schema() -> None:
             "archived_week": "DATE",
         },
         "users": {
+            "timezone": "VARCHAR(64) NOT NULL DEFAULT 'America/Sao_Paulo'",
             "weekly_focus_goal": "INTEGER NOT NULL DEFAULT 12",
             "legacy_done_migrated": "BOOLEAN NOT NULL DEFAULT 0",
             "onboarding_completed": "BOOLEAN NOT NULL DEFAULT 1",
@@ -305,6 +306,7 @@ def create_app(config_override: dict | None = None) -> Flask:
     from routes.tasks import tasks_bp
     from routes.water import water_bp
     from routes.mood import mood_bp
+    from routes.notifications import notifications_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
@@ -320,6 +322,7 @@ def create_app(config_override: dict | None = None) -> Flask:
     app.register_blueprint(export_bp)
     app.register_blueprint(water_bp)
     app.register_blueprint(mood_bp)
+    app.register_blueprint(notifications_bp)
 
     # ------------------------------------------------ logs e segurança
     log_startup(app)
@@ -396,6 +399,14 @@ def create_app(config_override: dict | None = None) -> Flask:
         db.create_all()
         ensure_schema()
         click.echo("Banco inicializado.")
+
+    @app.cli.command("notifications-run")
+    def notifications_run_command() -> None:
+        """Processa lembretes devidos; execute via cron a cada 5–15 minutos."""
+        from services.notifications import run_due_notifications
+
+        sent = run_due_notifications()
+        click.echo(f"Notificações criadas: {sent}")
 
     @app.cli.command("create-user")
     @click.option("--username", prompt=True, help="Nome de acesso")

@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Notificações{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow"><i class="bi bi-bell"></i> sistema <span class="sep">·</span> notificações</p>
+    <h1 class="page-title">Quando o app pode falar com você?</h1>
+    <p class="page-sub">A rotina define os horários. O silêncio e os lembretes ficam sob seu controle.</p>
+  </div>
+  <span class="chip"><i class="bi bi-lock"></i> dados privados</span>
+</div>
+
+<div class="notification-layout" data-notifications data-vapid-key="{{ public_key }}">
+  <div class="notification-main">
+    <form method="post" action="{{ url_for('notifications.configure') }}" class="bento-card notification-card">
+      {{ csrf() }}
+      <div class="card-head">
+        <h2 class="card-title"><i class="bi bi-calendar-week"></i> Sua rotina</h2>
+        <span class="card-link">fuso e semana de trabalho</span>
+      </div>
+      <div class="notification-grid">
+        <label class="form-label">Fuso horário
+          <input class="form-control" name="timezone" value="{{ current_user.timezone }}" list="timezone-list" required>
+          <datalist id="timezone-list">
+            <option value="America/Sao_Paulo"></option>
+            <option value="America/Manaus"></option>
+            <option value="America/Fortaleza"></option>
+            <option value="Europe/Lisbon"></option>
+            <option value="UTC"></option>
+          </datalist>
+        </label>
+        <div class="form-label">Dias de trabalho</div>
+        <div class="notification-workdays">
+          {% for label in workday_labels %}
+          <label class="notification-day">
+            <input type="checkbox" name="workdays" value="{{ loop.index0 }}" {{ 'checked' if loop.index0 in settings.workday_set() }}>
+            <span>{{ label }}</span>
+          </label>
+          {% endfor %}
+        </div>
+        <label class="form-label">Início
+          <input class="form-control" type="time" name="work_start" value="{{ settings.work_start.strftime('%H:%M') }}">
+        </label>
+        <label class="form-label">Fim
+          <input class="form-control" type="time" name="work_end" value="{{ settings.work_end.strftime('%H:%M') }}">
+        </label>
+        <label class="form-label">Silêncio começa
+          <input class="form-control" type="time" name="quiet_start" value="{{ settings.quiet_start.strftime('%H:%M') }}">
+        </label>
+        <label class="form-label">Silêncio termina
+          <input class="form-control" type="time" name="quiet_end" value="{{ settings.quiet_end.strftime('%H:%M') }}">
+        </label>
+      </div>
+
+      <div class="notification-section">
+        <h3>Lembretes</h3>
+        <label class="notification-toggle">
+          <input type="checkbox" name="mood_enabled" {{ 'checked' if settings.mood_enabled }}>
+          <span><strong>Check-in de humor</strong><small>30 minutos antes do fim do expediente: {{ checkin.strftime('%H:%M') }}</small></span>
+        </label>
+        <label class="notification-toggle">
+          <input type="checkbox" name="mood_rest_enabled" {{ 'checked' if settings.mood_rest_enabled }}>
+          <span><strong>Também em dias de folga</strong><small>Enviar às</small></span>
+          <input class="form-control notification-time" type="time" name="mood_rest_time" value="{{ settings.mood_rest_time.strftime('%H:%M') }}">
+        </label>
+        <div class="notification-row">
+          <label class="notification-toggle">
+            <input type="checkbox" name="weekly_enabled" {{ 'checked' if settings.weekly_enabled }}>
+            <span><strong>Revisão semanal</strong><small>Um convite para fechar a semana</small></span>
+          </label>
+          <select class="form-select notification-select" name="weekly_day">
+            {% for label in ['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'] %}
+            <option value="{{ loop.index0 }}" {{ 'selected' if settings.weekly_day == loop.index0 }}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          <input class="form-control notification-time" type="time" name="weekly_time" value="{{ settings.weekly_time.strftime('%H:%M') }}">
+        </div>
+        <div class="notification-row">
+          <label class="notification-toggle">
+            <input type="checkbox" name="task_enabled" {{ 'checked' if settings.task_enabled }}>
+            <span><strong>Prazos de tarefas</strong><small>No dia do prazo, uma vez por tarefa</small></span>
+          </label>
+          <input class="form-control notification-time" type="time" name="task_time" value="{{ settings.task_time.strftime('%H:%M') }}">
+        </div>
+      </div>
+      <div class="notification-actions">
+        <span class="form-hint"><i class="bi bi-info-circle"></i> Durante o silêncio, a central registra, mas o celular não é interrompido.</span>
+        <button class="btn btn-neon btn-sm" type="submit"><i class="bi bi-check2"></i> Salvar preferências</button>
+      </div>
+    </form>
+
+    <section class="bento-card notification-card">
+      <div class="card-head">
+        <h2 class="card-title"><i class="bi bi-phone"></i> Notificações no dispositivo</h2>
+        <span class="card-link">Web Push</span>
+      </div>
+      {% if public_key %}
+      <p class="form-hint">Ative neste navegador para receber avisos mesmo com o app fechado. O texto não inclui humor, notas ou nomes íntimos.</p>
+      <div class="notification-push-actions">
+        <button class="btn btn-ghost btn-sm" type="button" data-push-enable><i class="bi bi-bell"></i> Ativar neste dispositivo</button>
+        <span class="form-hint" data-push-status>Permissão ainda não solicitada.</span>
+      </div>
+      {% else %}
+      <p class="form-hint">Web Push ainda não configurado no servidor. A central abaixo já funciona; para push, defina as chaves VAPID no ambiente.</p>
+      {% endif %}
+    </section>
+  </div>
+
+  <aside class="bento-card notification-center">
+    <div class="card-head">
+      <h2 class="card-title"><i class="bi bi-inbox"></i> Central</h2>
+      {% if unread %}<span class="chip">{{ unread }} não lida{{ 's' if unread != 1 }}</span>{% endif %}
+    </div>
+    {% if notifications %}
+    <div class="notification-list">
+      {% for item in notifications %}
+      <article class="notification-item {{ 'is-unread' if not item.read_at }}">
+        <div class="notification-item-head">
+          <span class="notification-dot" aria-hidden="true"></span>
+          <strong>{{ item.title }}</strong>
+          <time>{{ item.created_at|localtime('%d/%m · %H:%M') }}</time>
+        </div>
+        <p>{{ item.body }}</p>
+        {% if item.url %}<a href="{{ item.url }}">Abrir <i class="bi bi-arrow-right"></i></a>{% endif %}
+        {% if not item.read_at %}
+        <form method="post" action="{{ url_for('notifications.read', notification_id=item.id) }}">
+          {{ csrf() }}<button class="btn btn-ghost btn-xs" type="submit">Marcar como lida</button>
+        </form>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </div>
+    {% if unread %}
+    <form method="post" action="{{ url_for('notifications.read_all') }}" class="mt-2">
+      {{ csrf() }}<button class="btn btn-ghost btn-xs" type="submit">Marcar todas como lidas</button>
+    </form>
+    {% endif %}
+    {% else %}
+    <div class="empty-state"><i class="bi bi-bell-slash"></i><span>Nenhuma notificação por aqui.</span></div>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/notifications.js') }}" defer></script>
+{% endblock %}
