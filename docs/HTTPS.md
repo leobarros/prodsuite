@@ -2,12 +2,14 @@
 
 ## 1. Certificado local
 
-O projeto usa `mkcert` quando disponível. Ele cria uma CA local confiável no
-navegador:
+O projeto exige `mkcert` para criar uma CA local confiável. O fallback
+autoassinado foi removido de propósito, porque o Firefox sempre exibirá aviso
+de segurança nesse caso.
 
 ```bash
-# Ubuntu/Debian (exemplo)
-sudo apt install mkcert
+# Ubuntu/Debian
+sudo apt install mkcert libnss3-tools
+mkcert -install
 make certs
 ```
 
@@ -17,8 +19,22 @@ Para incluir o IP da sua máquina na LAN:
 EXTRA_HOST=192.168.1.20 make certs
 ```
 
-Sem `mkcert`, o script gera um certificado autoassinado e o navegador exibirá
-um aviso. Não use esse fallback para PWA em produção.
+Se você gerou um certificado autoassinado anteriormente, remova-o antes:
+
+```bash
+rm -rf certs
+make certs
+```
+
+Depois de gerar, reinicie o Firefox. A CA fica em:
+
+```bash
+mkcert -CAROOT
+```
+
+Se o `mkcert -install` não alcançar o perfil do Firefox, importe
+`$(mkcert -CAROOT)/rootCA.pem` manualmente em **Configurações → Privacidade e
+segurança → Certificados → Autoridades**.
 
 ## 2. Flask local em HTTPS
 
