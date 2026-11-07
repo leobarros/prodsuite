@@ -1958,6 +1958,15 @@ class TestTaskDetail:
 # NOTAS / MARKDOWN / BUSCA
 # ==========================================================================
 class TestNotes:
+    def test_notes_search_uses_integrated_search_field(self, client, app, make_user):
+        make_user()
+        login(client)
+        html = client.get("/notas").get_data(as_text=True)
+        assert 'class="notes-search-row"' in html
+        assert 'class="search-field"' in html
+        assert 'class="search-submit"' in html
+        assert 'Buscar nas suas notas' in html
+
     def test_note_renders_markdown_and_wiki_links(self, client, app, make_user):
         make_user()
         login(client)

@@ -10231,3 +10231,22 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
     max-width: 100%;
   }
 }
+
+.notes-search-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 7px;
+}
+
+.notes-search-row .search-field {
+  flex: 1;
+}
+
+.notes-search-clear {
+  flex: 0 0 auto;
+}
+
+.notes-search-clear i {
+  margin-right: 2px;
+}

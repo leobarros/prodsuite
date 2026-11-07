@@ -12,11 +12,17 @@
 </div>
 
 <form class="search-box" method="get" action="{{ url_for('notes.index') }}" role="search">
-  <label class="visually-hidden" for="notesSearch">Buscar notas</label>
-  <input class="form-control" type="search" id="notesSearch" name="q" value="{{ query }}"
-         placeholder="Buscar nas suas notas…" autocomplete="off">
-  <button class="btn btn-ghost" type="submit"><i class="bi bi-search"></i></button>
-  {% if query %}<a class="btn btn-ghost" href="{{ url_for('notes.index') }}" aria-label="Limpar filtro"><i class="bi bi-x-lg"></i></a>{% endif %}
+  <div class="notes-search-row">
+    <div class="search-field">
+      <label class="visually-hidden" for="notesSearch">Buscar notas</label>
+      <input class="form-control" type="search" id="notesSearch" name="q" value="{{ query }}"
+             placeholder="Buscar nas suas notas…" autocomplete="off">
+      <button class="search-submit" type="submit" aria-label="Buscar notas" title="Buscar notas">
+        <i class="bi bi-search" aria-hidden="true"></i>
+      </button>
+    </div>
+    {% if query %}<a class="btn btn-ghost btn-sm notes-search-clear" href="{{ url_for('notes.index') }}" aria-label="Limpar filtro"><i class="bi bi-x-lg"></i> Limpar</a>{% endif %}
+  </div>
 </form>
 
 {% if notes %}

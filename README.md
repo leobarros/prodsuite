@@ -8,7 +8,7 @@ Um app pessoal e auto-hospedado para organizar o que importa sem transformar a v
 ![Python](https://img.shields.io/badge/Python-3.13-7c6aa3)
 ![Flask](https://img.shields.io/badge/Flask-3.0-9e8ab8)
 ![Docker](https://img.shields.io/badge/Docker-ready-8eb7c6)
-![Testes](https://img.shields.io/badge/testes-157%20passando-b98aa4)
+![Testes](https://img.shields.io/badge/testes-158%20passando-b98aa4)
 ![Trivy](https://img.shields.io/badge/Trivy-0%20HIGH%2FCRITICAL-a7d1b0)
 
 ![Meu dia no ProdSuite](docs/images/readme-dashboard.webp)
@@ -310,7 +310,7 @@ Testes:
 
 ```bash
 pytest -q
-# 157 testes
+# 158 testes
 ```
 
 O banco local fica em `instance/prodsuite.db` e não é apagado ao sair da conta.
