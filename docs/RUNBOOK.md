@@ -57,8 +57,8 @@ Para HTTPS no host e no Docker, consulte [HTTPS.md](HTTPS.md).
 
 ## Segurança da imagem
 
-A imagem usa **Chainguard/Wolfi** e remove `pip`, `setuptools` e `wheel` do
-runtime. O relatório PDF usa WeasyPrint atualizado.
+A imagem usa **Alpine Python 3.13**, compatível com x86-64 baseline, e remove
+`pip`, `setuptools` e `wheel` do runtime. O relatório PDF usa WeasyPrint atualizado.
 
 Rode o scanner na imagem local:
 

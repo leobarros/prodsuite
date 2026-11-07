@@ -1,26 +1,28 @@
-# PRD//SUITE — imagem de produção Chainguard/Wolfi.
-# Base fixada por digest; atualize junto com a revisão de segurança.
-FROM cgr.dev/chainguard/wolfi-base@sha256:24f549a7fcace88e69b9557941168c74645688ecc4acf7fb6d734a6b74e9019d
+# PRD//SUITE — imagem de produção compatível com x86-64 baseline.
+# A base Chainguard/Wolfi exige SSE4.2 e não roda em CPUs Llano antigas.
+FROM python:3.13-alpine
 
 USER root
 
-# Python + bibliotecas nativas do WeasyPrint, fontes e dados de fuso.
-RUN apk update && apk add --no-cache \
-        python-3.13 py3.13-pip \
-        pango cairo harfbuzz fontconfig ttf-dejavu libjpeg-turbo \
-        libffi shared-mime-info tzdata \
+# Bibliotecas nativas do WeasyPrint, fontes e dados de fuso.
+RUN apk add --no-cache \
+        pango cairo harfbuzz fontconfig ttf-dejavu libjpeg-turbo libffi \
+        shared-mime-info tzdata \
     && rm -rf /var/cache/apk/*
 
-# Mantém o UID/GID histórico do volume (10001) para atualização sem quebra.
-RUN addgroup --gid 10001 app \
-    && adduser -u 10001 -G app -S -D -H -g "ProdSuite" app
+# Mantém o UID/GID histórico do volume (10001).
+RUN addgroup -g 10001 app && adduser -S -D -H -u 10001 -G app app
 
 WORKDIR /app
 COPY requirements.txt ./
-RUN python3.13 -m venv /app/.venv \
+RUN python -m venv /app/.venv \
     && /app/.venv/bin/pip install --no-cache-dir --no-compile -r requirements.txt \
     && /app/.venv/bin/pip uninstall -y pip setuptools wheel >/dev/null 2>&1 || true
-RUN apk del py3.13-pip py3.13-setuptools py3-pip-wheel >/dev/null 2>&1 || true
+# Remove o pip do Python do sistema; não é necessário em runtime.
+RUN rm -rf /usr/local/lib/python3.13/site-packages/pip* \
+           /usr/local/lib/python3.13/site-packages/setuptools* \
+           /usr/local/lib/python3.13/site-packages/wheel* \
+           /usr/local/lib/python3.13/ensurepip
 
 COPY --chown=app:app . .
 RUN mkdir -p /data /app/instance && chown -R app:app /data /app

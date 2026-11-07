@@ -2,9 +2,12 @@
 
 ## Base
 
-A imagem de produção usa **Chainguard Wolfi, Python 3.13**, fixada por digest no
-`Dockerfile`. O runtime não usa `apt` e não mantém `pip`, `setuptools` ou
-`wheel`.
+A imagem de produção usa **Alpine Python 3.13**, compatível com x86-64 baseline.
+Essa escolha é necessária porque a base Chainguard/Wolfi usa instruções que não
+existem no AMD A4-3305M do homelab (sem SSE4.2); nessa CPU o Python Wolfi morre
+com SIGILL (exit 132).
+
+O runtime não usa `apt` e não mantém `pip`, `setuptools` ou `wheel`.
 
 ## Dependências nativas
 
@@ -24,7 +27,7 @@ fica em `.trivy-cache/` e não é versionado.
 
 ## Política de atualização
 
-- Revisar o digest da base Chainguard e as versões Python periodicamente.
+- Revisar a tag da base Alpine e as versões Python periodicamente.
 - Atualizar dependências Python com teste de PDF e suíte completa.
 - Não ignorar achados sem uma justificativa registrada.
 - Push, Web Push e notificações continuam exigindo HTTPS em produção.
@@ -32,7 +35,7 @@ fica em `.trivy-cache/` e não é versionado.
 ## Estado verificado
 
 Na verificação de implementação, a imagem anterior baseada em Debian apresentava
-**67 HIGH + 1 CRITICAL**. A imagem Chainguard com WeasyPrint 70 e runtime sem
+**67 HIGH + 1 CRITICAL**. A imagem Alpine com WeasyPrint 70 e runtime sem
 ferramentas de instalação ficou com **0 HIGH + 0 CRITICAL** no Trivy.
 
 O scanner é uma fotografia do banco de vulnerabilidades; deve rodar novamente a
