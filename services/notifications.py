@@ -237,6 +237,18 @@ def notifications_for(user: User, limit: int = 30):
     )
 
 
+def recent_notifications(user: User, hours: int = 2):
+    since = utcnow() - timedelta(hours=hours)
+    return (
+        Notification.query.filter(
+            Notification.user_id == user.id,
+            Notification.created_at >= since,
+        )
+        .order_by(Notification.created_at.desc(), Notification.id.desc())
+        .all()
+    )
+
+
 def unread_count(user: User) -> int:
     return Notification.query.filter_by(
         user_id=user.id, read_at=None

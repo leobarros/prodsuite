@@ -159,4 +159,7 @@ def read_all():
     db.session.commit()
     if request.headers.get("X-Requested-With") == "fetch":
         return jsonify(ok=True)
-    return redirect(url_for("notifications.index"))
+    target = (request.form.get("next") or "").strip()
+    if not target.startswith("/") or target.startswith("//"):
+        target = url_for("notifications.index")
+    return redirect(target)

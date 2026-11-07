@@ -207,3 +207,37 @@ def test_service_worker_contains_push_handlers(app):
         ).resolve().read_text()
         assert 'addEventListener("push"' in source
         assert 'addEventListener("notificationclick"' in source
+
+
+def test_bell_drawer_has_only_last_two_hours(client, app, make_user):
+    from datetime import timedelta
+    from models import Notification, utcnow
+
+    user_id = make_user()
+    with app.app_context():
+        db.session.add(
+            Notification(
+                user_id=user_id,
+                category="mood",
+                title="Recente",
+                body="Dentro da janela",
+                created_at=utcnow() - timedelta(minutes=30),
+            )
+        )
+        db.session.add(
+            Notification(
+                user_id=user_id,
+                category="mood",
+                title="Antiga",
+                body="Fora da janela",
+                created_at=utcnow() - timedelta(hours=3),
+            )
+        )
+        db.session.commit()
+    login(client)
+    html = client.get("/").get_data(as_text=True)
+    assert "notificationDrawer" in html
+    assert "Recente" in html
+    assert "Antiga" not in html
+    assert "últimas 2 horas" in html
+    assert "notification-badge" in html

@@ -102,13 +102,19 @@
     </nav>
 
     <div class="sidebar-footer">
-      <a class="user-chip" href="{{ url_for('auth.profile') }}">
-        <span class="avatar">{{ current_user.initials }}</span>
-        <span class="user-meta">
-          <strong>{{ current_user.display_name }}</strong>
-          <span>{{ current_user.email }}</span>
-        </span>
-      </a>
+      <div class="sidebar-user-row">
+        <a class="user-chip" href="{{ url_for('auth.profile') }}">
+          <span class="avatar">{{ current_user.initials }}</span>
+          <span class="user-meta">
+            <strong>{{ current_user.display_name }}</strong>
+            <span>{{ current_user.email }}</span>
+          </span>
+        </a>
+        <button class="icon-btn notification-bell" type="button" data-bs-toggle="offcanvas" data-bs-target="#notificationDrawer" aria-controls="notificationDrawer" aria-label="Notificações{% if notification_unread %}: {{ notification_unread }} não lidas{% endif %}" title="Notificações">
+          <i class="bi bi-bell"></i>
+          {% if notification_unread %}<span class="notification-badge">{{ notification_unread if notification_unread < 10 else '9+' }}</span>{% endif %}
+        </button>
+      </div>
       <div class="sidebar-actions">
         <a class="icon-btn" href="{{ url_for('main.search') }}" aria-label="Busca global" title="Busca global">
           <i class="bi bi-search"></i>
@@ -153,6 +159,7 @@
         <button class="icon-btn" type="button" data-bs-toggle="modal" data-bs-target="#captureModal" aria-label="Nova anotação"><i class="bi bi-plus-lg"></i></button>
         <button class="icon-btn" type="button" data-theme-toggle aria-label="Alternar tema" title="Alternar tema"><i class="bi bi-moon-stars"></i></button>
         <a class="icon-btn help-shortcut" href="{{ url_for('help.help_page') }}" aria-label="Ajuda"><i class="bi bi-question-circle"></i></a>
+        <button class="icon-btn notification-bell" type="button" data-bs-toggle="offcanvas" data-bs-target="#notificationDrawer" aria-controls="notificationDrawer" aria-label="Notificações{% if notification_unread %}: {{ notification_unread }} não lidas{% endif %}"><i class="bi bi-bell"></i>{% if notification_unread %}<span class="notification-badge">{{ notification_unread if notification_unread < 10 else '9+' }}</span>{% endif %}</button>
         <a class="avatar" href="{{ url_for('auth.profile') }}" aria-label="Perfil">{{ current_user.initials }}</a>
       </div>
     </header>
@@ -272,6 +279,42 @@
        data-report="{{ url_for('reports.weekly') }}"
        data-search="{{ url_for('main.search') }}"></div>
 
+  <div class="offcanvas offcanvas-end notification-drawer" tabindex="-1" id="notificationDrawer" aria-labelledby="notificationDrawerLabel">
+    <div class="offcanvas-header">
+      <div>
+        <h2 class="offcanvas-title" id="notificationDrawerLabel">Notificações</h2>
+        <span class="notification-drawer-sub">últimas 2 horas</span>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
+    </div>
+    <div class="offcanvas-body">
+      {% if notification_recent %}
+      <div class="notification-drawer-list">
+        {% for item in notification_recent %}
+        <a class="notification-drawer-item {{ 'is-unread' if not item.read_at }}" href="{{ item.url or url_for('notifications.index') }}">
+          <span class="notification-drawer-dot" aria-hidden="true"></span>
+          <span class="notification-drawer-main">
+            <strong>{{ item.title }}</strong>
+            <span>{{ item.body }}</span>
+            <time>{{ item.created_at|localtime('%d/%m · %H:%M') }}</time>
+          </span>
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state notification-drawer-empty"><i class="bi bi-bell-slash"></i><span>Nada nas últimas 2 horas.</span></div>
+      {% endif %}
+    </div>
+    <div class="offcanvas-footer notification-drawer-footer">
+      {% if notification_unread %}
+      <form method="post" action="{{ url_for('notifications.read_all') }}">
+        {{ csrf() }}<input type="hidden" name="next" value="{{ request.path }}">
+        <button class="btn btn-ghost btn-xs" type="submit">Marcar todas como lidas</button>
+      </form>
+      {% endif %}
+      <a class="btn btn-ghost btn-xs" href="{{ url_for('notifications.index') }}">Ver histórico completo <i class="bi bi-arrow-right"></i></a>
+    </div>
+  </div>
   {% include "_bottom_nav.html" %}
   {% include "_capture_modal.html" %}
 {% endif %}

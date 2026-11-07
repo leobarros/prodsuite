@@ -372,7 +372,10 @@ def create_app(config_override: dict | None = None) -> Flask:
         }
         if current_user.is_authenticated:
             from forms import ScratchpadForm, SearchForm
+            from services.notifications import recent_notifications, unread_count
 
+            data["notification_unread"] = unread_count(current_user)
+            data["notification_recent"] = recent_notifications(current_user, hours=2)
             data["show_onboarding"] = bool(
                 not current_user.onboarding_completed
                 or request.args.get("tour") == "1"
