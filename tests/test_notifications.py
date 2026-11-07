@@ -39,6 +39,18 @@ def test_notification_page_requires_login(client):
     assert "/entrar" in response.headers["Location"]
 
 
+def test_notification_settings_live_in_profile_not_in_menu(client, make_user):
+    make_user()
+    login(client)
+    profile = client.get("/perfil").get_data(as_text=True)
+    assert 'id="notificacoes"' in profile
+    assert 'action="/notificacoes/configurar"' in profile
+    assert "Meia hora antes do fim do expediente" in profile
+    assert "Notificações</span>" in profile
+    central = client.get("/notificacoes/").get_data(as_text=True)
+    assert "Configurar no perfil" in central
+    assert 'action="/notificacoes/configurar"' not in central
+
 def test_notification_settings_are_per_user_and_derive_checkin(
     client, app, make_user
 ):

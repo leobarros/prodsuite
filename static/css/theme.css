@@ -10038,3 +10038,71 @@ html[data-theme="light"] #surfaceGradient stop:nth-child(2) {
     flex-direction: column;
   }
 }
+
+.profile-notification-details summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.profile-notification-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.profile-summary-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text);
+  font-size: .78rem;
+  font-weight: 650;
+}
+
+.profile-summary-title i {
+  color: var(--lav);
+}
+
+.profile-summary-meta {
+  flex: 1;
+  color: var(--dim);
+  font-size: .55rem;
+}
+
+.profile-summary-chevron {
+  color: var(--dim);
+  font-size: .65rem;
+  transition: transform .16s ease;
+}
+
+.profile-notification-details[open] .profile-summary-chevron {
+  transform: rotate(180deg);
+}
+
+.profile-notification-body {
+  margin-top: 13px;
+  padding-top: 13px;
+  border-top: 1px solid var(--line);
+}
+
+.profile-notification-body .notification-card {
+  margin-bottom: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.profile-notification-central {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--lav);
+  font-size: .6rem;
+  text-decoration: none;
+}
+
+.notification-layout--central {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 760px;
+}

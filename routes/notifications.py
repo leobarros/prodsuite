@@ -94,7 +94,7 @@ def configure():
     )
     db.session.commit()
     flash("Preferências de notificação atualizadas.", "success")
-    return redirect(url_for("notifications.index"))
+    return redirect(url_for("auth.profile") + "#notificacoes")
 
 
 @notifications_bp.post("/assinar")

@@ -19,7 +19,7 @@ Para a apresentação do app, o tour visual e o guia de uso, volte ao **[README]
 | Banco | `/data/prodsuite.db` |
 | Limite de memória | 512 MB |
 | Healthcheck | `GET /healthz` |
-| Testes | 155 Pytest |
+| Testes | 156 Pytest |
 | Dados no Git | nenhum (banco, `.env` e backups são ignorados) |
 
 ---
@@ -499,7 +499,7 @@ source .venv/bin/activate
 pytest -q
 ```
 
-Resultado esperado: **155 testes passando**.
+Resultado esperado: **156 testes passando**.
 
 Cobertura:
 

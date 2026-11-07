@@ -25,6 +25,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from extensions import db
 from forms import ChangePasswordForm, DisplayNameForm, LoginForm, RegisterForm
 from models import User, utcnow
+from services.notifications import checkin_time, settings_for, unread_count
 from security import (
     clear_login_failures,
     login_retry_after,
@@ -180,10 +181,17 @@ def profile():
             flash("Senha atualizada. Os outros aparelhos foram desconectados.", "success")
             return redirect(url_for("auth.profile"))
 
+    notification_settings = settings_for(current_user)
+    db.session.commit()
     return render_template(
         "auth/profile.html",
         form=form,
         name_form=DisplayNameForm(display_name=current_user.display_name),
+        notification_settings=notification_settings,
+        checkin=checkin_time(notification_settings),
+        notification_unread=unread_count(current_user),
+        notification_public_key=current_app.config.get("VAPID_PUBLIC_KEY", ""),
+        workday_labels=("seg", "ter", "qua", "qui", "sex", "sáb", "dom"),
     )
 
 

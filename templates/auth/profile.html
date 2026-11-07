@@ -7,7 +7,7 @@
   <div>
     <p class="eyebrow"><i class="bi bi-person-circle"></i> sua conta</p>
     <h1 class="page-title">Perfil</h1>
-    <p class="page-sub">Sua conta, aparência e segurança em um só lugar.</p>
+    <p class="page-sub">Sua conta, aparência, notificações e segurança em um só lugar.</p>
   </div>
   <form method="post" action="{{ url_for('auth.logout') }}">
     {{ csrf() }}
@@ -74,6 +74,22 @@
       </div>
     </section>
 
+    <section class="bento-card mb-3" id="notificacoes">
+      <details class="profile-notification-details">
+        <summary>
+          <span class="profile-summary-title"><i class="bi bi-bell"></i> Notificações</span>
+          <span class="profile-summary-meta">{% if notification_settings.mood_enabled %}check-in {{ checkin.strftime('%H:%M') }}{% else %}lembretes pausados{% endif %}{% if notification_unread %} · {{ notification_unread }} não lida{{ 's' if notification_unread != 1 }}{% endif %}</span>
+          <i class="bi bi-chevron-down profile-summary-chevron"></i>
+        </summary>
+        <div class="profile-notification-body" data-notifications data-vapid-key="{{ notification_public_key }}">
+          {% with settings = notification_settings, checkin = checkin, public_key = notification_public_key, workday_labels = workday_labels %}
+          {% include "_notification_preferences.html" %}
+          {% endwith %}
+          <a class="profile-notification-central" href="{{ url_for('notifications.index') }}">Abrir central de notificações <i class="bi bi-arrow-right"></i></a>
+        </div>
+      </details>
+    </section>
+
     <section class="bento-card">
       <div class="card-head"><h2 class="card-title"><i class="bi bi-person-lines-fill"></i> Meus dados</h2></div>
       <p class="page-sub mb-3">Guarde uma cópia das suas tarefas, notas, anotações, água e humor quando quiser.</p>
@@ -131,4 +147,8 @@
     </section>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/notifications.js') }}" defer></script>
 {% endblock %}
