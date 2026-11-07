@@ -40,3 +40,8 @@ ferramentas de instalação ficou com **0 HIGH + 0 CRITICAL** no Trivy.
 
 O scanner é uma fotografia do banco de vulnerabilidades; deve rodar novamente a
 cada atualização de base, dependência ou deploy.
+
+## Compatibilidade de CPU
+
+A imagem precisa funcionar no AMD A4-3305M do homelab, que não possui SSE4.2.
+Consulte [CPU_COMPATIBILITY.md](CPU_COMPATIBILITY.md) antes de trocar a base.

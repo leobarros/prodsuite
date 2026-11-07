@@ -45,6 +45,14 @@ explicar o bloqueio real.
   Não duplique gráficos na revisão.
 
 
+## Compatibilidade de runtime
+
+- Imagens publicadas devem rodar em **x86-64 baseline**. O homelab alvo é um
+  AMD A4-3305M sem SSE4.2/AVX; detalhes em `docs/CPU_COMPATIBILITY.md`.
+- Antes de publicar, teste o binário Python da imagem no homelab. `exit 132`
+  (SIGILL) indica base compilada para CPU mais nova.
+- Não use `-march=native` em imagens publicadas.
+
 ## Design system
 
 - Siga `docs/DESIGN_SYSTEM.md` e os componentes/tokens de `static/css/theme.css`.
