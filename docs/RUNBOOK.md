@@ -51,6 +51,21 @@ O comando constrói a imagem a partir do Dockerfile antes de enviar. Para usar o
 make push v1 REGISTRY_IMAGE=usuario/prodsuite
 ```
 
+## Segurança da imagem
+
+A imagem usa **Chainguard/Wolfi** e remove `pip`, `setuptools` e `wheel` do
+runtime. O relatório PDF usa WeasyPrint atualizado.
+
+Rode o scanner na imagem local:
+
+```bash
+docker build -t prodsuite:1.0 .
+make scan
+```
+
+O alvo falha com código diferente de zero se houver vulnerabilidade
+HIGH/CRITICAL. O cache do Trivy fica em `.trivy-cache/` e não é versionado.
+
 ## Notificações Web Push
 
 A central interna funciona sem configuração externa. Para envio com o app fechado:

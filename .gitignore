@@ -40,3 +40,5 @@ Thumbs.db
 
 # Ruff
 .ruff_cache/
+.trivy-cache/
+.docker-cg/

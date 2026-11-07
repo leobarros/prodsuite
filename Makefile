@@ -4,9 +4,11 @@ PYTHON ?= python3
 VENV := .venv
 COMPOSE := docker compose
 REGISTRY_IMAGE ?= nickolback/prodsuite
+TRIVY_IMAGE ?= aquasec/trivy:latest
+SCAN_IMAGE ?= prodsuite:1.0
 PUSH_TARGET := $(word 2,$(MAKECMDGOALS))
 
-.PHONY: help install test coverage run init-db icons secret pull up down logs ps backup backup-local push push-tag FORCE
+.PHONY: help install test coverage run init-db icons secret pull up down logs ps backup backup-local push push-tag scan FORCE
 
 help:
 	@echo "PRD//SUITE"
@@ -20,6 +22,7 @@ help:
 	@echo "  make pull      baixa a imagem latest do Docker Hub"
 	@echo "  make push      build + push da imagem latest"
 	@echo "  make push TAG  build + push da tag informada (ex.: v1)"
+	@echo "  make scan      Trivy HIGH/CRITICAL na imagem local"
 	@echo "  make up        pull + sobe o Compose"
 	@echo "  make down      para o Compose"
 	@echo "  make logs      acompanha logs"
@@ -75,6 +78,9 @@ push-tag:
 	@test -n "$(TAG)" || { echo "Informe a tag: make push v1"; exit 1; }
 	docker build -t $(REGISTRY_IMAGE):$(TAG) .
 	docker push $(REGISTRY_IMAGE):$(TAG)
+
+scan:
+	docker run --rm 		-v /var/run/docker.sock:/var/run/docker.sock 		-v "$(PWD)/.trivy-cache:/root/.cache/trivy" 		$(TRIVY_IMAGE) image 		--scanners vuln 		--severity HIGH,CRITICAL 		--exit-code 1 		$(SCAN_IMAGE)
 
 FORCE:
 

@@ -29,3 +29,7 @@ requisitos-rf_rnf.md
 
 .screens/
 .ruff_cache
+.trivy-cache
+.trivy*
+Dockerfile.cg-test
+.docker-cg
