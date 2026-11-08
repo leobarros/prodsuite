@@ -52,3 +52,31 @@
     action.click();
   });
 })();
+
+/* Menu de mais ações da fila: fecha ao clicar fora, trocar de menu ou Esc. */
+(() => {
+  "use strict";
+  const menus = Array.from(document.querySelectorAll(".inbox-more"));
+  if (!menus.length) return;
+
+  const closeAll = (except = null) => {
+    menus.forEach((menu) => {
+      if (menu !== except) menu.open = false;
+    });
+  };
+
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    const current = target instanceof Element ? target.closest(".inbox-more") : null;
+    closeAll(current);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    const open = menus.find((menu) => menu.open);
+    if (!open) return;
+    open.open = false;
+    const summary = open.querySelector("summary");
+    if (summary instanceof HTMLElement) summary.focus();
+  });
+})();
