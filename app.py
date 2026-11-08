@@ -103,6 +103,7 @@ def ensure_schema() -> None:
         },
         "scratchpads": {
             "completed_at": "DATETIME",
+            "someday_at": "DATETIME",
         },
         "water_logs": {
             "kind": "VARCHAR(20) NOT NULL DEFAULT 'water'",
@@ -372,6 +373,7 @@ def create_app(config_override: dict | None = None) -> Flask:
         }
         if current_user.is_authenticated:
             from forms import ScratchpadForm, SearchForm
+            from models import Scratchpad
             from services.notifications import recent_notifications, unread_count
 
             data["notification_unread"] = unread_count(current_user)
@@ -390,6 +392,12 @@ def create_app(config_override: dict | None = None) -> Flask:
             )
             data["nav_pending"] = Task.query.filter(
                 Task.user_id == current_user.id, Task.status != "done"
+            ).count()
+            data["nav_inbox"] = Scratchpad.query.filter(
+                Scratchpad.user_id == current_user.id,
+                Scratchpad.completed_at.is_(None),
+                Scratchpad.someday_at.is_(None),
+                Scratchpad.converted_task_id.is_(None),
             ).count()
             data["capture_form"] = ScratchpadForm()
             data["search_form"] = SearchForm()

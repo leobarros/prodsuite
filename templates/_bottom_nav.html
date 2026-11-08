@@ -10,7 +10,7 @@
     <span class="emoji-icon tomato-glyph" aria-hidden="true"></span><span>Pomodoro</span>
   </a>
   <a class="bottom-link {{ 'active' if (request.endpoint or '').startswith('scratchpad.') }}" href="{{ url_for('scratchpad.index') }}">
-    <i class="bi bi-lightbulb"></i><span>Anotações</span>
+    <i class="bi bi-inbox"></i><span>Caixa</span>
   </a>
   <a class="bottom-link {{ 'active' if (request.endpoint or '').startswith('notes.') }}" href="{{ url_for('notes.index') }}">
     <i class="bi bi-journal-bookmark"></i><span>Notas</span>

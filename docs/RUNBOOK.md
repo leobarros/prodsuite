@@ -19,7 +19,7 @@ Para a apresentação do app, o tour visual e o guia de uso, volte ao **[README]
 | Banco | `/data/prodsuite.db` |
 | Limite de memória | 512 MB |
 | Healthcheck | `GET /healthz` |
-| Testes | 158 Pytest |
+| Testes | 163 Pytest |
 | Dados no Git | nenhum (banco, `.env` e backups são ignorados) |
 
 ---
@@ -377,7 +377,7 @@ docker image prune -f
 
 Abra **Meus dados** e baixe:
 
-- **Cópia organizada** — um arquivo leve com perfil, tarefas, colunas, notas, rascunhos, sessões e revisões.
+- **Cópia organizada** — um arquivo leve com perfil, tarefas, colunas, notas, capturas, sessões e revisões.
 - **Cópia completa** — uma cópia fiel para guardar, sem a senha.
 
 ### Backup frio do volume
@@ -520,7 +520,7 @@ source .venv/bin/activate
 pytest -q
 ```
 
-Resultado esperado: **158 testes passando**.
+Resultado esperado: **163 testes passando**.
 
 Cobertura:
 
@@ -528,7 +528,7 @@ Cobertura:
 make coverage
 ```
 
-A suíte cobre modelos, autenticação, sessões, CSRF, headers, isolamento entre usuários, tarefas, colunas personalizadas, rascunhos, notas/XSS, busca, Pomodoro, planejamento, revisão, onboarding, ajuda, exportação e PWA.
+A suíte cobre modelos, autenticação, sessões, CSRF, headers, isolamento entre usuários, tarefas, colunas personalizadas, capturas, notas/XSS, busca, Pomodoro, planejamento, revisão, onboarding, ajuda, exportação e PWA.
 
 Os testes usam bancos temporários em `tmp_path` e não tocam no banco de produção.
 
@@ -612,7 +612,7 @@ prodsuite/
 │   ├── review.py           # revisão semanal
 │   ├── tasks.py            # tarefas e colunas personalizadas
 │   ├── pomodoro.py         # timer e ciclos
-│   ├── scratchpad.py       # captura rápida
+│   ├── scratchpad.py       # caixa de entrada
 │   ├── notes.py            # notas e busca
 │   ├── dashboard.py        # Meu dia, PWA, healthcheck
 │   └── export.py           # cópias dos dados

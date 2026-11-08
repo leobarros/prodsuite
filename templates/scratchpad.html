@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf, field_errors %}
-{% block title %}Anotações{% endblock %}
+{% block title %}Caixa de entrada{% endblock %}
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/annotations.js') }}" defer></script>
@@ -9,35 +9,66 @@
 {% block content %}
 <div class="page-head">
   <div>
-    <p class="eyebrow"><i class="bi bi-sticky"></i> anotações rápidas <span class="sep">·</span> agora</p>
-    <h1 class="page-title">Tire da cabeça.</h1>
-    <p class="page-sub">Anote para liberar espaço mental. Resolva com um check ou transforme em tarefa quando houver uma ação concreta.</p>
+    <p class="eyebrow"><i class="bi bi-inbox"></i> captura <span class="sep">·</span> caixa de entrada</p>
+    <h1 class="page-title">Caixa de entrada</h1>
+    <p class="page-sub">Tire da cabeça. Decida depois — sem transformar cada pensamento em tarefa.</p>
   </div>
   <div class="d-flex flex-wrap gap-2">
-    <a class="btn btn-ghost btn-sm" href="{{ url_for('scratchpad.index', ver='concluidas') }}"><i class="bi bi-check2-circle"></i> Concluídas</a>
+    {% if counts.open %}
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('scratchpad.focus') }}"><i class="bi bi-collection-play"></i> Decidir um por um</a>
+    {% endif %}
   </div>
 </div>
 
-<div class="annotation-tabs" aria-label="Filtro de anotações">
-  <a class="annotation-tab {{ 'is-active' if view == 'abertas' }}" href="{{ url_for('scratchpad.index', ver='abertas') }}">Abertas <b>{{ counts.open }}</b></a>
-  <a class="annotation-tab {{ 'is-active' if view == 'concluidas' }}" href="{{ url_for('scratchpad.index', ver='concluidas') }}">Concluídas <b>{{ counts.done }}</b></a>
+<section class="inbox-capture">
+  <form method="post" action="{{ url_for('scratchpad.index') }}" data-annotation-composer>
+    {{ form.hidden_tag() }}
+    <div class="inbox-capture-head">
+      <div>
+        <h2><i class="bi bi-plus-circle"></i> O que está na sua cabeça?</h2>
+        <p>Capture cru. Sem projeto, prazo ou obrigação.</p>
+      </div>
+      <span class="shortcut-chip"><kbd>Alt</kbd> + <kbd>C</kbd></span>
+    </div>
+    <label class="visually-hidden" for="annotationContent">Nova captura</label>
+    {{ form.content(class="form-control" + (" is-invalid" if form.content.errors else ""), id="annotationContent", rows=2, placeholder="Escreva uma ideia, uma pendência, um lembrete…") }}
+    {{ field_errors(form.content) }}
+    <div class="inbox-capture-foot">
+      <span class="form-hint">Enter envia · Shift+Enter quebra linha</span>
+      <button class="btn btn-neon btn-sm" type="submit"><i class="bi bi-arrow-return-left"></i> Capturar</button>
+    </div>
+  </form>
+</section>
+
+<div class="annotation-tabs" aria-label="Filtro da caixa de entrada" role="tablist">
+  <a class="annotation-tab {{ 'is-active' if view == 'decidir' }}" href="{{ url_for('scratchpad.index', ver='decidir') }}">A decidir <b>{{ counts.open }}</b></a>
+  <a class="annotation-tab {{ 'is-active' if view == 'talvez' }}" href="{{ url_for('scratchpad.index', ver='talvez') }}">Talvez <b>{{ counts.someday }}</b></a>
+  <a class="annotation-tab {{ 'is-active' if view == 'resolvidas' }}" href="{{ url_for('scratchpad.index', ver='resolvidas') }}">Resolvidas <b>{{ counts.done }}</b></a>
 </div>
 
 <div class="annotation-layout">
   <section class="bento-card annotation-flow">
     <div class="card-head">
-      <h2 class="card-title"><i class="bi bi-sticky"></i> {{ 'Anotações concluídas' if view == 'concluidas' else 'Anotações abertas' }}</h2>
-      <span class="card-link">{{ items|length }} {{ 'anotação' if items|length == 1 else 'anotações' }}</span>
+      <h2 class="card-title">
+        <i class="bi {{ 'bi-check2-circle' if view == 'resolvidas' else ('bi-cloud' if view == 'talvez' else 'bi-inbox') }}"></i>
+        {{ 'Resolvidas' if view == 'resolvidas' else ('Talvez' if view == 'talvez' else 'A decidir') }}
+      </h2>
+      <span class="card-link">{{ items|length }} {{ 'item' if items|length == 1 else 'itens' }}</span>
     </div>
-    <div class="annotation-direction"><span>{{ 'mais recentes primeiro' if view == 'concluidas' else 'mais antigas' }}</span><span>{{ '' if view == 'concluidas' else 'mais recentes ↓' }}</span></div>
+    <div class="annotation-direction">
+      <span>{{ 'mais recentes primeiro' if view in ('resolvidas', 'talvez') else 'mais antigos primeiro' }}</span>
+      <span>{{ '' if view == 'resolvidas' else 'mais recentes ↓' }}</span>
+    </div>
 
     {% if items %}
-    <div class="annotation-list">
+    <div class="annotation-list inbox-list">
       {% for item in items %}
-      <article class="annotation-item {{ 'is-done' if item.is_completed }}" id="anotacao-{{ item.id }}">
+      <article class="annotation-item inbox-item {{ 'is-done' if item.is_completed }} {{ 'is-someday' if item.is_someday }}" id="item-{{ item.id }}">
         <form method="post" action="{{ url_for('scratchpad.complete', item_id=item.id) }}" class="annotation-check-form">
           {{ csrf() }}
-          <button class="annotation-check {{ 'is-done' if item.is_completed }}" type="submit" aria-label="{{ 'Reabrir anotação' if item.is_completed else 'Concluir anotação' }}" title="{{ 'Reabrir anotação' if item.is_completed else 'Concluir anotação' }}">
+          <button class="annotation-check {{ 'is-done' if item.is_completed }}" type="submit"
+                  aria-label="{{ 'Reabrir item' if item.is_completed else 'Resolver item' }}"
+                  title="{{ 'Reabrir item' if item.is_completed else 'Resolver item' }}">
             <i class="bi {{ 'bi-check2' if item.is_completed else 'bi-check' }}" aria-hidden="true"></i>
           </button>
         </form>
@@ -45,18 +76,36 @@
           <p class="annotation-text">{{ item.content }}</p>
           <div class="annotation-meta">
             <span>{{ item.created_at|localtime('%d/%m · %H:%M') }}</span>
-            {% if item.is_completed %}<span class="annotation-done-label"><i class="bi bi-check2"></i> concluída</span>{% endif %}
+            {% if item.is_completed %}<span class="annotation-done-label"><i class="bi bi-check2"></i> resolvida</span>{% endif %}
+            {% if item.is_someday %}<span class="inbox-state"><i class="bi bi-cloud"></i> talvez</span>{% endif %}
+            {% if not item.is_completed and item.someday_at %}<!-- estado preservado ao reabrir -->{% endif %}
           </div>
           <div class="annotation-actions">
-            {% if not item.is_completed %}
-            <a class="annotation-action" href="{{ url_for('scratchpad.detail', item_id=item.id) }}"><i class="bi bi-arrow-up-right"></i> virar tarefa</a>
-            <a class="annotation-action" href="{{ url_for('scratchpad.detail', item_id=item.id) }}"><i class="bi bi-pencil"></i> editar</a>
-            {% else %}
-            <span class="annotation-readonly-label"><i class="bi bi-lock"></i> concluída · somente consulta</span>
-            {% endif %}
-            <form method="post" action="{{ url_for('scratchpad.delete', item_id=item.id) }}" data-confirm="Excluir esta anotação?">
+            {% if item.is_completed %}
+            <form method="post" action="{{ url_for('scratchpad.complete', item_id=item.id) }}">
               {{ csrf() }}
-              <button class="annotation-delete" type="submit" aria-label="Excluir anotação" title="Excluir"><i class="bi bi-trash3"></i></button>
+              <button class="annotation-action" type="submit"><i class="bi bi-arrow-counterclockwise"></i> Reabrir</button>
+            </form>
+            {% else %}
+            <a class="annotation-action" href="{{ url_for('scratchpad.detail', item_id=item.id) }}"><i class="bi bi-check2-square"></i> Virar tarefa</a>
+            <form method="post" action="{{ url_for('scratchpad.convert_note', item_id=item.id) }}">
+              {{ csrf() }}
+              <button class="annotation-action" type="submit"><i class="bi bi-journal-bookmark"></i> Virar nota</button>
+            </form>
+            <form method="post" action="{{ url_for('scratchpad.someday', item_id=item.id) }}">
+              {{ csrf() }}
+              <button class="annotation-action" type="submit"><i class="bi bi-cloud"></i> {{ 'Voltar para a fila' if item.is_someday else 'Talvez' }}</button>
+            </form>
+            <form method="post" action="{{ url_for('scratchpad.complete', item_id=item.id) }}">
+              {{ csrf() }}
+              <button class="annotation-action" type="submit"><i class="bi bi-check2"></i> Feito</button>
+            </form>
+            {% endif %}
+            <a class="annotation-action annotation-edit" href="{{ url_for('scratchpad.detail', item_id=item.id) }}"><i class="bi bi-pencil"></i> Editar</a>
+            <form method="post" action="{{ url_for('scratchpad.delete', item_id=item.id) }}" class="annotation-dismiss-form"
+                  data-confirm="Soltar este item? Ele não vai para Tarefas nem para Notas.">
+              {{ csrf() }}
+              <button class="annotation-dismiss" type="submit" aria-label="Soltar item" title="Soltar item"><i class="bi bi-x-lg"></i></button>
             </form>
           </div>
         </div>
@@ -65,47 +114,41 @@
     </div>
     {% else %}
     <div class="empty-state annotation-empty">
-      <i class="bi bi-sticky"></i>
-      <span>{% if view == 'concluidas' %}Nenhuma anotação concluída ainda.{% else %}Nada na cabeça agora. A próxima ideia pode entrar aqui.{% endif %}</span>
-    </div>
-    {% endif %}
-
-    {% if view == 'abertas' %}
-    <div class="annotation-composer">
-      <form method="post" action="{{ url_for('scratchpad.index') }}" data-annotation-composer>
-        {{ form.hidden_tag() }}
-        <label class="visually-hidden" for="annotationContent">Nova anotação</label>
-        {{ form.content(class="form-control" + (" is-invalid" if form.content.errors else ""), id="annotationContent", rows=2, placeholder="Anote agora, sem organizar…") }}
-        {{ field_errors(form.content) }}
-        <div class="annotation-composer-foot">
-          <span class="form-hint">Enter envia · Shift+Enter quebra linha</span>
-          <button class="btn btn-neon btn-sm" type="submit"><i class="bi bi-plus-lg"></i> Anotar</button>
-        </div>
-      </form>
+      <i class="bi {{ 'bi-check2-circle' if view == 'resolvidas' else ('bi-cloud' if view == 'talvez' else 'bi-inbox') }}"></i>
+      <span>
+        {% if view == 'resolvidas' %}Nada resolvido ainda. Quando algo sair da frente, fica registrado aqui.
+        {% elif view == 'talvez' %}Nada guardado em Talvez. O que ainda não pede decisão pode descansar aqui.
+        {% else %}Nada na cabeça agora. A próxima ideia pode entrar aqui.{% endif %}
+      </span>
+      {% if view == 'decidir' and counts.someday %}<a class="card-link" href="{{ url_for('scratchpad.index', ver='talvez') }}">ver Talvez <i class="bi bi-arrow-right"></i></a>{% endif %}
     </div>
     {% endif %}
   </section>
 
-  <aside class="annotation-side">
+  <aside class="annotation-side inbox-side">
     <section class="bento-card pad">
-      <div class="card-head"><h2 class="card-title"><i class="bi bi-clock-history"></i> Seu dia</h2><span class="link">agora</span></div>
-      <div class="annotation-stat"><span>Abertas</span><strong>{{ counts.open }}</strong></div>
-      <div class="annotation-stat"><span>Concluídas</span><strong>{{ counts.done }}</strong></div>
+      <div class="card-head"><h2 class="card-title"><i class="bi bi-inboxes"></i> Sua fila</h2><span class="link">agora</span></div>
+      <div class="inbox-stats">
+        <div><strong>{{ counts.open }}</strong><span>a decidir</span></div>
+        <div><strong>{{ counts.someday }}</strong><span>talvez</span></div>
+        <div><strong>{{ counts.done }}</strong><span>resolvidas</span></div>
+      </div>
+      <div class="inbox-flow-guide"><b>capturar</b><i class="bi bi-arrow-right"></i><b>decidir</b><i class="bi bi-arrow-right"></i><b>seguir</b></div>
       <div class="divider"></div>
-      <div class="small" style="color:var(--text);font-weight:650">Uma anotação não é uma obrigação.</div>
-      <div class="form-hint" style="line-height:1.55;margin-top:5px">O check encerra a anotação. Virar tarefa mantém o texto como descrição e abre o formulário completo.</div>
+      <div class="small" style="color:var(--text);font-weight:650">Nem tudo precisa virar algo.</div>
+      <div class="form-hint" style="line-height:1.55;margin-top:5px">Um item pode ser resolvido, guardado em Talvez, virar tarefa, virar nota ou simplesmente ser solto.</div>
     </section>
 
     <section class="bento-card pad annotation-distinction">
-      <div class="card-head"><h2 class="card-title"><i class="bi bi-journal-bookmark"></i> Anotação ou Nota?</h2><span class="chip">calma</span></div>
-      <p><strong>Anotação</strong> é para agora: tirar da cabeça e decidir depois.</p>
+      <div class="card-head"><h2 class="card-title"><i class="bi bi-journal-bookmark"></i> Captura ou Nota?</h2><span class="chip">calma</span></div>
+      <p><strong>Captura</strong> é para agora: tirar da cabeça e decidir depois.</p>
       <p><strong>Nota</strong> é para referência: texto maior, Markdown e links.</p>
       <a class="card-link" href="{{ url_for('notes.index') }}">ir para Notas <i class="bi bi-arrow-up-right"></i></a>
     </section>
 
     <section class="bento-card pad">
       <div class="card-head"><h2 class="card-title"><i class="bi bi-lock"></i> Privado</h2></div>
-      <p class="form-hint mb-0">Suas anotações são visíveis apenas para você. Nada vira tarefa automaticamente.</p>
+      <p class="form-hint mb-0">Sua caixa de entrada é visível apenas para você. Nada vira tarefa automaticamente.</p>
     </section>
   </aside>
 </div>

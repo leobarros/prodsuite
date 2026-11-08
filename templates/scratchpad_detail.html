@@ -1,30 +1,34 @@
 {% extends "base.html" %}
 {% from "_macros.html" import csrf, field_errors, task_form_modal %}
-{% block title %}Anotação{% endblock %}
+{% block title %}Captura{% endblock %}
 {% block body_attrs %}{% if open_modal %}data-auto-open="#taskModal"{% endif %}{% endblock %}
 
 {% block content %}
 <div class="page-head">
   <div>
-    <p class="eyebrow"><a href="{{ url_for('scratchpad.index') }}">anotações</a> <span class="sep">/</span> anotação</p>
-    <h1 class="page-title">Sua anotação</h1>
-    <p class="page-sub">{% if item.is_completed %}Anotação concluída: somente consulta. Reabra pelo check para editar ou transformar em tarefa.{% else %}Edite o texto ou transforme em tarefa usando o mesmo formulário do quadro.{% endif %}</p>
+    <p class="eyebrow"><a href="{{ url_for('scratchpad.index') }}">caixa de entrada</a> <span class="sep">/</span> captura</p>
+    <h1 class="page-title">Sua captura</h1>
+    <p class="page-sub">
+      {% if item.is_completed %}Item resolvido: somente consulta. Reabra para editar ou transformar.
+      {% elif item.is_someday %}Guardado em Talvez. Volte para a fila quando fizer sentido.
+      {% else %}Edite o texto ou escolha o próximo passo: tarefa, nota ou Talvez.{% endif %}
+    </p>
   </div>
   <div class="d-flex flex-wrap gap-2">
-    <a class="btn btn-ghost btn-sm" href="{{ url_for('scratchpad.index') }}"><i class="bi bi-arrow-left"></i> Anotações</a>
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('scratchpad.index') }}"><i class="bi bi-arrow-left"></i> Caixa de entrada</a>
   </div>
 </div>
 
 <div class="scratch-detail-grid">
   <section class="bento-card">
     <div class="card-head">
-      <h2 class="card-title"><i class="bi bi-sticky"></i> Anotação</h2>
+      <h2 class="card-title"><i class="bi bi-inbox"></i> Captura</h2>
       <span class="card-link">{{ item.created_at|localtime('%d/%m/%Y · %H:%M') }}</span>
     </div>
     {% if item.is_completed %}
-    <span class="chip is-done"><i class="bi bi-check2"></i> anotação concluída</span>
+    <span class="chip is-done"><i class="bi bi-check2"></i> resolvida</span>
     <div class="annotation-readonly">{{ item.content }}</div>
-    <p class="form-hint mt-2 mb-0">Esta anotação está somente para consulta. Reabra pelo check para alterar ou transformar em tarefa.</p>
+    <p class="form-hint mt-2 mb-0">Este item está somente para consulta. Reabra para alterar, transformar em tarefa ou guardar como nota.</p>
     {% else %}
     <form method="post" action="{{ url_for('scratchpad.edit', item_id=item.id) }}">
       {{ form.hidden_tag() }}
@@ -32,8 +36,8 @@
       {{ form.content(class="form-control" + (" is-invalid" if form.content.errors else "")) }}
       {{ field_errors(form.content) }}
       <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3">
-        <span class="form-hint">A edição fica somente nesta anotação até você salvar.</span>
-        <button class="btn btn-neon btn-sm" type="submit"><i class="bi bi-check-lg"></i> Salvar anotação</button>
+        <span class="form-hint">A edição fica só nesta captura até você salvar.</span>
+        <button class="btn btn-neon btn-sm" type="submit"><i class="bi bi-check-lg"></i> Salvar captura</button>
       </div>
     </form>
     {% endif %}
@@ -43,37 +47,47 @@
       {% if item.is_completed %}
       <form method="post" action="{{ url_for('scratchpad.complete', item_id=item.id) }}">
         {{ csrf() }}
-        <button class="btn btn-ghost btn-sm" type="submit"><i class="bi bi-arrow-counterclockwise"></i> Reabrir anotação</button>
+        <button class="btn btn-ghost btn-sm" type="submit"><i class="bi bi-arrow-counterclockwise"></i> Reabrir item</button>
       </form>
-      {% elif board_columns %}
-      <button class="btn btn-cyan btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#taskModal">
-        <i class="bi bi-arrow-right-circle"></i> Transformar em tarefa
-      </button>
-      <span class="form-hint">Abre o formulário completo, com coluna, prazo, categoria, matriz e etiquetas.</span>
       {% else %}
-      <span class="chip"><i class="bi bi-exclamation-circle"></i> Crie uma coluna no quadro para converter</span>
+        {% if board_columns %}
+        <button class="btn btn-cyan btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#taskModal">
+          <i class="bi bi-check2-square"></i> Transformar em tarefa
+        </button>
+        {% else %}
+        <span class="chip"><i class="bi bi-exclamation-circle"></i> Crie uma coluna para transformar em tarefa</span>
+        {% endif %}
+        <form method="post" action="{{ url_for('scratchpad.convert_note', item_id=item.id) }}">
+          {{ csrf() }}
+          <button class="btn btn-ghost btn-sm" type="submit"><i class="bi bi-journal-bookmark"></i> Guardar como nota</button>
+        </form>
+        <form method="post" action="{{ url_for('scratchpad.someday', item_id=item.id) }}">
+          {{ csrf() }}
+          <button class="btn btn-ghost btn-sm" type="submit"><i class="bi bi-cloud"></i> {{ 'Voltar para a fila' if item.is_someday else 'Deixar em Talvez' }}</button>
+        </form>
       {% endif %}
       <form method="post" action="{{ url_for('scratchpad.delete', item_id=item.id) }}" class="ms-auto"
-            data-confirm="Excluir esta anotação?">
+            data-confirm="Soltar este item? Ele não vai para Tarefas nem para Notas.">
         {{ csrf() }}
-        <button class="btn btn-danger-ghost btn-sm" type="submit"><i class="bi bi-trash3"></i> Excluir</button>
+        <button class="btn btn-danger-ghost btn-sm" type="submit"><i class="bi bi-x-lg"></i> Soltar</button>
       </form>
     </div>
   </section>
 
   <aside class="bento-card scratch-detail-help">
-    <h2 class="card-title"><i class="bi bi-info-circle"></i> Como funciona</h2>
+    <h2 class="card-title"><i class="bi bi-info-circle"></i> O que fazer agora</h2>
     <ul class="scratch-detail-list">
       {% if item.is_completed %}
-      <li>Anotações concluídas ficam somente para consulta.</li>
-      <li>Use o check na lista para reabrir antes de editar ou transformar em tarefa.</li>
+      <li>Itens resolvidos ficam somente para consulta.</li>
+      <li>Reabra para editar ou transformar em tarefa/nota.</li>
       {% else %}
-      <li>O texto editado é salvo só quando você clica em <strong>Salvar anotação</strong>.</li>
-      <li>Transformar em tarefa remove esta anotação: a tarefa passa a ser a única representação da ideia.</li>
+      <li><strong>Transformar em tarefa</strong> abre o formulário completo do quadro.</li>
+      <li><strong>Guardar como nota</strong> cria uma nota de referência e sai da fila.</li>
+      <li><strong>Deixar em Talvez</strong> tira o item da decisão sem apagá-lo.</li>
+      <li><strong>Soltar</strong> remove o item: ele não vira tarefa nem nota.</li>
       {% endif %}
-      <li>O conteúdo da anotação entra na descrição; o título começa com a primeira linha.</li>
-      <li>Depois de criada, a tarefa pode ser alterada no quadro como qualquer outra.</li>
     </ul>
+    <p class="form-hint mb-0">A caixa de entrada é uma fila de decisão. Notas são conhecimento; Tarefas são ação.</p>
   </aside>
 </div>
 

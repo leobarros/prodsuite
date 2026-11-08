@@ -8,7 +8,7 @@ Um app pessoal e auto-hospedado para organizar o que importa sem transformar a v
 ![Python](https://img.shields.io/badge/Python-3.13-7c6aa3)
 ![Flask](https://img.shields.io/badge/Flask-3.0-9e8ab8)
 ![Docker](https://img.shields.io/badge/Docker-ready-8eb7c6)
-![Testes](https://img.shields.io/badge/testes-158%20passando-b98aa4)
+![Testes](https://img.shields.io/badge/testes-163%20passando-b98aa4)
 ![Trivy](https://img.shields.io/badge/Trivy-0%20HIGH%2FCRITICAL-a7d1b0)
 
 ![Meu dia no ProdSuite](docs/images/readme-dashboard.webp)
@@ -55,7 +55,7 @@ A tela inicial mostra o que precisa da sua atenção agora:
 
 - próximas tarefas e prioridades do dia;
 - andamento do foco na semana;
-- anotação rápida para não perder uma ideia;
+- captura rápida para não perder uma ideia;
 - notas recentes;
 - prazos próximos.
 
@@ -97,15 +97,19 @@ Foco com começo, pausa e fim.
 
 ![Pomodoro](docs/images/readme-focus.webp)
 
-### Anotações rápidas
+### Caixa de entrada
 
-Capture uma ideia antes que ela desapareça.
+O lugar para o que ainda não precisa virar tarefa, nota ou obrigação.
 
-- anote em segundos;
-- transforme uma anotação em tarefa;
-- mantenha o que é temporário fora das notas definitivas.
+- capture em segundos, sem projeto, prazo ou prioridade;
+- decida depois: **virar tarefa**, **virar nota**, **Talvez**, **Feito** ou **soltar**;
+- use **Decidir um por um** para esvaziar a cabeça no modo foco;
+- itens de **Talvez** descansam fora da fila de decisão;
+- o que foi resolvido continua consultável em **Resolvidas**.
 
-![Anotações rápidas](docs/images/readme-scratchpad.webp)
+![Caixa de entrada](docs/images/readme-scratchpad.webp)
+
+![Modo foco da caixa de entrada](docs/images/readme-inbox-focus.webp)
 
 ### Notas
 
@@ -310,7 +314,7 @@ Testes:
 
 ```bash
 pytest -q
-# 158 testes
+# 163 testes
 ```
 
 O banco local fica em `instance/prodsuite.db` e não é apagado ao sair da conta.

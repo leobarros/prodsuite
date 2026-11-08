@@ -1,4 +1,4 @@
-"""Busca global (tarefas, notas e anotações) com consultas parametrizadas."""
+"""Busca global (tarefas, notas e caixa de entrada) com consultas parametrizadas."""
 
 from __future__ import annotations
 
@@ -110,13 +110,13 @@ def global_search(user, query: str, limit_per_kind: int = MAX_PER_KIND) -> dict:
         groups.append(
             {
                 "kind": "scratch",
-                "label": "Anotações",
+                "label": "Caixa de entrada",
                 "icon": "bi-lightning",
                 "items": [
                     {
-                        "title": "Anotação",
+                        "title": "Captura",
                         "snippet": _snippet(scratch.content, term),
-                        "url": "/anotacoes",
+                        "url": "/entrada",
                         "meta": "captura",
                     }
                     for scratch in scratchpads

@@ -40,7 +40,7 @@
       </li>
       <li>
         <span class="help-step-number">3</span>
-        <div><strong>Organize</strong><p>Use <a href="{{ url_for('tasks.index') }}">Tarefas</a> para o que precisa ser feito, <a href="{{ url_for('scratchpad.index') }}">Anotações</a> para ideias e <a href="{{ url_for('notes.index') }}">Notas</a> para o que vale relembrar.</p></div>
+        <div><strong>Organize</strong><p>Use <a href="{{ url_for('tasks.index') }}">Tarefas</a> para o que precisa ser feito, <a href="{{ url_for('scratchpad.index') }}">Caixa de entrada</a> para ideias e <a href="{{ url_for('notes.index') }}">Notas</a> para o que vale relembrar.</p></div>
       </li>
       <li>
         <span class="help-step-number">4</span>
@@ -55,7 +55,7 @@
       <a href="#planejar">Planejar o dia</a>
       <a href="#pomodoro">Pomodoro e pausas</a>
       <a href="#tarefas">Tarefas e prioridades</a>
-      <a href="#organizar">Anotações e notas</a>
+      <a href="#organizar">Caixa de entrada e notas</a>
       <a href="#revisao">Metas e revisão</a>
       <a href="#conceitos">Conceitos aplicados</a>
       <a href="#duvidas">Dúvidas frequentes</a>
@@ -104,9 +104,9 @@
   </section>
 
   <section class="bento-card help-section" id="organizar">
-    <h2 class="help-section-title"><i class="bi bi-lightbulb"></i> Anotações e notas</h2>
-    <p><strong>Anotações</strong> são para capturar rápido, sem decidir onde cada coisa vai. Depois, conclua com um check ou transforme em tarefa. <strong>Notas</strong> são para conhecimento: use formatação simples, listas e links <span class="mono">[[como este]]</span> para conectar ideias.</p>
-    <p>A busca no topo procura ao mesmo tempo em tarefas, notas e anotações.</p>
+    <h2 class="help-section-title"><i class="bi bi-lightbulb"></i> Caixa de entrada e notas</h2>
+    <p><strong>Caixa de entrada</strong> é para o que precisa sair da cabeça. Capture sem organizar, depois decida: tarefa, nota, Talvez ou soltar. <strong>Notas</strong> são para conhecimento: use formatação simples, listas e links <span class="mono">[[como este]]</span> para conectar ideias.</p>
+    <p>A busca no topo procura ao mesmo tempo em tarefas, notas e na caixa de entrada.</p>
   </section>
 
   <section class="bento-card help-section" id="revisao">
@@ -148,7 +148,7 @@
 
       <details>
         <summary>Como faço uma cópia dos meus dados?</summary>
-        <p>Abra <a href="{{ url_for('export.index') }}">Meus dados</a>. Você pode baixar uma cópia organizada, com tarefas, notas, anotações e revisões em um formato legível, ou uma cópia completa para guardar como backup.</p>
+        <p>Abra <a href="{{ url_for('export.index') }}">Meus dados</a>. Você pode baixar uma cópia organizada, com tarefas, notas, capturas e revisões em um formato legível, ou uma cópia completa para guardar como backup.</p>
         <p>A cópia completa não inclui sua senha e deve ser guardada em um lugar seguro. Restaurar uma cópia substitui os dados atuais, então guarde também uma cópia antes de qualquer restauração.</p>
       </details>
 
@@ -178,7 +178,7 @@
 
       <details>
         <summary>Posso usar a mesma conta em mais de um aparelho?</summary>
-        <p>Sim. Ao entrar com a mesma conta, tarefas, notas, anotações, revisões e histórico de sessões ficam disponíveis nos outros aparelhos. As alterações feitas em um deles aparecem ao atualizar o outro.</p>
+        <p>Sim. Ao entrar com a mesma conta, tarefas, notas, capturas, revisões e histórico de sessões ficam disponíveis nos outros aparelhos. As alterações feitas em um deles aparecem ao atualizar o outro.</p>
         <p>O cronômetro em andamento e o tema escolhido ficam no aparelho onde foram configurados. Se você iniciar um foco no computador, ele não aparece automaticamente rodando no celular.</p>
       </details>
 

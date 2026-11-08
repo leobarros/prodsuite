@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>{% block title %}Meu dia{% endblock %} · ProdSuite</title>
-  <meta name="description" content="ProdSuite: tarefas, foco, anotações e estudos em um só lugar. Simples, leve e no seu ritmo.">
+  <meta name="description" content="ProdSuite: tarefas, foco, notas e cuidado pessoal em um só lugar. Simples, leve e no seu ritmo.">
   <meta name="theme-color" content="#faf7f2">
   <meta name="color-scheme" content="light dark">
   <meta name="application-name" content="ProdSuite">
@@ -74,7 +74,8 @@
         <span class="emoji-icon tomato-glyph" aria-hidden="true"></span><span>Pomodoro</span>
       </a>
       <a class="side-link {{ 'active' if ep.startswith('scratchpad.') }}" href="{{ url_for('scratchpad.index') }}" aria-keyshortcuts="Alt+R">
-        <i class="bi bi-sticky"></i><span>Anotações</span>
+        <i class="bi bi-inbox"></i><span>Caixa de entrada</span>
+        {% if nav_inbox %}<span class="side-badge">{{ nav_inbox }}</span>{% endif %}
       </a>
       <a class="side-link {{ 'active' if ep.startswith('notes.') }}" href="{{ url_for('notes.index') }}" aria-keyshortcuts="Alt+O">
         <i class="bi bi-journal-bookmark"></i><span>Notas</span>
@@ -119,7 +120,7 @@
         <a class="icon-btn" href="{{ url_for('main.search') }}" aria-label="Busca global" title="Busca global">
           <i class="bi bi-search"></i>
         </a>
-        <button class="icon-btn" type="button" data-bs-toggle="modal" data-bs-target="#captureModal" aria-label="Nova anotação" title="Nova anotação">
+        <button class="icon-btn" type="button" data-bs-toggle="modal" data-bs-target="#captureModal" aria-label="Nova captura" title="Nova captura">
           <i class="bi bi-plus-lg"></i>
         </button>
         <button class="icon-btn" type="button" data-theme-toggle aria-label="Alternar tema" title="Alternar tema">
@@ -156,7 +157,7 @@
           <a class="icon-btn" href="{{ url_for('mood.index') }}" aria-label="Humor" title="Humor"><i class="bi bi-emoji-smile"></i></a>
         </div>
         <a class="icon-btn" href="{{ url_for('main.search') }}" aria-label="Buscar"><i class="bi bi-search"></i></a>
-        <button class="icon-btn" type="button" data-bs-toggle="modal" data-bs-target="#captureModal" aria-label="Nova anotação"><i class="bi bi-plus-lg"></i></button>
+        <button class="icon-btn" type="button" data-bs-toggle="modal" data-bs-target="#captureModal" aria-label="Nova captura"><i class="bi bi-plus-lg"></i></button>
         <button class="icon-btn" type="button" data-theme-toggle aria-label="Alternar tema" title="Alternar tema"><i class="bi bi-moon-stars"></i></button>
         <a class="icon-btn help-shortcut" href="{{ url_for('help.help_page') }}" aria-label="Ajuda"><i class="bi bi-question-circle"></i></a>
         <button class="icon-btn notification-bell" type="button" data-bs-toggle="offcanvas" data-bs-target="#notificationDrawer" aria-controls="notificationDrawer" aria-label="Notificações{% if notification_unread %}: {{ notification_unread }} não lidas{% endif %}"><i class="bi bi-bell"></i>{% if notification_unread %}<span class="notification-badge">{{ notification_unread if notification_unread < 10 else '9+' }}</span>{% endif %}</button>
@@ -247,7 +248,7 @@
             <div><kbd>Alt</kbd> + <kbd>A</kbd><span>Hidratação</span></div>
             <div><kbd>Alt</kbd> + <kbd>H</kbd><span>Humor</span></div>
             <div><kbd>Alt</kbd> + <kbd>P</kbd><span>Pomodoro</span></div>
-            <div><kbd>Alt</kbd> + <kbd>R</kbd><span>Anotações</span></div>
+            <div><kbd>Alt</kbd> + <kbd>R</kbd><span>Caixa de entrada</span></div>
             <div><kbd>Alt</kbd> + <kbd>O</kbd><span>Notas</span></div>
             <div><kbd>Alt</kbd> + <kbd>E</kbd><span>Revisão</span></div>
             <div><kbd>Alt</kbd> + <kbd>L</kbd><span>Relatório</span></div>

@@ -2,7 +2,7 @@
   "id": "/",
   "name": "ProdSuite — produtividade pessoal",
   "short_name": "ProdSuite",
-  "description": "Tarefas, planejamento, foco e anotações em um só lugar. Simples, privado e no seu ritmo.",
+  "description": "Tarefas, planejamento, foco e notas em um só lugar. Simples, privado e no seu ritmo.",
   "lang": "pt-BR",
   "dir": "ltr",
   "start_url": "/",
@@ -48,9 +48,9 @@
       "icons": [{ "src": "/static/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Nova anotação",
-      "short_name": "Anotação",
-      "url": "/anotacoes",
+      "name": "Abrir caixa de entrada",
+      "short_name": "Entrada",
+      "url": "/entrada",
       "icons": [{ "src": "/static/icons/icon-192.png", "sizes": "192x192" }]
     }
   ]

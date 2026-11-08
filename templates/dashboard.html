@@ -56,7 +56,7 @@
             <span class="emoji-icon tomato-glyph" aria-hidden="true"></span> Começar foco
           </a>
           <button class="btn btn-ghost btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#captureModal">
-            <i class="bi bi-lightbulb"></i> Anotar ideia
+            <i class="bi bi-lightbulb"></i> Capturar ideia
           </button>
         </div>
         <div class="hero-metrics">
@@ -169,8 +169,8 @@
   <!-- CAPTURA -->
   <section class="bento-card bento-capture">
     <div class="card-head">
-      <h2 class="card-title"><i class="bi bi-lightbulb"></i> Anotação rápida</h2>
-      <a class="card-link" href="{{ url_for('scratchpad.index') }}">ver anotações <i class="bi bi-arrow-up-right"></i></a>
+      <h2 class="card-title"><i class="bi bi-lightbulb"></i> Captura rápida</h2>
+      <a class="card-link" href="{{ url_for('scratchpad.index') }}">ver caixa de entrada <i class="bi bi-arrow-up-right"></i></a>
     </div>
     <form class="quick-capture" method="post" action="{{ url_for('scratchpad.index') }}" data-ajax-capture>
       {{ csrf() }}
@@ -187,7 +187,7 @@
     {% if recent_scratch %}
     <div class="recent-scratch dashboard-scratch-list" data-scratch-preview data-scratch-base="{{ url_for('scratchpad.index') }}">
       {% for item in recent_scratch %}
-      <a class="recent-scratch-item" href="{{ url_for('scratchpad.detail', item_id=item.id) }}" title="Abrir anotação">
+      <a class="recent-scratch-item" href="{{ url_for('scratchpad.detail', item_id=item.id) }}" title="Abrir captura">
         <i class="bi bi-{{ 'check2' if item.is_converted else 'dash' }}"></i>
         <span>{{ item.preview }}</span>
       </a>

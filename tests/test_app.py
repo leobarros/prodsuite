@@ -43,6 +43,7 @@ from models import (
     utcnow,
 )
 from services.categories import ensure_categories
+from services.timeutils import local_today
 from services.planning import weekly_metrics
 from services.pomodoro import (
     InvalidCycle,
@@ -424,7 +425,7 @@ class TestAuth:
         assert "inválidos" in unknown_user.get_data(as_text=True)
 
     def test_protected_routes_redirect_anonymous(self, client):
-        for path in ["/", "/tarefas", "/foco", "/anotacoes", "/notas", "/exportar"]:
+        for path in ["/", "/tarefas", "/foco", "/entrada", "/notas", "/exportar"]:
             response = client.get(path)
             assert response.status_code == 302, path
             assert "/entrar" in response.headers["Location"], path
@@ -1392,18 +1393,19 @@ class TestTasks:
 # CAPTURA RÁPIDA
 # ==========================================================================
 class TestScratchpad:
-    def test_legacy_draft_url_redirects_to_annotations(self, client, make_user):
+    def test_legacy_paths_redirect_to_inbox(self, client, make_user):
         make_user()
         login(client)
-        response = client.get("/rascunhos")
-        assert response.status_code == 302
-        assert response.headers["Location"].endswith("/anotacoes")
+        for path in ("/anotacoes", "/rascunhos"):
+            response = client.get(path)
+            assert response.status_code == 302
+            assert response.headers["Location"].endswith("/entrada")
 
     def test_ajax_capture_returns_json(self, client, app, make_user):
         make_user()
         login(client)
         response = client.post(
-            "/anotacoes",
+            "/entrada",
             data={"content": "Ideia bruta"},
             headers={
                 "X-Requested-With": "fetch",
@@ -1421,73 +1423,156 @@ class TestScratchpad:
         make_user()
         login(client)
         response = client.post(
-            "/anotacoes",
+            "/entrada",
             data={"content": "   "},
             headers={"X-Requested-With": "fetch", "Accept": "application/json"},
         )
         assert response.status_code == 400
         assert response.get_json()["ok"] is False
 
+    def test_inbox_triage_list_has_actions(self, client, app, make_user):
+        make_user()
+        login(client)
+        client.post("/entrada", data={"content": "Ligar para o dentista"})
+        page = client.get("/entrada").get_data(as_text=True)
+        assert "Caixa de entrada" in page
+        assert "A decidir" in page
+        assert "Talvez" in page
+        assert "Virar tarefa" in page
+        assert "Virar nota" in page
+        assert "Feito" in page
+        assert "Soltar" in page
+
     def test_annotation_check_completes_and_reopens(self, client, app, make_user):
         make_user()
         login(client)
-        client.post("/anotacoes", data={"content": "Anotação para concluir"})
+        client.post("/entrada", data={"content": "Item para resolver"})
         with app.app_context():
             item_id = Scratchpad.query.one().id
 
         completed = client.post(
-            f"/anotacoes/{item_id}/concluir", follow_redirects=False
+            f"/entrada/{item_id}/concluir", follow_redirects=False
         )
         assert completed.status_code == 302
-        assert "ver=abertas" in completed.headers["Location"]
+        assert "ver=decidir" in completed.headers["Location"]
         with app.app_context():
             assert db.session.get(Scratchpad, item_id).is_completed is True
 
-        completed_list = client.get("/anotacoes?ver=concluidas").get_data(as_text=True)
-        assert "Anotação para concluir" in completed_list
-        assert "concluída" in completed_list
-        assert "virar tarefa" not in completed_list
-        opened = client.get("/anotacoes?ver=abertas").get_data(as_text=True)
-        assert "Anotação para concluir" not in opened
+        resolved_list = client.get("/entrada?ver=resolvidas").get_data(as_text=True)
+        assert "Item para resolver" in resolved_list
+        assert "resolvida" in resolved_list
+        opened = client.get("/entrada?ver=decidir").get_data(as_text=True)
+        assert "Item para resolver" not in opened
 
         blocked = client.post(
-            f"/anotacoes/{item_id}/editar",
+            f"/entrada/{item_id}/editar",
             data={"content": "Não deveria mudar"},
             follow_redirects=True,
         )
         assert blocked.status_code == 200
         with app.app_context():
-            assert db.session.get(Scratchpad, item_id).content == "Anotação para concluir"
+            assert db.session.get(Scratchpad, item_id).content == "Item para resolver"
 
         reopened = client.post(
-            f"/anotacoes/{item_id}/concluir", follow_redirects=False
+            f"/entrada/{item_id}/concluir", follow_redirects=False
         )
         assert reopened.status_code == 302
-        assert "ver=abertas" in reopened.headers["Location"]
         with app.app_context():
             assert db.session.get(Scratchpad, item_id).is_completed is False
+
+    def test_someday_moves_item_out_of_decision_queue(self, client, app, make_user):
+        make_user()
+        login(client)
+        client.post("/entrada", data={"content": "Talvez estudar francês"})
+        with app.app_context():
+            item_id = Scratchpad.query.one().id
+
+        response = client.post(f"/entrada/{item_id}/talvez", follow_redirects=False)
+        assert response.status_code == 302
+        assert "ver=talvez" in response.headers["Location"]
+        with app.app_context():
+            assert db.session.get(Scratchpad, item_id).is_someday is True
+        talvez = client.get("/entrada?ver=talvez").get_data(as_text=True)
+        assert "Talvez estudar francês" in talvez
+        decidir = client.get("/entrada?ver=decidir").get_data(as_text=True)
+        assert "Talvez estudar francês" not in decidir
+
+        back = client.post(f"/entrada/{item_id}/talvez", follow_redirects=False)
+        assert "ver=decidir" in back.headers["Location"]
+        with app.app_context():
+            assert db.session.get(Scratchpad, item_id).is_someday is False
+
+    def test_convert_to_note(self, client, app, make_user):
+        make_user()
+        login(client)
+        client.post("/entrada", data={"content": "Referência sobre foco"})
+        with app.app_context():
+            item_id = Scratchpad.query.one().id
+
+        response = client.post(f"/entrada/{item_id}/nota", follow_redirects=False)
+        assert response.status_code == 302
+        with app.app_context():
+            assert db.session.get(Scratchpad, item_id) is None
+            note = Note.query.one()
+            assert note.title == "Referência sobre foco"
+            assert note.body == "Referência sobre foco"
+
+    def test_quick_task_from_focus(self, client, app, make_user):
+        make_user()
+        login(client)
+        client.post("/entrada", data={"content": "Ligar para o dentista"})
+        with app.app_context():
+            item_id = Scratchpad.query.one().id
+
+        response = client.post(
+            f"/entrada/{item_id}/agora",
+            data={"next": "foco"},
+            follow_redirects=False,
+        )
+        assert response.status_code == 302
+        assert response.headers["Location"].endswith("/entrada/foco")
+        with app.app_context():
+            assert db.session.get(Scratchpad, item_id) is None
+            task = Task.query.one()
+            assert task.title == "Ligar para o dentista"
+            assert task.due_date == local_today()
+
+    def test_focus_mode_shows_one_item(self, client, app, make_user):
+        make_user()
+        login(client)
+        client.post("/entrada", data={"content": "Primeira decisão"})
+        client.post("/entrada", data={"content": "Segunda decisão"})
+        page = client.get("/entrada/foco").get_data(as_text=True)
+        assert "Esvazie a cabeça" in page
+        assert "Primeira decisão" in page
+        assert "A seguir" in page
+        assert "Segunda decisão" in page
+        assert "Fazer agora" in page
+        assert "Soltar" in page
 
     def test_scratchpad_detail_can_be_edited_and_uses_task_form(
         self, client, app, make_user
     ):
         make_user()
         login(client)
-        client.post("/anotacoes", data={"content": "Texto original"})
+        client.post("/entrada", data={"content": "Texto original"})
         with app.app_context():
             item_id = Scratchpad.query.one().id
 
-        detail = client.get(f"/anotacoes/{item_id}")
+        detail = client.get(f"/entrada/{item_id}")
         assert detail.status_code == 200
         html = detail.get_data(as_text=True)
         assert "Texto original" in html
         assert "Transformar em tarefa" in html
+        assert "Guardar como nota" in html
+        assert "Deixar em Talvez" in html
         assert "Quadrante da matriz" in html
         assert "Prazo final" in html
         assert "Sessões de foco (estimativa)" in html
         assert "Etiquetas" in html
 
         saved = client.post(
-            f"/anotacoes/{item_id}/editar",
+            f"/entrada/{item_id}/editar",
             data={"content": "Texto revisado"},
             follow_redirects=True,
         )
@@ -1499,12 +1584,12 @@ class TestScratchpad:
     def test_convert_scratchpad_to_task(self, client, app, make_user):
         make_user()
         login(client)
-        client.post("/anotacoes", data={"content": "Comprar cafe"})
+        client.post("/entrada", data={"content": "Comprar cafe"})
         with app.app_context():
             item_id = Scratchpad.query.one().id
 
         response = client.post(
-            f"/anotacoes/{item_id}/converter",
+            f"/entrada/{item_id}/converter",
             data={
                 "title": "Comprar café",
                 "priority": "high",
@@ -1520,7 +1605,7 @@ class TestScratchpad:
             assert task.description == "Comprar cafe"
 
         again = client.post(
-            f"/anotacoes/{item_id}/converter",
+            f"/entrada/{item_id}/converter",
             data={"title": "Outra", "priority": "low", "estimate_pomodoros": "1"},
         )
         assert again.status_code == 404
@@ -1535,7 +1620,7 @@ class TestScratchpad:
             item_id = item.id
         login(client, "alice")
         response = client.post(
-            f"/anotacoes/{item_id}/converter",
+            f"/entrada/{item_id}/converter",
             data={"title": "x", "priority": "low", "estimate_pomodoros": "1"},
         )
         assert response.status_code == 404
@@ -3187,7 +3272,7 @@ class TestPages:
             ("/revisao", "Fechar a semana"),
             ("/tarefas", "kanban"),
             ("/foco", "Pomodoro"),
-            ("/anotacoes", "Anotações"),
+            ("/entrada", "Caixa de entrada"),
             ("/notas", "Notas"),
             ("/exportar", "Meus dados"),
             ("/perfil", "Perfil"),
