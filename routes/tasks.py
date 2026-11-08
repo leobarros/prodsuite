@@ -223,6 +223,79 @@ def _redirect_back(default_endpoint: str = "tasks.index"):
     return redirect(url_for(default_endpoint))
 
 
+@tasks_bp.route("/tarefas/nova", methods=["GET", "POST"])
+@login_required
+def new():
+    project = active_project(current_user, request.args.get("projeto"), session)
+    if project is None:
+        flash("Crie um projeto e uma coluna antes de adicionar tarefas.", "warning")
+        return redirect(url_for("tasks.index"))
+    columns = project_columns(project)
+    if not columns:
+        flash("Crie uma coluna antes de adicionar tarefas.", "warning")
+        return redirect(url_for("tasks.index", projeto=project.id))
+
+    categories = ensure_categories(current_user)
+    form = TaskForm()
+    _prepare_category_form(form, categories, reset_default=request.method == "GET")
+    if request.method == "GET" and not form.due_date.data:
+        form.due_date.data = local_today()
+
+    capture = None
+    raw_scratchpad = request.form.get("scratchpad_id") or request.args.get("scratchpad")
+    if raw_scratchpad and str(raw_scratchpad).isdigit():
+        capture = Scratchpad.query.filter_by(
+            id=int(raw_scratchpad), user_id=current_user.id
+        ).first()
+
+    if request.method == "GET" and capture is not None:
+        first_line = next(
+            (line.strip() for line in capture.content.splitlines() if line.strip()),
+            "",
+        )
+        form.title.data = first_line[:160]
+        form.description.data = capture.content
+        form.estimate_pomodoros.data = 1
+        form.due_date.data = local_today()
+
+    if form.validate_on_submit():
+        task = create_task_from_form(
+            current_user,
+            form,
+            project,
+            columns,
+            categories,
+            request.form.get("column_id"),
+        )
+        if task is None:
+            return redirect(url_for("tasks.index", projeto=project.id))
+        if capture is not None:
+            db.session.delete(capture)
+        db.session.commit()
+        flash(
+            "Tarefa criada a partir da captura." if capture else "Tarefa criada.",
+            "success",
+        )
+        return redirect(url_for("tasks.detail", task_id=task.id))
+
+    selected_column_id = (
+        int(request.form.get("column_id"))
+        if request.form.get("column_id", "").isdigit()
+        else columns[0].id
+    )
+    return (
+        render_template(
+            "task_new.html",
+            form=form,
+            project=project,
+            board_columns=columns,
+            selected_column_id=selected_column_id,
+            capture=capture,
+        ),
+        400 if request.method == "POST" else 200,
+    )
+
+
 @tasks_bp.route("/tarefas", methods=["GET", "POST"])
 @login_required
 def index():

@@ -51,9 +51,9 @@
       </form>
       {% else %}
         {% if board_columns %}
-        <button class="btn btn-cyan btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#taskModal">
+        <a class="btn btn-cyan btn-sm" href="{{ url_for('tasks.new', scratchpad=item.id) }}">
           <i class="bi bi-check2-square"></i> Transformar em tarefa
-        </button>
+        </a>
         {% else %}
         <span class="chip"><i class="bi bi-exclamation-circle"></i> Crie uma coluna para transformar em tarefa</span>
         {% endif %}

@@ -1581,6 +1581,42 @@ class TestScratchpad:
         with app.app_context():
             assert db.session.get(Scratchpad, item_id).content == "Texto revisado"
 
+    def test_virar_tarefa_opens_prefilled_new_task_page(self, client, app, make_user):
+        make_user()
+        login(client)
+        client.post("/entrada", data={"content": "Comprar presente da Ana"})
+        with app.app_context():
+            item_id = Scratchpad.query.one().id
+
+        page = client.get(f"/tarefas/nova?scratchpad={item_id}")
+        assert page.status_code == 200
+        html = page.get_data(as_text=True)
+        assert "Nova tarefa" in html
+        assert "Vindo da captura" in html
+        assert 'value="Comprar presente da Ana"' in html
+        assert "A captura será removida" in html
+
+        with app.app_context():
+            due_date = local_today().isoformat()
+        created = client.post(
+            f"/tarefas/nova?scratchpad={item_id}",
+            data={
+                "title": "Comprar presente da Ana",
+                "description": "Comprar presente da Ana",
+                "estimate_pomodoros": "1",
+                "due_date": due_date,
+                "category": "personal",
+                "tags": "pessoal",
+                "scratchpad_id": str(item_id),
+            },
+            follow_redirects=False,
+        )
+        assert created.status_code == 302
+        with app.app_context():
+            assert db.session.get(Scratchpad, item_id) is None
+            task = Task.query.filter_by(title="Comprar presente da Ana").one()
+            assert task.description == "Comprar presente da Ana"
+
     def test_convert_scratchpad_to_task(self, client, app, make_user):
         make_user()
         login(client)

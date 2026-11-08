@@ -82,7 +82,7 @@
               <button class="inbox-triage-btn" type="submit"><i class="bi bi-arrow-counterclockwise"></i> Reabrir</button>
             </form>
             {% else %}
-            <a class="inbox-triage-btn task" href="{{ url_for('scratchpad.detail', item_id=item.id) }}"><i class="bi bi-check2-square"></i> Virar tarefa</a>
+            <a class="inbox-triage-btn task" href="{{ url_for('tasks.new', scratchpad=item.id) }}"><i class="bi bi-check2-square"></i> Virar tarefa</a>
             <form method="post" action="{{ url_for('scratchpad.convert_note', item_id=item.id) }}">
               {{ csrf() }}
               <button class="inbox-triage-btn note" type="submit"><i class="bi bi-journal-bookmark"></i> Virar nota</button>
