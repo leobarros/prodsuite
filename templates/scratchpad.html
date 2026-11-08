@@ -46,6 +46,19 @@
   <a class="annotation-tab {{ 'is-active' if view == 'resolvidas' }}" href="{{ url_for('scratchpad.index', ver='resolvidas') }}">Resolvidas <b>{{ counts.done }}</b></a>
 </div>
 
+<section class="bento-card inbox-queue" aria-label="Resumo da fila">
+  <div class="inbox-queue-title">
+    <h2 class="card-title"><i class="bi bi-inboxes"></i> Sua fila</h2>
+    <div class="inbox-flow-guide"><b>capturar</b><i class="bi bi-arrow-right"></i><b>decidir</b><i class="bi bi-arrow-right"></i><b>seguir</b></div>
+  </div>
+  <div class="inbox-stats">
+    <div><strong>{{ counts.open }}</strong><span>a decidir</span></div>
+    <div><strong>{{ counts.someday }}</strong><span>talvez</span></div>
+    <div><strong>{{ counts.done }}</strong><span>resolvidas</span></div>
+  </div>
+  <p class="inbox-queue-copy"><strong>Nem tudo precisa virar algo.</strong> Um item pode ser resolvido, guardado em Talvez, virar tarefa, virar nota ou simplesmente ser solto.</p>
+</section>
+
 <div class="annotation-layout">
   <section class="bento-card annotation-flow">
     <div class="card-head">
@@ -126,19 +139,6 @@
   </section>
 
   <aside class="annotation-side inbox-side">
-    <section class="bento-card pad">
-      <div class="card-head"><h2 class="card-title"><i class="bi bi-inboxes"></i> Sua fila</h2><span class="link">agora</span></div>
-      <div class="inbox-stats">
-        <div><strong>{{ counts.open }}</strong><span>a decidir</span></div>
-        <div><strong>{{ counts.someday }}</strong><span>talvez</span></div>
-        <div><strong>{{ counts.done }}</strong><span>resolvidas</span></div>
-      </div>
-      <div class="inbox-flow-guide"><b>capturar</b><i class="bi bi-arrow-right"></i><b>decidir</b><i class="bi bi-arrow-right"></i><b>seguir</b></div>
-      <div class="divider"></div>
-      <div class="small" style="color:var(--text);font-weight:650">Nem tudo precisa virar algo.</div>
-      <div class="form-hint" style="line-height:1.55;margin-top:5px">Um item pode ser resolvido, guardado em Talvez, virar tarefa, virar nota ou simplesmente ser solto.</div>
-    </section>
-
     <section class="bento-card pad annotation-distinction">
       <div class="card-head"><h2 class="card-title"><i class="bi bi-journal-bookmark"></i> Captura ou Nota?</h2><span class="chip">calma</span></div>
       <p><strong>Captura</strong> é para agora: tirar da cabeça e decidir depois.</p>

@@ -6362,7 +6362,7 @@ a.recent-scratch-item:focus-visible {
 
 .annotation-flow {
   display: flex;
-  min-height: 500px;
+  min-height: 0;
   flex-direction: column;
   padding: 18px;
 }
@@ -10787,4 +10787,66 @@ button.annotation-action:hover {
 
 .annotation-actions form:not(.annotation-dismiss-form) {
   margin: 0;
+}
+
+/* Resumo da fila acima da lista. */
+.inbox-queue {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 14px;
+  padding: 13px 16px;
+}
+
+.inbox-queue-title {
+  flex: 0 0 auto;
+  min-width: 128px;
+}
+
+.inbox-queue-title .card-title {
+  margin: 0 0 5px;
+}
+
+.inbox-queue .inbox-stats {
+  flex: 0 1 310px;
+}
+
+.inbox-queue-copy {
+  flex: 1 1 260px;
+  margin: 0;
+  color: var(--muted);
+  font-size: .68rem;
+  line-height: 1.5;
+}
+
+.inbox-queue-copy strong {
+  color: var(--text);
+  font-weight: 650;
+}
+
+@media (max-width: 900px) {
+  .inbox-queue {
+    flex-wrap: wrap;
+    gap: 10px 16px;
+  }
+
+  .inbox-queue-title {
+    display: flex;
+    flex: 1 1 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .inbox-queue-title .card-title {
+    margin: 0;
+  }
+
+  .inbox-queue .inbox-stats {
+    flex: 1 1 220px;
+  }
+
+  .inbox-queue-copy {
+    flex: 1 1 100%;
+  }
 }
