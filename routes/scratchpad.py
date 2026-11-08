@@ -440,15 +440,17 @@ def someday(item_id: int):
     if item.is_completed:
         flash("Reabra o item antes de mandá-lo para Talvez.", "warning")
         return _back_to_flow()
+    source_view = request.form.get("view", "").strip().lower()
+    source_view = VIEW_ALIASES.get(source_view, "decidir")
     if item.someday_at is not None:
         item.someday_at = None
         flash("Item de volta para a fila.", "info")
         db.session.commit()
-        return _back_to_flow("decidir")
+        return _back_to_flow(source_view)
     item.someday_at = utcnow()
     flash("Item guardado em Talvez, sem virar tarefa.", "success")
     db.session.commit()
-    return _back_to_flow("talvez")
+    return _back_to_flow(source_view)
 
 
 @scratchpad_bp.post("/entrada/<int:item_id>/concluir")

@@ -1487,9 +1487,13 @@ class TestScratchpad:
         with app.app_context():
             item_id = Scratchpad.query.one().id
 
-        response = client.post(f"/entrada/{item_id}/talvez", follow_redirects=False)
+        response = client.post(
+            f"/entrada/{item_id}/talvez",
+            data={"view": "decidir"},
+            follow_redirects=False,
+        )
         assert response.status_code == 302
-        assert "ver=talvez" in response.headers["Location"]
+        assert "ver=decidir" in response.headers["Location"]
         with app.app_context():
             assert db.session.get(Scratchpad, item_id).is_someday is True
         talvez = client.get("/entrada?ver=talvez").get_data(as_text=True)
@@ -1497,8 +1501,12 @@ class TestScratchpad:
         decidir = client.get("/entrada?ver=decidir").get_data(as_text=True)
         assert "Talvez estudar francês" not in decidir
 
-        back = client.post(f"/entrada/{item_id}/talvez", follow_redirects=False)
-        assert "ver=decidir" in back.headers["Location"]
+        back = client.post(
+            f"/entrada/{item_id}/talvez",
+            data={"view": "talvez"},
+            follow_redirects=False,
+        )
+        assert "ver=talvez" in back.headers["Location"]
         with app.app_context():
             assert db.session.get(Scratchpad, item_id).is_someday is False
 
