@@ -1581,6 +1581,37 @@ class TestScratchpad:
         with app.app_context():
             assert db.session.get(Scratchpad, item_id).content == "Texto revisado"
 
+    def test_virar_nota_opens_prefilled_new_note_page(self, client, app, make_user):
+        make_user()
+        login(client)
+        client.post("/entrada", data={"content": "Referência sobre foco"})
+        with app.app_context():
+            item_id = Scratchpad.query.one().id
+
+        page = client.get(f"/notas/nova?scratchpad={item_id}")
+        assert page.status_code == 200
+        html = page.get_data(as_text=True)
+        assert "Nova nota" in html
+        assert "Vindo da caixa de entrada" in html
+        assert "Referência sobre foco" in html
+        assert "A captura será removida" in html
+
+        created = client.post(
+            f"/notas/nova?scratchpad={item_id}",
+            data={
+                "title": "Referência sobre foco",
+                "body": "Referência sobre foco",
+                "tags": "foco",
+                "scratchpad_id": str(item_id),
+            },
+            follow_redirects=False,
+        )
+        assert created.status_code == 302
+        with app.app_context():
+            assert db.session.get(Scratchpad, item_id) is None
+            note = Note.query.filter_by(title="Referência sobre foco").one()
+            assert note.body == "Referência sobre foco"
+
     def test_virar_tarefa_opens_prefilled_new_task_page(self, client, app, make_user):
         make_user()
         login(client)

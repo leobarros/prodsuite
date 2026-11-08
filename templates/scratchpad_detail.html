@@ -57,10 +57,7 @@
         {% else %}
         <span class="chip"><i class="bi bi-exclamation-circle"></i> Crie uma coluna para transformar em tarefa</span>
         {% endif %}
-        <form method="post" action="{{ url_for('scratchpad.convert_note', item_id=item.id) }}">
-          {{ csrf() }}
-          <button class="btn btn-ghost btn-sm" type="submit"><i class="bi bi-journal-bookmark"></i> Guardar como nota</button>
-        </form>
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('notes.create', scratchpad=item.id) }}"><i class="bi bi-journal-bookmark"></i> Guardar como nota</a>
         <form method="post" action="{{ url_for('scratchpad.someday', item_id=item.id) }}">
           {{ csrf() }}
           <button class="btn btn-ghost btn-sm" type="submit"><i class="bi bi-cloud"></i> {{ 'Voltar para a fila' if item.is_someday else 'Deixar em Talvez' }}</button>

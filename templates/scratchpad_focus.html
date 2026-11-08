@@ -40,12 +40,9 @@
       <a class="focus-action" href="{{ url_for('scratchpad.detail', item_id=item.id) }}" data-focus-action="schedule">
         <i class="bi bi-calendar3"></i><span><strong>Agendar tarefa</strong><small>escolher data e projeto</small></span><kbd>2</kbd>
       </a>
-      <form method="post" action="{{ url_for('scratchpad.convert_note', item_id=item.id) }}">
-        {{ csrf() }}<input type="hidden" name="next" value="foco">
-        <button class="focus-action" type="submit" data-focus-action="note">
-          <i class="bi bi-journal-bookmark"></i><span><strong>Guardar como nota</strong><small>referência para consultar</small></span><kbd>3</kbd>
-        </button>
-      </form>
+      <a class="focus-action" href="{{ url_for('notes.create', scratchpad=item.id) }}" data-focus-action="note">
+        <i class="bi bi-journal-bookmark"></i><span><strong>Guardar como nota</strong><small>referência para consultar</small></span><kbd>3</kbd>
+      </a>
       <form method="post" action="{{ url_for('scratchpad.someday', item_id=item.id) }}">
         {{ csrf() }}<input type="hidden" name="next" value="foco">
         <button class="focus-action" type="submit" data-focus-action="someday">

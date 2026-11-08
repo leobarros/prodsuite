@@ -18,7 +18,7 @@ from sqlalchemy.exc import IntegrityError
 
 from extensions import db
 from forms import NoteForm
-from models import Note, normalize_tags
+from models import Note, Scratchpad, normalize_tags
 from services.notes import render_note_excerpt, render_note_markdown
 
 notes_bp = Blueprint("notes", __name__)
@@ -74,23 +74,43 @@ def index():
 @login_required
 def create():
     form = NoteForm()
+    capture = None
+    raw_scratchpad = request.form.get("scratchpad_id") or request.args.get("scratchpad")
+    if raw_scratchpad and str(raw_scratchpad).isdigit():
+        capture = Scratchpad.query.filter_by(
+            id=int(raw_scratchpad), user_id=current_user.id
+        ).first()
+    if request.method == "GET" and capture is not None:
+        first_line = next(
+            (line.strip() for line in capture.content.splitlines() if line.strip()),
+            "",
+        )
+        form.title.data = first_line[:160]
+        form.body.data = capture.content
     if form.validate_on_submit():
         note = Note(user_id=current_user.id)
         if _save_from_form(note, form):
             db.session.add(note)
             try:
+                db.session.flush()
+                if capture is not None:
+                    db.session.delete(capture)
                 db.session.commit()
             except IntegrityError:
                 db.session.rollback()
                 flash("Não foi possível salvar a nota.", "danger")
             else:
-                flash("Nota criada.", "success")
+                flash(
+                    "Nota criada a partir da captura." if capture else "Nota criada.",
+                    "success",
+                )
                 return redirect(url_for("notes.view", note_id=note.id))
     return render_template(
         "note_edit.html",
         form=form,
         note=None,
-        rendered=render_note_markdown(current_user, ""),
+        capture=capture,
+        rendered=render_note_markdown(current_user, form.body.data or ""),
     )
 
 
@@ -125,6 +145,7 @@ def edit(note_id: int):
         "note_edit.html",
         form=form,
         note=note,
+        capture=None,
         rendered=render_note_markdown(current_user, note.body),
     )
 

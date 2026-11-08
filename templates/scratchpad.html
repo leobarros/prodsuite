@@ -83,10 +83,7 @@
             </form>
             {% else %}
             <a class="inbox-triage-btn task" href="{{ url_for('tasks.new', scratchpad=item.id) }}"><i class="bi bi-check2-square"></i> Virar tarefa</a>
-            <form method="post" action="{{ url_for('scratchpad.convert_note', item_id=item.id) }}">
-              {{ csrf() }}
-              <button class="inbox-triage-btn note" type="submit"><i class="bi bi-journal-bookmark"></i> Virar nota</button>
-            </form>
+            <a class="inbox-triage-btn note" href="{{ url_for('notes.create', scratchpad=item.id) }}"><i class="bi bi-journal-bookmark"></i> Virar nota</a>
             <form method="post" action="{{ url_for('scratchpad.someday', item_id=item.id) }}">
               {{ csrf() }}
               <button class="inbox-triage-btn" type="submit"><i class="bi bi-cloud"></i> {{ 'Voltar' if item.is_someday else 'Talvez' }}</button>

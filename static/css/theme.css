@@ -10980,3 +10980,33 @@ button.annotation-action:hover {
     order: 0;
   }
 }
+
+.capture-origin {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--emerald) 24%, var(--line));
+  border-radius: 10px;
+  background: var(--surface-soft);
+}
+
+.capture-origin-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--emerald);
+  font-size: .7rem;
+  font-weight: 650;
+}
+
+.capture-origin p {
+  margin: 7px 0 4px;
+  color: var(--text);
+  font-size: .8rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.capture-origin span {
+  color: var(--dim);
+  font-size: .64rem;
+}
