@@ -2155,7 +2155,7 @@ class TestNotes:
                 data={"title": title, "body": title, "tags": tags},
             )
         page = client.get("/notas").get_data(as_text=True)
-        assert "Nuvem de tags" in page
+        assert "> Tags" in page
         assert "#foco" in page
         assert "#pessoal" in page
 

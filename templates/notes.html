@@ -11,72 +11,79 @@
   <a class="btn btn-neon btn-sm" href="{{ url_for('notes.create') }}"><i class="bi bi-journal-plus"></i> Nova nota</a>
 </div>
 
-<form class="search-box" method="get" action="{{ url_for('notes.index') }}" role="search">
-  <div class="notes-search-row">
-    <div class="search-field">
-      <label class="visually-hidden" for="notesSearch">Buscar notas</label>
-      <input class="form-control" type="search" id="notesSearch" name="q" value="{{ query }}"
-             placeholder="Buscar nas suas notas…" autocomplete="off">
-      <button class="search-submit" type="submit" aria-label="Buscar notas" title="Buscar notas">
-        <i class="bi bi-search" aria-hidden="true"></i>
-      </button>
-    </div>
-    {% if query %}<a class="btn btn-ghost btn-sm notes-search-clear" href="{{ url_for('notes.index', tag=active_tag or None) }}" aria-label="Limpar busca"><i class="bi bi-x-lg"></i> Limpar busca</a>{% endif %}
-  </div>
-</form>
+<div class="notes-layout {{ 'has-sidebar' if tag_cloud }}">
+  <div class="notes-main">
+    <form class="search-box" method="get" action="{{ url_for('notes.index') }}" role="search">
+      <div class="notes-search-row">
+        <div class="search-field">
+          <label class="visually-hidden" for="notesSearch">Buscar notas</label>
+          <input class="form-control" type="search" id="notesSearch" name="q" value="{{ query }}"
+                 placeholder="Buscar nas suas notas…" autocomplete="off">
+          <button class="search-submit" type="submit" aria-label="Buscar notas" title="Buscar notas">
+            <i class="bi bi-search" aria-hidden="true"></i>
+          </button>
+        </div>
+        {% if query %}<a class="btn btn-ghost btn-sm notes-search-clear" href="{{ url_for('notes.index', tag=active_tag or None) }}" aria-label="Limpar busca"><i class="bi bi-x-lg"></i> Limpar busca</a>{% endif %}
+      </div>
+    </form>
 
-{% if tag_cloud %}
-<section class="notes-tags" aria-label="Nuvem de tags">
-  <div class="notes-tags-head">
-    <h2><i class="bi bi-tags"></i> Nuvem de tags</h2>
-    <span>{{ tag_total }} tag{{ 's' if tag_total != 1 }} · clique para seguir uma linha de pensamento</span>
-  </div>
-  <div class="tag-cloud">
-    {% if active_tag %}<a class="tag-cloud-item tag-cloud-clear" href="{{ url_for('notes.index', q=query or None) }}"><i class="bi bi-x-lg"></i> Todas</a>{% endif %}
-    {% for tag, count in tag_cloud %}
-    <a class="tag-cloud-item {{ 'is-active' if active_tag == tag }}" href="{{ url_for('notes.index', tag=tag, q=query or None) }}">
-      #{{ tag }} <span>{{ count }}</span>
-    </a>
-    {% endfor %}
-  </div>
-</section>
-{% endif %}
-
-{% if active_tag %}
-<div class="notes-active-tag">
-  <span><i class="bi bi-tag"></i> Linha de pensamento: <strong>#{{ active_tag }}</strong></span>
-  <a href="{{ url_for('notes.index', q=query or None) }}">limpar tag <i class="bi bi-x-lg"></i></a>
-</div>
-{% endif %}
-
-{% if notes %}
-<div class="notes-grid">
-  {% for note in notes %}
-  <article class="note-card" data-note-url="{{ url_for('notes.view', note_id=note.id) }}">
-    <div class="d-flex justify-content-between align-items-start gap-2">
-      <h2><a class="note-card-title" href="{{ url_for('notes.view', note_id=note.id) }}">{{ note.title }}</a></h2>
-      <a class="note-card-open" href="{{ url_for('notes.view', note_id=note.id) }}" aria-label="Abrir nota {{ note.title }}">
-        <i class="bi bi-arrow-up-right text-dim"></i>
-      </a>
-    </div>
-    {% if note_excerpts[note.id] %}<p>{{ note_excerpts[note.id] }}</p>{% endif %}
-    {% if note.tag_list %}
-    <div class="task-tags mb-2">
-      {% for tag in note.tag_list[:3] %}<a class="tag" href="{{ url_for('notes.index', tag=tag) }}">#{{ tag }}</a>{% endfor %}
+    {% if active_tag %}
+    <div class="notes-active-tag">
+      <span><i class="bi bi-tag"></i> Linha de pensamento: <strong>#{{ active_tag }}</strong></span>
+      <a href="{{ url_for('notes.index', q=query or None) }}">limpar tag <i class="bi bi-x-lg"></i></a>
     </div>
     {% endif %}
-    <div class="note-card-foot">
-      <span>{{ note.updated_at|localtime('%d/%m/%Y') }}</span>
-      <span class="ms-auto mono">{{ (note.body or '')|length }} chars</span>
+
+    {% if notes %}
+    <div class="notes-grid">
+      {% for note in notes %}
+      <article class="note-card" data-note-url="{{ url_for('notes.view', note_id=note.id) }}">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <h2><a class="note-card-title" href="{{ url_for('notes.view', note_id=note.id) }}">{{ note.title }}</a></h2>
+          <a class="note-card-open" href="{{ url_for('notes.view', note_id=note.id) }}" aria-label="Abrir nota {{ note.title }}">
+            <i class="bi bi-arrow-up-right text-dim"></i>
+          </a>
+        </div>
+        {% if note_excerpts[note.id] %}<p>{{ note_excerpts[note.id] }}</p>{% endif %}
+        {% if note.tag_list %}
+        <div class="task-tags mb-2">
+          {% for tag in note.tag_list[:3] %}<a class="tag" href="{{ url_for('notes.index', tag=tag) }}">#{{ tag }}</a>{% endfor %}
+        </div>
+        {% endif %}
+        <div class="note-card-foot">
+          <span>{{ note.updated_at|localtime('%d/%m/%Y') }}</span>
+          <span class="ms-auto mono">{{ (note.body or '')|length }} chars</span>
+        </div>
+      </article>
+      {% endfor %}
     </div>
-  </article>
-  {% endfor %}
+    {% else %}
+    <div class="empty-state" style="min-height: 220px;">
+      <i class="bi bi-journal-text"></i>
+      <span>{% if active_tag %}Nenhuma nota com a tag <strong>#{{ active_tag }}</strong>.{% elif query %}Nenhuma nota para «{{ query }}».{% else %}Nenhuma nota ainda. Comece com uma ideia solta.{% endif %}</span>
+      <a class="btn btn-ghost btn-xs" href="{{ url_for('notes.create') }}">Criar nota</a>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if tag_cloud %}
+  <aside class="notes-sidebar" aria-label="Tags das notas">
+    <section class="notes-tags">
+      <div class="notes-tags-head">
+        <h2><i class="bi bi-tags"></i> Tags</h2>
+        <span class="notes-tags-count">{{ tag_total }}</span>
+      </div>
+      <p class="notes-tags-hint">Siga uma linha de pensamento.</p>
+      <div class="tag-cloud">
+        {% if active_tag %}<a class="tag-cloud-item tag-cloud-clear" href="{{ url_for('notes.index', q=query or None) }}"><i class="bi bi-x-lg"></i> Todas</a>{% endif %}
+        {% for tag, count in tag_cloud %}
+        <a class="tag-cloud-item {{ 'is-active' if active_tag == tag }}" href="{{ url_for('notes.index', tag=tag, q=query or None) }}">
+          #{{ tag }} <span>{{ count }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+  </aside>
+  {% endif %}
 </div>
-{% else %}
-<div class="empty-state" style="min-height: 220px;">
-  <i class="bi bi-journal-text"></i>
-  <span>{% if active_tag %}Nenhuma nota com a tag <strong>#{{ active_tag }}</strong>.{% elif query %}Nenhuma nota para «{{ query }}».{% else %}Nenhuma nota ainda. Comece com uma ideia solta.{% endif %}</span>
-  <a class="btn btn-ghost btn-xs" href="{{ url_for('notes.create') }}">Criar nota</a>
-</div>
-{% endif %}
 {% endblock %}

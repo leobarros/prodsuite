@@ -11351,3 +11351,90 @@ button.annotation-action:hover {
     gap: 3px;
   }
 }
+
+/* Notas: coluna principal + tags na lateral direita. */
+.notes-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.notes-layout.has-sidebar {
+  grid-template-columns: minmax(0, 1fr) 242px;
+}
+
+.notes-main {
+  min-width: 0;
+}
+
+.notes-sidebar {
+  position: sticky;
+  top: 20px;
+  align-self: start;
+}
+
+.notes-sidebar .notes-tags {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 14px;
+}
+
+.notes-tags-head {
+  align-items: center;
+  margin-bottom: 3px;
+}
+
+.notes-tags-head h2 {
+  font-size: .78rem;
+}
+
+.notes-tags-count {
+  display: inline-grid;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: var(--surface-soft);
+  color: var(--dim);
+  font-family: var(--font-mono);
+  font-size: .56rem;
+}
+
+.notes-tags-hint {
+  margin: 0 0 10px;
+  color: var(--dim);
+  font-size: .63rem;
+}
+
+.notes-sidebar .tag-cloud {
+  gap: 5px;
+}
+
+.notes-sidebar .tag-cloud-item {
+  min-height: 25px;
+  padding: 3px 7px;
+  font-size: .64rem;
+}
+
+.notes-sidebar .notes-active-tag {
+  max-width: none;
+}
+
+@media (max-width: 991px) {
+  .notes-layout.has-sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  .notes-sidebar {
+    position: static;
+    order: -1;
+  }
+
+  .notes-sidebar .notes-tags {
+    max-width: none;
+  }
+}
