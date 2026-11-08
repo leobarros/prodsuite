@@ -11010,3 +11010,73 @@ button.annotation-action:hover {
   color: var(--dim);
   font-size: .64rem;
 }
+
+/* Notas: escrita e prévia no mesmo espaço, com alternância. */
+.note-mode-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface-soft);
+}
+
+.note-mode-btn {
+  display: inline-flex;
+  height: 28px;
+  align-items: center;
+  gap: 4px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: .68rem;
+  cursor: pointer;
+}
+
+.note-mode-btn i {
+  font-size: .72rem;
+}
+
+.note-mode-btn:hover {
+  color: var(--text);
+}
+
+.note-mode-btn.is-active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-card);
+}
+
+.editor-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.editor-grid .preview-pane {
+  display: none;
+}
+
+.editor-grid.is-previewing .notepad-pane {
+  display: none;
+}
+
+.editor-grid.is-previewing .preview-pane {
+  display: block;
+  position: static;
+  min-height: 520px;
+  max-height: none;
+  overflow: visible;
+}
+
+@media (max-width: 575.98px) {
+  .note-mode-btn {
+    padding: 0 7px;
+  }
+
+  .note-mode-btn i {
+    display: none;
+  }
+}

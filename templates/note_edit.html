@@ -12,11 +12,13 @@
       {% else %}Um bloco de notas simples para registrar a ideia antes que ela passe. Use <span class="mono">[[Título]]</span> para conectar notas.{% endif %}
     </p>
   </div>
-  <div class="d-flex gap-2">
+  <div class="d-flex flex-wrap align-items-center gap-2">
+    <div class="note-mode-switch" role="group" aria-label="Modo do editor">
+      <button class="note-mode-btn is-active" type="button" data-note-mode="write" aria-pressed="true"><i class="bi bi-pencil"></i> Escrever</button>
+      <button class="note-mode-btn" type="button" data-note-mode="preview" aria-pressed="false"><i class="bi bi-eye"></i> Visualizar</button>
+    </div>
     <a class="btn btn-ghost btn-sm" href="{{ url_for('scratchpad.index') if capture else url_for('notes.index') }}"><i class="bi bi-arrow-left"></i> {{ 'Voltar à caixa de entrada' if capture else 'Voltar' }}</a>
-    {% if note %}
     <button class="btn btn-neon btn-sm" type="submit" form="noteForm"><i class="bi bi-check-lg"></i> Salvar</button>
-    {% endif %}
   </div>
 </div>
 
@@ -47,7 +49,7 @@
     </div>
   </div>
 
-  <div class="editor-grid">
+  <div class="editor-grid" data-note-editor-grid>
     <div class="notepad-pane editor-pane">
       <div class="notepad-head">
         <div>
@@ -97,7 +99,7 @@
     </div>
 
     <div class="preview-pane">
-      <div class="preview-label"><i class="bi bi-eye"></i> Visualizar</div>
+      <div class="preview-label"><i class="bi bi-eye"></i> Prévia da nota</div>
       <div class="prose" data-note-preview>{{ rendered }}</div>
       <div class="preview-empty" data-note-preview-empty {% if rendered %}hidden{% endif %}>
         <i class="bi bi-journal-text"></i>

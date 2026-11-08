@@ -1589,6 +1589,17 @@ class TestScratchpad:
         with app.app_context():
             assert db.session.get(Scratchpad, item_id).content == "Texto revisado"
 
+    def test_note_editor_has_write_and_preview_modes(self, client, make_user):
+        make_user()
+        login(client)
+        page = client.get("/notas/nova")
+        assert page.status_code == 200
+        html = page.get_data(as_text=True)
+        assert 'data-note-mode="write"' in html
+        assert 'data-note-mode="preview"' in html
+        assert 'data-note-editor-grid' in html
+        assert 'data-note-preview' in html
+
     def test_virar_nota_opens_prefilled_new_note_page(self, client, app, make_user):
         make_user()
         login(client)

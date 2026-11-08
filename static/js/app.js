@@ -359,6 +359,27 @@
       debounce = window.setTimeout(refreshPreview, 380);
     };
 
+    const editorGrid = editor.querySelector("[data-note-editor-grid]");
+    const modeButtons = Array.from(document.querySelectorAll("[data-note-mode]"));
+    const setMode = (mode) => {
+      const previewing = mode === "preview";
+      if (editorGrid) editorGrid.classList.toggle("is-previewing", previewing);
+      modeButtons.forEach((button) => {
+        const active = button.dataset.noteMode === mode;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+      if (previewing) {
+        refreshPreview();
+      } else {
+        body?.focus();
+      }
+    };
+
+    modeButtons.forEach((button) => {
+      button.addEventListener("click", () => setMode(button.dataset.noteMode));
+    });
+
     const wrapSelection = (before, after) => {
       if (!body) return;
       const start = body.selectionStart;
