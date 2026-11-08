@@ -73,15 +73,25 @@
       </div>
 
       <div class="md-link-box" data-md-link-box hidden>
-        <div class="md-link-field">
-          <label class="form-label" for="mdLinkUrl">Endereço do link</label>
-          <input class="form-control" id="mdLinkUrl" type="text" inputmode="url" placeholder="https://exemplo.com" data-md-link-url>
+        <div class="md-link-head">
+          <strong><i class="bi bi-link-45deg"></i> Adicionar link</strong>
+          <button class="md-link-close" type="button" data-md-link-cancel aria-label="Fechar"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="md-link-fields">
+          <div class="md-link-field">
+            <label class="form-label" for="mdLinkText">Nome do link</label>
+            <input class="form-control" id="mdLinkText" type="text" maxlength="120" placeholder="Ex.: Wikipédia" data-md-link-text>
+          </div>
+          <div class="md-link-field">
+            <label class="form-label" for="mdLinkUrl">Endereço</label>
+            <input class="form-control" id="mdLinkUrl" type="text" inputmode="url" placeholder="https://exemplo.com" data-md-link-url>
+          </div>
         </div>
         <div class="md-link-actions">
-          <button class="btn btn-neon btn-xs" type="button" data-md-link-apply><i class="bi bi-check-lg"></i> Inserir</button>
+          <button class="btn btn-neon btn-xs" type="button" data-md-link-apply><i class="bi bi-check-lg"></i> Inserir link</button>
           <button class="btn btn-ghost btn-xs" type="button" data-md-link-cancel>Cancelar</button>
         </div>
-        <span class="md-link-error" data-md-link-error hidden>Use um endereço http(s), mailto ou um caminho interno.</span>
+        <span class="md-link-error" data-md-link-error hidden>Preencha um endereço http(s), mailto ou um caminho interno.</span>
       </div>
 
       {{ form.body(class="form-control" + (" is-invalid" if form.body.errors else ""), id="noteBody", rows=24) }}

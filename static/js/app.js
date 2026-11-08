@@ -314,6 +314,7 @@
     const counter = editor.querySelector("[data-note-count]");
     const previewUrl = editor.dataset.previewUrl;
     const linkBox = editor.querySelector("[data-md-link-box]");
+    const linkTextInput = editor.querySelector("[data-md-link-text]");
     const linkInput = editor.querySelector("[data-md-link-url]");
     const linkError = editor.querySelector("[data-md-link-error]");
     let debounce = null;
@@ -402,9 +403,10 @@
         text: body.value.slice(body.selectionStart, body.selectionEnd),
       };
       linkInput.value = "";
+      if (linkTextInput) linkTextInput.value = linkSelection.text || "";
       linkBox.hidden = false;
       if (linkError) linkError.hidden = true;
-      linkInput.focus();
+      (linkSelection.text ? linkInput : linkTextInput || linkInput)?.focus();
     };
 
     const closeLinkBox = () => {
@@ -435,7 +437,8 @@
         end: body.selectionEnd,
         text: body.value.slice(body.selectionStart, body.selectionEnd),
       };
-      const label = (selection.text || "texto").replace(/([\[\]])/g, "\\$1");
+      const rawLabel = (linkTextInput?.value || selection.text || "texto").trim();
+      const label = (rawLabel || "texto").replace(/([\[\]])/g, "\\$1");
       body.setRangeText(`[${label}](${url})`, selection.start, selection.end, "end");
       if (!selection.text) {
         body.setSelectionRange(
@@ -487,14 +490,16 @@
     editor.querySelector("[data-md-link]")?.addEventListener("click", openLinkBox);
     editor.querySelector("[data-md-link-apply]")?.addEventListener("click", applyLink);
     editor.querySelector("[data-md-link-cancel]")?.addEventListener("click", closeLinkBox);
-    linkInput?.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        applyLink();
-      } else if (event.key === "Escape") {
-        event.preventDefault();
-        closeLinkBox();
-      }
+    [linkTextInput, linkInput].forEach((field) => {
+      field?.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          applyLink();
+        } else if (event.key === "Escape") {
+          event.preventDefault();
+          closeLinkBox();
+        }
+      });
     });
     linkBox?.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {

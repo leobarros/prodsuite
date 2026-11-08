@@ -1599,6 +1599,8 @@ class TestScratchpad:
         assert 'data-note-mode="preview"' in html
         assert 'data-note-editor-grid' in html
         assert 'data-note-preview' in html
+        assert 'data-md-link-text' in html
+        assert 'data-md-link-url' in html
 
     def test_virar_nota_opens_prefilled_new_note_page(self, client, app, make_user):
         make_user()
@@ -2163,6 +2165,9 @@ class TestNotes:
         assert "<h1>Título</h1>" in html
         assert "<strong>negrito</strong>" in html
         assert f'href="/notas/{note_b_id}"' in html
+        assert re.search(
+            rf'<a[^>]+href="/notas/{note_b_id}"[^>]+target="_blank"', html
+        )
         assert 'href="https://globo.com"' in html
         assert 'target="_blank"' in html
         assert 'rel="noopener noreferrer"' in html

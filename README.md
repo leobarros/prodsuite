@@ -117,7 +117,7 @@ Um espaço para ideias que merecem continuar.
 
 - escrita em Markdown e prévia renderizada no mesmo espaço;
 - listas e links;
-- links entre notas com `[[outra nota]]`;
+- links entre notas com `[[outra nota]]`, abertos em nova aba;
 - busca no conteúdo.
 
 ![Notas](docs/images/readme-notes.webp)

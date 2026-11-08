@@ -40,20 +40,18 @@ ALLOWED_ATTRS = {
 }
 ALLOWED_PROTOCOLS = ["http", "https", "mailto"]
 
-_EXTERNAL_ANCHOR_RE = re.compile(
-    r'<a\b[^>]*\bhref="https?://[^"]+"[^>]*>', re.IGNORECASE
-)
+_ANCHOR_RE = re.compile(r"<a\b[^>]*>", re.IGNORECASE)
 
 
-def _open_external_links(html_fragment: str) -> str:
-    """Abre links externos em outra aba sem permitir acesso ao opener."""
+def _open_links_in_new_tab(html_fragment: str) -> str:
+    """Abre qualquer link em outra aba sem permitir acesso ao opener."""
     def _replace(match: re.Match) -> str:
         tag = match.group(0)
         if "target=" in tag.lower():
             return tag
         return tag[:-1] + ' target="_blank" rel="noopener noreferrer">'
 
-    return _EXTERNAL_ANCHOR_RE.sub(_replace, html_fragment)
+    return _ANCHOR_RE.sub(_replace, html_fragment)
 
 
 def _escape_link_text(text: str) -> str:
@@ -98,7 +96,7 @@ def render_note_markdown(user, body: str | None) -> Markup:
     )
     # Também transforma URLs coladas como texto em links.
     linked = bleach.linkify(cleaned, parse_email=False, skip_tags=["pre", "code"])
-    return Markup(_open_external_links(linked))
+    return Markup(_open_links_in_new_tab(linked))
 
 
 def render_note_excerpt(body: str | None) -> Markup:
@@ -115,4 +113,4 @@ def render_note_excerpt(body: str | None) -> Markup:
         protocols=["http", "https"],
         strip=True,
     )
-    return Markup(_open_external_links(cleaned))
+    return Markup(_open_links_in_new_tab(cleaned))
