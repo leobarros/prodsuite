@@ -1600,6 +1600,8 @@ class TestScratchpad:
         assert 'data-note-editor-grid' in html
         assert 'data-note-preview' in html
         assert 'data-md-link-text' in html
+        assert 'md-link-overlay' in html
+        assert 'md-link-dialog' in html
         assert 'data-md-link-url' in html
 
     def test_virar_nota_opens_prefilled_new_note_page(self, client, app, make_user):

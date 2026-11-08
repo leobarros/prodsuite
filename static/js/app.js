@@ -507,6 +507,9 @@
         closeLinkBox();
       }
     });
+    linkBox?.addEventListener("click", (event) => {
+      if (event.target === linkBox) closeLinkBox();
+    });
   }
 
   // ------------------------------------------------ abrir nota pelo card

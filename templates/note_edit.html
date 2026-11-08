@@ -72,9 +72,10 @@
         <button class="md-btn md-btn-wide" type="button" data-md-insert="[[|]]" title="Link para outra nota" aria-label="Link para outra nota"><i class="bi bi-journal-bookmark"></i> nota</button>
       </div>
 
-      <div class="md-link-box" data-md-link-box hidden>
+      <div class="md-link-overlay" data-md-link-box hidden>
+        <div class="md-link-dialog" role="dialog" aria-modal="true" aria-labelledby="mdLinkTitle">
         <div class="md-link-head">
-          <strong><i class="bi bi-link-45deg"></i> Adicionar link</strong>
+          <strong id="mdLinkTitle"><i class="bi bi-link-45deg"></i> Adicionar link</strong>
           <button class="md-link-close" type="button" data-md-link-cancel aria-label="Fechar"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="md-link-fields">
@@ -92,6 +93,7 @@
           <button class="btn btn-ghost btn-xs" type="button" data-md-link-cancel>Cancelar</button>
         </div>
         <span class="md-link-error" data-md-link-error hidden>Preencha um endereço http(s), mailto ou um caminho interno.</span>
+        </div>
       </div>
 
       {{ form.body(class="form-control" + (" is-invalid" if form.body.errors else ""), id="noteBody", rows=24) }}

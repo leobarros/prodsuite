@@ -11155,3 +11155,71 @@ button.annotation-action:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* Link das notas em pop-up centralizado. */
+.md-link-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1080;
+  display: grid;
+  padding: 18px;
+  place-items: center;
+  background: var(--overlay);
+  backdrop-filter: blur(3px);
+}
+
+.md-link-overlay[hidden] {
+  display: none;
+}
+
+.md-link-dialog {
+  width: min(520px, 100%);
+  padding: 15px;
+  border: 1px solid var(--line-strong);
+  border-radius: 13px;
+  background: var(--surface);
+  box-shadow: var(--shadow-float);
+}
+
+.md-link-dialog .md-link-fields {
+  grid-template-columns: 1fr;
+}
+
+.md-link-dialog .md-link-head {
+  margin-bottom: 11px;
+}
+
+.md-link-dialog .md-link-box .form-control,
+.md-link-dialog .form-control {
+  height: 34px;
+  min-height: 34px;
+  padding: 0 9px;
+  border-radius: 7px;
+  font-family: var(--font-sans);
+  font-size: .78rem;
+}
+
+.md-link-dialog .form-label {
+  margin-bottom: 4px;
+  font-size: .66rem;
+}
+
+.md-link-dialog .md-link-actions {
+  margin-top: 11px;
+  justify-content: flex-end;
+}
+
+.md-link-dialog .md-link-error {
+  font-size: .68rem;
+}
+
+@media (max-width: 575.98px) {
+  .md-link-overlay {
+    align-items: end;
+    padding: 10px;
+  }
+
+  .md-link-dialog {
+    width: 100%;
+  }
+}
