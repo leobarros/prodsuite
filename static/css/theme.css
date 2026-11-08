@@ -10789,64 +10789,162 @@ button.annotation-action:hover {
   margin: 0;
 }
 
-/* Resumo da fila acima da lista. */
-.inbox-queue {
+/* Conceito 1: triagem em pills e fila como card lateral. */
+.inbox-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--emerald);
+}
+
+.inbox-dot.is-done {
+  background: var(--green);
+}
+
+.inbox-triage {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 18px;
-  margin-bottom: 14px;
-  padding: 13px 16px;
+  gap: 5px;
+  margin-top: 8px;
 }
 
-.inbox-queue-title {
-  flex: 0 0 auto;
-  min-width: 128px;
-}
-
-.inbox-queue-title .card-title {
-  margin: 0 0 5px;
-}
-
-.inbox-queue .inbox-stats {
-  flex: 0 1 310px;
-}
-
-.inbox-queue-copy {
-  flex: 1 1 260px;
+.inbox-triage form {
   margin: 0;
+}
+
+.inbox-triage-btn {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
   color: var(--muted);
-  font-size: .68rem;
-  line-height: 1.5;
+  font: inherit;
+  font-size: .65rem;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
 }
 
-.inbox-queue-copy strong {
+.inbox-triage-btn i {
+  color: var(--dim);
+  font-size: .7rem;
+}
+
+.inbox-triage-btn:hover,
+.inbox-triage-btn:focus-visible {
+  border-color: var(--line-strong);
   color: var(--text);
-  font-weight: 650;
 }
 
-@media (max-width: 900px) {
-  .inbox-queue {
-    flex-wrap: wrap;
-    gap: 10px 16px;
-  }
+.inbox-triage-btn.task {
+  border-color: color-mix(in srgb, var(--emerald) 26%, var(--line));
+  color: var(--emerald);
+}
 
-  .inbox-queue-title {
-    display: flex;
-    flex: 1 1 100%;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-  }
+.inbox-triage-btn.task i {
+  color: var(--emerald);
+}
 
-  .inbox-queue-title .card-title {
-    margin: 0;
-  }
+.inbox-triage-btn.note {
+  border-color: color-mix(in srgb, var(--cyan) 26%, var(--line));
+}
 
-  .inbox-queue .inbox-stats {
-    flex: 1 1 220px;
-  }
+.inbox-triage-btn.note i {
+  color: var(--cyan);
+}
 
-  .inbox-queue-copy {
-    flex: 1 1 100%;
+.inbox-more {
+  position: relative;
+  margin-left: auto;
+}
+
+.inbox-more summary {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--dim);
+  cursor: pointer;
+  list-style: none;
+}
+
+.inbox-more summary::-webkit-details-marker {
+  display: none;
+}
+
+.inbox-more summary:hover,
+.inbox-more[open] summary {
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.inbox-more-menu {
+  position: absolute;
+  right: 0;
+  z-index: 5;
+  min-width: 122px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow-float);
+}
+
+.inbox-more-menu a,
+.inbox-more-menu button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: .68rem;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.inbox-more-menu a:hover,
+.inbox-more-menu button:hover {
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+.inbox-more-menu form {
+  margin: 0;
+}
+
+.inbox-queue-side .inbox-stats {
+  grid-template-columns: 1fr 1fr;
+}
+
+.inbox-queue-side .inbox-flow-guide {
+  margin-top: 9px;
+}
+
+.inbox-queue-side .card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 9px;
+}
+
+@media (max-width: 991px) {
+  .inbox-queue-side {
+    order: -1;
   }
 }

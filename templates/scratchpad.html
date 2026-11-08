@@ -46,18 +46,7 @@
   <a class="annotation-tab {{ 'is-active' if view == 'resolvidas' }}" href="{{ url_for('scratchpad.index', ver='resolvidas') }}">Resolvidas <b>{{ counts.done }}</b></a>
 </div>
 
-<section class="bento-card inbox-queue" aria-label="Resumo da fila">
-  <div class="inbox-queue-title">
-    <h2 class="card-title"><i class="bi bi-inboxes"></i> Sua fila</h2>
-    <div class="inbox-flow-guide"><b>capturar</b><i class="bi bi-arrow-right"></i><b>decidir</b><i class="bi bi-arrow-right"></i><b>seguir</b></div>
-  </div>
-  <div class="inbox-stats">
-    <div><strong>{{ counts.open }}</strong><span>a decidir</span></div>
-    <div><strong>{{ counts.someday }}</strong><span>talvez</span></div>
-    <div><strong>{{ counts.done }}</strong><span>resolvidas</span></div>
-  </div>
-  <p class="inbox-queue-copy"><strong>Nem tudo precisa virar algo.</strong> Um item pode ser resolvido, guardado em Talvez, virar tarefa, virar nota ou simplesmente ser solto.</p>
-</section>
+
 
 <div class="annotation-layout">
   <section class="bento-card annotation-flow">
@@ -77,49 +66,45 @@
     <div class="annotation-list inbox-list">
       {% for item in items %}
       <article class="annotation-item inbox-item {{ 'is-done' if item.is_completed }} {{ 'is-someday' if item.is_someday }}" id="item-{{ item.id }}">
-        <form method="post" action="{{ url_for('scratchpad.complete', item_id=item.id) }}" class="annotation-check-form">
-          {{ csrf() }}
-          <button class="annotation-check {{ 'is-done' if item.is_completed }}" type="submit"
-                  aria-label="{{ 'Reabrir item' if item.is_completed else 'Resolver item' }}"
-                  title="{{ 'Reabrir item' if item.is_completed else 'Resolver item' }}">
-            <i class="bi {{ 'bi-check2' if item.is_completed else 'bi-check' }}" aria-hidden="true"></i>
-          </button>
-        </form>
+        <span class="inbox-dot {{ 'is-done' if item.is_completed }}" aria-hidden="true"></span>
         <div class="annotation-main">
           <p class="annotation-text">{{ item.content }}</p>
           <div class="annotation-meta">
             <span>{{ item.created_at|localtime('%d/%m · %H:%M') }}</span>
             {% if item.is_completed %}<span class="annotation-done-label"><i class="bi bi-check2"></i> resolvida</span>{% endif %}
             {% if item.is_someday %}<span class="inbox-state"><i class="bi bi-cloud"></i> talvez</span>{% endif %}
-            {% if not item.is_completed and item.someday_at %}<!-- estado preservado ao reabrir -->{% endif %}
           </div>
-          <div class="annotation-actions">
+          <div class="inbox-triage">
             {% if item.is_completed %}
             <form method="post" action="{{ url_for('scratchpad.complete', item_id=item.id) }}">
               {{ csrf() }}
-              <button class="annotation-action" type="submit"><i class="bi bi-arrow-counterclockwise"></i> Reabrir</button>
+              <button class="inbox-triage-btn" type="submit"><i class="bi bi-arrow-counterclockwise"></i> Reabrir</button>
             </form>
             {% else %}
-            <a class="annotation-action" href="{{ url_for('scratchpad.detail', item_id=item.id) }}"><i class="bi bi-check2-square"></i> Virar tarefa</a>
+            <a class="inbox-triage-btn task" href="{{ url_for('scratchpad.detail', item_id=item.id) }}"><i class="bi bi-check2-square"></i> Virar tarefa</a>
             <form method="post" action="{{ url_for('scratchpad.convert_note', item_id=item.id) }}">
               {{ csrf() }}
-              <button class="annotation-action" type="submit"><i class="bi bi-journal-bookmark"></i> Virar nota</button>
+              <button class="inbox-triage-btn note" type="submit"><i class="bi bi-journal-bookmark"></i> Virar nota</button>
             </form>
             <form method="post" action="{{ url_for('scratchpad.someday', item_id=item.id) }}">
               {{ csrf() }}
-              <button class="annotation-action" type="submit"><i class="bi bi-cloud"></i> {{ 'Voltar para a fila' if item.is_someday else 'Talvez' }}</button>
+              <button class="inbox-triage-btn" type="submit"><i class="bi bi-cloud"></i> {{ 'Voltar' if item.is_someday else 'Talvez' }}</button>
             </form>
             <form method="post" action="{{ url_for('scratchpad.complete', item_id=item.id) }}">
               {{ csrf() }}
-              <button class="annotation-action" type="submit"><i class="bi bi-check2"></i> Feito</button>
+              <button class="inbox-triage-btn" type="submit"><i class="bi bi-check2"></i> Feito</button>
             </form>
             {% endif %}
-            <a class="annotation-action annotation-edit" href="{{ url_for('scratchpad.detail', item_id=item.id) }}"><i class="bi bi-pencil"></i> Editar</a>
-            <form method="post" action="{{ url_for('scratchpad.delete', item_id=item.id) }}" class="annotation-dismiss-form"
-                  data-confirm="Soltar este item? Ele não vai para Tarefas nem para Notas.">
-              {{ csrf() }}
-              <button class="annotation-dismiss" type="submit" aria-label="Soltar item" title="Soltar item"><i class="bi bi-x-lg"></i></button>
-            </form>
+            <details class="inbox-more">
+              <summary aria-label="Mais ações do item" title="Mais ações"><i class="bi bi-three-dots"></i></summary>
+              <div class="inbox-more-menu">
+                <a href="{{ url_for('scratchpad.detail', item_id=item.id) }}"><i class="bi bi-pencil"></i> Editar</a>
+                <form method="post" action="{{ url_for('scratchpad.delete', item_id=item.id) }}" data-confirm="Soltar este item? Ele não vai para Tarefas nem para Notas.">
+                  {{ csrf() }}
+                  <button type="submit"><i class="bi bi-x-lg"></i> Soltar</button>
+                </form>
+              </div>
+            </details>
           </div>
         </div>
       </article>
@@ -139,6 +124,19 @@
   </section>
 
   <aside class="annotation-side inbox-side">
+    <section class="bento-card pad inbox-queue-side">
+      <div class="card-head"><h2 class="card-title"><i class="bi bi-inboxes"></i> Sua fila</h2><span class="link">agora</span></div>
+      <div class="inbox-stats inbox-stats-two">
+        <div><strong>{{ counts.open }}</strong><span>a decidir</span></div>
+        <div><strong>{{ counts.someday }}</strong><span>talvez</span></div>
+      </div>
+      <div class="inbox-flow-guide"><b>capturar</b><i class="bi bi-arrow-right"></i><b>decidir</b><i class="bi bi-arrow-right"></i><b>seguir</b></div>
+      <div class="divider"></div>
+      <div class="small" style="color:var(--text);font-weight:650">Nem tudo precisa virar algo.</div>
+      <div class="form-hint" style="line-height:1.55;margin-top:5px">Um item pode ser resolvido, guardado em Talvez, virar tarefa, virar nota ou simplesmente ser solto.</div>
+      {% if counts.done %}<a class="card-link" href="{{ url_for('scratchpad.index', ver='resolvidas') }}">{{ counts.done }} resolvida{{ 's' if counts.done != 1 }} <i class="bi bi-arrow-right"></i></a>{% endif %}
+    </section>
+
     <section class="bento-card pad annotation-distinction">
       <div class="card-head"><h2 class="card-title"><i class="bi bi-journal-bookmark"></i> Captura ou Nota?</h2><span class="chip">calma</span></div>
       <p><strong>Captura</strong> é para agora: tirar da cabeça e decidir depois.</p>
