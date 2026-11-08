@@ -11223,3 +11223,131 @@ button.annotation-action:hover {
     width: 100%;
   }
 }
+
+/* Nuvem de tags das notas. */
+.notes-tags {
+  max-width: 900px;
+  margin-bottom: 12px;
+  padding: 13px 15px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.notes-tags-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 9px;
+}
+
+.notes-tags-head h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--text);
+  font-size: .76rem;
+  font-weight: 700;
+}
+
+.notes-tags-head h2 i {
+  color: var(--emerald);
+}
+
+.notes-tags-head span {
+  color: var(--dim);
+  font-size: .62rem;
+}
+
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.tag-cloud-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 26px;
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: .68rem;
+  text-decoration: none;
+}
+
+.tag-cloud-item span {
+  color: var(--dim);
+  font-family: var(--font-mono);
+  font-size: .58rem;
+}
+
+.tag-cloud-item:hover,
+.tag-cloud-item.is-active {
+  border-color: color-mix(in srgb, var(--emerald) 38%, var(--line));
+  background: var(--emerald-dim);
+  color: var(--text);
+}
+
+.tag-cloud-item.is-active {
+  font-weight: 650;
+}
+
+.tag-cloud-clear {
+  color: var(--emerald);
+}
+
+.notes-active-tag {
+  display: flex;
+  max-width: 900px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+  color: var(--muted);
+  font-size: .68rem;
+}
+
+.notes-active-tag > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.notes-active-tag > span i {
+  color: var(--emerald);
+}
+
+.notes-active-tag a {
+  color: var(--emerald);
+  text-decoration: none;
+}
+
+.note-card .tag {
+  text-decoration: none;
+}
+
+.note-card .tag:hover {
+  border-color: var(--line-strong);
+  color: var(--text);
+}
+
+@media (max-width: 575.98px) {
+  .notes-tags-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .notes-active-tag {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+  }
+}

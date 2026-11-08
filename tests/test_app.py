@@ -2142,6 +2142,30 @@ class TestNotes:
         assert 'class="search-submit"' in html
         assert 'Buscar nas suas notas' in html
 
+    def test_notes_tag_cloud_filters_by_tag(self, client, app, make_user):
+        make_user()
+        login(client)
+        for title, tags in (
+            ("Rotina de foco", "foco, rotina"),
+            ("Ideias de foco", "foco"),
+            ("Lista pessoal", "pessoal"),
+        ):
+            client.post(
+                "/notas/nova",
+                data={"title": title, "body": title, "tags": tags},
+            )
+        page = client.get("/notas").get_data(as_text=True)
+        assert "Nuvem de tags" in page
+        assert "#foco" in page
+        assert "#pessoal" in page
+
+        filtered = client.get("/notas?tag=foco").get_data(as_text=True)
+        assert "Linha de pensamento" in filtered
+        assert "#foco" in filtered
+        assert "Rotina de foco" in filtered
+        assert "Ideias de foco" in filtered
+        assert "Lista pessoal" not in filtered
+
     def test_note_renders_markdown_and_wiki_links(self, client, app, make_user):
         make_user()
         login(client)

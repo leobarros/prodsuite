@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections import Counter
+
 from flask import (
     Blueprint,
     current_app,
@@ -13,7 +15,7 @@ from flask import (
     url_for,
 )
 from flask_login import current_user, login_required
-from sqlalchemy import func, or_
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 
 from extensions import db
@@ -57,16 +59,40 @@ def _save_from_form(note: Note, form: NoteForm) -> bool:
 @login_required
 def index():
     query = (request.args.get("q") or "").strip()[:120]
-    notes_query = Note.query.filter(Note.user_id == current_user.id)
+    active_tag = (
+        (request.args.get("tag") or "").strip().lstrip("#").lower()[:40]
+    )
+    all_notes = (
+        Note.query.filter(Note.user_id == current_user.id)
+        .order_by(Note.updated_at.desc())
+        .all()
+    )
+    tag_counts: Counter[str] = Counter()
+    for note in all_notes:
+        tag_counts.update(note.tag_list)
+    cloud = sorted(tag_counts.items(), key=lambda item: (-item[1], item[0]))[:40]
+
+    notes = all_notes
     if query:
-        pattern = f"%{query}%"
-        notes_query = notes_query.filter(
-            or_(Note.title.ilike(pattern), Note.body.ilike(pattern))
-        )
-    notes = notes_query.order_by(Note.updated_at.desc()).limit(200).all()
+        needle = query.casefold()
+        notes = [
+            note
+            for note in notes
+            if needle in (note.title or "").casefold()
+            or needle in (note.body or "").casefold()
+        ]
+    if active_tag:
+        notes = [note for note in notes if active_tag in note.tag_list]
+    notes = notes[:200]
     excerpts = {note.id: render_note_excerpt(note.body) for note in notes}
     return render_template(
-        "notes.html", notes=notes, query=query, note_excerpts=excerpts
+        "notes.html",
+        notes=notes,
+        query=query,
+        active_tag=active_tag,
+        tag_cloud=cloud,
+        tag_total=len(tag_counts),
+        note_excerpts=excerpts,
     )
 
 

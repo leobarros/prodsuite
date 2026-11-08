@@ -21,9 +21,33 @@
         <i class="bi bi-search" aria-hidden="true"></i>
       </button>
     </div>
-    {% if query %}<a class="btn btn-ghost btn-sm notes-search-clear" href="{{ url_for('notes.index') }}" aria-label="Limpar filtro"><i class="bi bi-x-lg"></i> Limpar</a>{% endif %}
+    {% if query %}<a class="btn btn-ghost btn-sm notes-search-clear" href="{{ url_for('notes.index', tag=active_tag or None) }}" aria-label="Limpar busca"><i class="bi bi-x-lg"></i> Limpar busca</a>{% endif %}
   </div>
 </form>
+
+{% if tag_cloud %}
+<section class="notes-tags" aria-label="Nuvem de tags">
+  <div class="notes-tags-head">
+    <h2><i class="bi bi-tags"></i> Nuvem de tags</h2>
+    <span>{{ tag_total }} tag{{ 's' if tag_total != 1 }} · clique para seguir uma linha de pensamento</span>
+  </div>
+  <div class="tag-cloud">
+    {% if active_tag %}<a class="tag-cloud-item tag-cloud-clear" href="{{ url_for('notes.index', q=query or None) }}"><i class="bi bi-x-lg"></i> Todas</a>{% endif %}
+    {% for tag, count in tag_cloud %}
+    <a class="tag-cloud-item {{ 'is-active' if active_tag == tag }}" href="{{ url_for('notes.index', tag=tag, q=query or None) }}">
+      #{{ tag }} <span>{{ count }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if active_tag %}
+<div class="notes-active-tag">
+  <span><i class="bi bi-tag"></i> Linha de pensamento: <strong>#{{ active_tag }}</strong></span>
+  <a href="{{ url_for('notes.index', q=query or None) }}">limpar tag <i class="bi bi-x-lg"></i></a>
+</div>
+{% endif %}
 
 {% if notes %}
 <div class="notes-grid">
@@ -38,7 +62,7 @@
     {% if note_excerpts[note.id] %}<p>{{ note_excerpts[note.id] }}</p>{% endif %}
     {% if note.tag_list %}
     <div class="task-tags mb-2">
-      {% for tag in note.tag_list[:3] %}<span class="tag">#{{ tag }}</span>{% endfor %}
+      {% for tag in note.tag_list[:3] %}<a class="tag" href="{{ url_for('notes.index', tag=tag) }}">#{{ tag }}</a>{% endfor %}
     </div>
     {% endif %}
     <div class="note-card-foot">
@@ -51,7 +75,7 @@
 {% else %}
 <div class="empty-state" style="min-height: 220px;">
   <i class="bi bi-journal-text"></i>
-  <span>{% if query %}Nenhuma nota para «{{ query }}».{% else %}Nenhuma nota ainda. Comece com uma ideia solta.{% endif %}</span>
+  <span>{% if active_tag %}Nenhuma nota com a tag <strong>#{{ active_tag }}</strong>.{% elif query %}Nenhuma nota para «{{ query }}».{% else %}Nenhuma nota ainda. Comece com uma ideia solta.{% endif %}</span>
   <a class="btn btn-ghost btn-xs" href="{{ url_for('notes.create') }}">Criar nota</a>
 </div>
 {% endif %}
