@@ -10948,3 +10948,35 @@ button.annotation-action:hover {
     order: -1;
   }
 }
+
+/* A barra lateral começa no topo da captura, não na linha da lista. */
+.inbox-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(270px, 300px);
+  gap: 15px;
+  align-items: start;
+}
+
+.inbox-main {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.inbox-main .inbox-capture {
+  max-width: none;
+}
+
+@media (max-width: 991px) {
+  .inbox-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .inbox-main .inbox-capture {
+    max-width: none;
+  }
+
+  .inbox-side {
+    order: 0;
+  }
+}

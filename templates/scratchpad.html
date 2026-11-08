@@ -20,6 +20,8 @@
   </div>
 </div>
 
+<div class="inbox-workspace">
+<div class="inbox-main">
 <section class="inbox-capture">
   <form method="post" action="{{ url_for('scratchpad.index') }}" data-annotation-composer>
     {{ form.hidden_tag() }}
@@ -48,7 +50,6 @@
 
 
 
-<div class="annotation-layout">
   <section class="bento-card annotation-flow">
     <div class="card-head">
       <h2 class="card-title">
@@ -122,6 +123,8 @@
     </div>
     {% endif %}
   </section>
+
+</div>
 
   <aside class="annotation-side inbox-side">
     <section class="bento-card pad inbox-queue-side">
