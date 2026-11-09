@@ -218,6 +218,19 @@ class Store:
         )
         self.conn.commit()
 
+    def focus_last_days(self) -> list[tuple[str, int]]:
+        labels = ("seg", "ter", "qua", "qui", "sex", "sáb", "dom")
+        values: list[tuple[str, int]] = []
+        for offset in range(6, -1, -1):
+            day = (date.today() - timedelta(days=offset)).isoformat()
+            row = self.conn.execute(
+                "SELECT COALESCE(SUM(minutes), 0) AS total FROM focus_sessions "
+                "WHERE mode = 'focus' AND substr(created_at, 1, 10) = ?",
+                (day,),
+            ).fetchone()
+            values.append((labels[(date.fromisoformat(day).weekday())], int(row["total"] or 0)))
+        return values
+
     def focus_stats(self) -> dict[str, int]:
         start = (date.today() - timedelta(days=6)).isoformat()
         row = self.conn.execute(

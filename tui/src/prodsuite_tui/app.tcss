@@ -306,3 +306,138 @@ Button.action:focus {
     border: round #cbb9e8;
     color: #f1eaf3;
 }
+
+/* Conceito 1: dashboard em duas colunas. */
+#sidebar {
+    width: 24;
+}
+
+.nav-item {
+    width: 100%;
+    height: 2;
+    padding: 0 1;
+    color: #bcadc5;
+    content-align: left middle;
+    border-left: thick transparent;
+}
+
+.nav-item:hover {
+    background: #282130;
+    color: #f1eaf3;
+}
+
+.nav-item:focus {
+    background: #352b43;
+    color: #f1eaf3;
+    border-left: thick #cbb9e8;
+}
+
+.nav-item.active {
+    background: #352b43;
+    color: #f1eaf3;
+    border-left: thick #cbb9e8;
+}
+
+#statusbar {
+    height: 2;
+    padding: 0 2;
+    color: #82738c;
+    background: #1c1722;
+    border-top: solid #3b3247;
+}
+
+.dash-top {
+    height: 6;
+    margin-bottom: 1;
+}
+
+.dash-heading {
+    width: 1fr;
+}
+
+.dash-heading .page-title {
+    height: 2;
+}
+
+.dash-heading .page-sub {
+    height: 1;
+    margin: 0;
+}
+
+.kicker {
+    height: 1;
+    color: #82738c;
+}
+
+.dash-actions {
+    width: auto;
+    height: 3;
+    align-vertical: middle;
+}
+
+.dash-actions Button.action {
+    min-width: 9;
+    height: 3;
+}
+
+#dash-grid {
+    height: 1fr;
+    width: 1fr;
+}
+
+.dash-main {
+    width: 2fr;
+    margin-right: 1;
+}
+
+.dash-side {
+    width: 1fr;
+}
+
+.card {
+    border: round #3b3247;
+    background: #211b28;
+    color: #d8cbdc;
+    padding: 1 2;
+    margin-bottom: 1;
+    height: auto;
+}
+
+#dash-next {
+    height: 8;
+}
+
+#dash-focus-card {
+    height: 9;
+}
+
+#dash-priorities {
+    height: 9;
+}
+
+#dash-inbox {
+    height: 9;
+}
+
+#dash-care {
+    height: 7;
+}
+
+#dash-week {
+    height: 7;
+}
+
+#dash-title {
+    color: #f1eaf3;
+    text-style: bold;
+}
+
+NavItem {
+    background: transparent;
+    text-style: none;
+}
+
+NavItem:focus {
+    background: #352b43;
+    text-style: none;
+}

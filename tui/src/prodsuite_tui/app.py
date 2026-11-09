@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import argparse
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 from rich.markup import escape
@@ -14,7 +14,6 @@ from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
     DataTable,
-    Footer,
     Input,
     Label,
     Markdown,
@@ -34,6 +33,24 @@ PRIORITY_LABELS = {"low": "baixa", "medium": "média", "high": "alta"}
 STATUS_LABELS = {"todo": "a fazer", "doing": "em andamento", "done": "concluída"}
 
 
+class NavItem(Static):
+    """Item de navegação clicável e focável."""
+
+    can_focus = True
+
+    def __init__(self, label: str, page_id: str, **kwargs) -> None:
+        super().__init__(label, id=f"nav-{page_id}", classes="nav-item", **kwargs)
+        self.page_id = page_id
+
+    def on_click(self) -> None:
+        self.app.switch_page(self.page_id)
+
+    def on_key(self, event) -> None:
+        if event.key in {"enter", "space"}:
+            event.stop()
+            self.app.switch_page(self.page_id)
+
+
 class Page(VerticalScroll):
     """Base das telas; o app injeta o store."""
 
@@ -46,61 +63,95 @@ class Page(VerticalScroll):
 
 
 class DashboardPage(Page):
+    WEEKDAYS = ("segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo")
+    MONTHS = ("jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez")
+
     def compose(self) -> ComposeResult:
-        yield Static("Meu dia", classes="page-title")
-        yield Static("O essencial à vista, sem excesso.", id="dash-sub", classes="page-sub")
-        with Horizontal(classes="button-row"):
-            yield Button("Capturar", id="dash-capture", classes="action primary")
-            yield Button("Abrir foco", id="dash-focus", classes="action")
-            yield Button("Ver tarefas", id="dash-tasks", classes="action")
-        yield Static("", id="dash-stats", classes="panel stats-panel")
-        yield Static("", id="dash-next", classes="panel")
-        yield Static("", id="dash-inbox", classes="panel")
-        yield Static("", id="dash-care", classes="panel")
+        with Horizontal(classes="dash-top"):
+            with Vertical(classes="dash-heading"):
+                yield Static("", id="dash-kicker", classes="kicker")
+                yield Static("", id="dash-title", classes="page-title")
+                yield Static("O essencial à vista, sem excesso.", classes="page-sub")
+            with Horizontal(classes="dash-actions"):
+                yield Button("Capturar", id="dash-capture", classes="action primary")
+                yield Button("Foco", id="dash-focus", classes="action")
+                yield Button("Tarefas", id="dash-tasks", classes="action")
+        with Horizontal(id="dash-grid"):
+            with Vertical(classes="dash-main"):
+                yield Static("", id="dash-next", classes="card")
+                yield Static("", id="dash-focus-card", classes="card")
+                yield Static("", id="dash-priorities", classes="card")
+            with Vertical(classes="dash-side"):
+                yield Static("", id="dash-inbox", classes="card")
+                yield Static("", id="dash-care", classes="card")
+                yield Static("", id="dash-week", classes="card")
 
     def refresh_data(self) -> None:
+        if not self.is_mounted:
+            return
         data = self.store.dashboard()
+        now = datetime.now()
+        day = date.today()
+        self.query_one("#dash-kicker", Static).update(
+            f"[#82738c]{now:%H:%M} · {self.WEEKDAYS[day.weekday()]}, {day.day:02d} {self.MONTHS[day.month - 1]}[/#82738c]"
+        )
+        greeting = "Bom dia" if now.hour < 12 else ("Boa tarde" if now.hour < 18 else "Boa noite")
+        self.query_one("#dash-title", Static).update(f"{greeting}.")
         next_task = data["next_task"]
-        next_title = escape(next_task["title"]) if next_task else "Nenhuma tarefa aberta."
-        next_meta = (
-            f"{STATUS_LABELS.get(next_task['status'], next_task['status'])} · "
-            f"prioridade {PRIORITY_LABELS.get(next_task['priority'], next_task['priority'])}"
-            if next_task
-            else "Capture uma ideia e decida o próximo passo."
-        )
-        self.query_one("#dash-stats", Static).update(
-            f"[b]{data['open_tasks']}[/b] tarefas abertas   "
-            f"[b]{data['done_tasks']}[/b] concluídas   "
-            f"[b]{data['focus']['sessions']}[/b] sessões de foco   "
-            f"[b]{data['inbox_open']}[/b] na entrada"
-        )
-        self.query_one("#dash-next", Static).update(
-            f"[b #e9a095]PRÓXIMA AÇÃO[/b #e9a095]\n\n"
-            f"[b]{next_title}[/b]\n[dim]{next_meta}[/dim]"
-        )
-        inbox_rows = self.store.list_inbox("open")[:5]
-        if inbox_rows:
-            inbox_text = "\n".join(f"• {escape(row['content'][:78])}" for row in inbox_rows)
+        if next_task:
+            next_block = (
+                f"[b #cbb9e8]PRÓXIMA AÇÃO[/b #cbb9e8]  [dim]prioridade do dia[/dim]\n\n"
+                f"[b]{escape(next_task['title'])}[/b]\n"
+                f"[dim]{STATUS_LABELS.get(next_task['status'], next_task['status'])} · "
+                f"prioridade {PRIORITY_LABELS.get(next_task['priority'], next_task['priority'])}[/dim]\n\n"
+                "[dim]↵ abrir   f iniciar foco   m prioridades[/dim]"
+            )
         else:
-            inbox_text = "[dim]Nada na cabeça agora.[/dim]"
+            next_block = "[b #cbb9e8]PRÓXIMA AÇÃO[/b #cbb9e8]\n\n[dim]Nenhuma tarefa aberta. Capture uma ideia.[/dim]"
+        self.query_one("#dash-next", Static).update(next_block)
+        focus = data["focus"]
+        self.query_one("#dash-focus-card", Static).update(
+            "[b #cbb9e8]FOCO[/b #cbb9e8]  [dim]sessão de 25 minutos[/dim]\n\n"
+            "[b]25:00[/b]  [dim]foco[/dim]\n"
+            "[dim]────────────────────────[/dim]\n"
+            f"[dim]{focus['sessions']} sessões · {_minutes(focus['minutes'])} nesta semana[/dim]\n"
+            "[dim]Enter abre o Pomodoro[/dim]"
+        )
+        tasks = self.store.list_tasks(include_done=False)[:3]
+        if tasks:
+            lines = []
+            for index, task in enumerate(tasks, 1):
+                lines.append(f"[b #e3c18c]{index}[/b #e3c18c]  {escape(task['title'])}")
+            priorities = "\n".join(lines)
+        else:
+            priorities = "[dim]Nenhuma prioridade aberta.[/dim]"
+        self.query_one("#dash-priorities", Static).update(
+            f"[b #cbb9e8]PRIORIDADES DO DIA[/b #cbb9e8]  [dim]{len(tasks)}/3[/dim]\n\n{priorities}"
+        )
+        inbox = self.store.list_inbox("open")[:4]
+        inbox_text = "\n".join(f"[#cbb9e8]•[/#cbb9e8] {escape(row['content'][:70])}" for row in inbox) if inbox else "[dim]Nada na cabeça agora.[/dim]"
         self.query_one("#dash-inbox", Static).update(
-            f"[b]CAIXA DE ENTRADA[/b]  [dim]{data['inbox_open']} a decidir[/dim]\n\n{inbox_text}"
+            f"[b #cbb9e8]CAIXA DE ENTRADA[/b #cbb9e8]  [dim]{data['inbox_open']} a decidir[/dim]\n\n{inbox_text}"
         )
         self.query_one("#dash-care", Static).update(
-            f"[b]CUIDADO[/b]\n\n"
-            f"Água: [b]{data['water'] / 1000:.2f} L[/b] hoje\n"
-            f"Humor: [b]{data['mood']['mood']:.1f}/5[/b] · {data['mood']['entries']} check-ins\n"
-            f"Foco na semana: [b]{_minutes(data['focus']['minutes'])}[/b]"
+            "[b #cbb9e8]CUIDADO[/b #cbb9e8]\n\n"
+            f"[dim]Água hoje[/dim]   [b]{data['water'] / 1000:.2f} L[/b]\n"
+            f"[dim]Humor[/dim]       [b]{data['mood']['mood']:.1f}/5[/b] · {data['mood']['entries']} check-ins"
+        )
+        days = self.store.focus_last_days()
+        max_value = max((value for _, value in days), default=0) or 1
+        bars = "".join("▁▂▃▄▅▆▇█"[min(7, int(value / max_value * 7))] for _, value in days)
+        labels = " ".join(label for label, _ in days)
+        self.query_one("#dash-week", Static).update(
+            f"[b #cbb9e8]FOCO NA SEMANA[/b #cbb9e8]  [dim]{_minutes(focus['minutes'])}[/dim]\n\n"
+            f"[#cbb9e8]{bars}[/#cbb9e8]\n[dim]{labels}[/dim]"
         )
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        mapping = {
-            "dash-capture": "inbox",
-            "dash-focus": "focus",
-            "dash-tasks": "tasks",
-        }
+        mapping = {"dash-capture": "inbox", "dash-focus": "focus", "dash-tasks": "tasks"}
         if event.button.id in mapping:
             self.app.switch_page(mapping[event.button.id])
+
 
 
 class TasksPage(Page):
@@ -675,12 +726,12 @@ class ProdSuiteTUI(App):
                     ("focus", "Pomodoro"),
                     ("notes", "Notas"),
                 ):
-                    yield Button(label, id=f"nav-{page_id}", classes="nav")
+                    yield NavItem(label, page_id)
                 yield Static("CUIDADO", classes="nav-label")
-                yield Button("Cuidado pessoal", id="nav-care", classes="nav")
+                yield NavItem("Cuidado pessoal", "care")
                 yield Static("FERRAMENTAS", classes="nav-label")
-                yield Button("Revisão", id="nav-review", classes="nav")
-                yield Button("Relatório", id="nav-report", classes="nav")
+                yield NavItem("Revisão", "review")
+                yield NavItem("Relatório", "report")
                 yield Static("", id="sidebar-spacer")
                 yield Static("local · SQLite\nsem nuvem", id="sidebar-foot")
             with Vertical(id="content"):
@@ -693,7 +744,10 @@ class ProdSuiteTUI(App):
                     yield CarePage(self.store, id="care")
                     yield ReviewPage(self.store, id="review")
                     yield ReportPage(self.store, id="report")
-        yield Footer()
+        yield Static(
+            "1–8 navegar   c capturar   f foco   n novo   ? ajuda   q sair",
+            id="statusbar",
+        )
 
     def on_mount(self) -> None:
         self.switch_page("dashboard")
@@ -701,8 +755,8 @@ class ProdSuiteTUI(App):
     def switch_page(self, page_id: str) -> None:
         for page in self.query(Page):
             page.display = page.id == page_id
-        for button in self.query(".nav"):
-            button.set_class(button.id == f"nav-{page_id}", "active")
+        for item in self.query(NavItem):
+            item.set_class(item.page_id == page_id, "active")
         page = self.query_one(f"#{page_id}", Page)
         page.refresh_data()
 
@@ -727,11 +781,6 @@ class ProdSuiteTUI(App):
 
     def action_help(self) -> None:
         self.push_screen(HelpModal())
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        button_id = event.button.id or ""
-        if button_id.startswith("nav-"):
-            self.switch_page(button_id.removeprefix("nav-"))
 
     def on_unmount(self) -> None:
         self.store.close()

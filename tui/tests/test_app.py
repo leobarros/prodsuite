@@ -9,6 +9,9 @@ def test_app_navigation_and_capture(tmp_path: Path):
         app = ProdSuiteTUI(tmp_path / "ui.db")
         async with app.run_test(size=(120, 38)) as pilot:
             await pilot.pause()
+            await pilot.click("#nav-tasks")
+            await pilot.pause()
+            assert app.query_one("#tasks").display
             app.switch_page("inbox")
             await pilot.pause()
             app.query_one("#inbox-input").value = "Teste de captura"
