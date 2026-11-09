@@ -175,7 +175,20 @@ Uma leitura dos seus dados, sem transformar a semana em uma nota.
 
 ![Relatório semanal](docs/images/readme-report.webp)
 
-### Notificações
+### TUI beta
+
+Existe uma versão local em terminal, separada do app web e sem Docker:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/leobarros/prodsuite/main/tui/install.py -o /tmp/prodsuite-tui-install.py
+python3 /tmp/prodsuite-tui-install.py
+prodsuite-tui
+```
+
+O instalador detecta Linux/Debian, macOS e Windows, cria um ambiente isolado e
+usa um banco SQLite local. Veja [tui/README.md](tui/README.md).
+
+## Notificações
 
 Lembretes discretos para a rotina:
 

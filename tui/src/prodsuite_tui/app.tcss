@@ -1,0 +1,308 @@
+Screen {
+    background: #17141d;
+    color: #f1eaf3;
+}
+
+#shell {
+    height: 1fr;
+}
+
+#sidebar {
+    width: 27;
+    background: #1c1722;
+    border-right: solid #3b3247;
+    padding: 1 1 0 1;
+}
+
+#brand {
+    color: #cbb9e8;
+    text-style: bold;
+    height: 4;
+    padding: 1 1;
+    border-bottom: solid #3b3247;
+    margin-bottom: 1;
+}
+
+.nav-label {
+    color: #82738c;
+    text-style: bold;
+    height: 2;
+    padding: 1 1 0 1;
+    margin-top: 1;
+}
+
+Button.nav {
+    width: 100%;
+    height: 3;
+    min-height: 3;
+    border: none;
+    background: transparent;
+    color: #bcadc5;
+    content-align: left middle;
+    padding: 0 1;
+    margin: 0;
+}
+
+Button.nav:hover {
+    background: #282130;
+    color: #f1eaf3;
+}
+
+Button.nav.active {
+    background: #352b43;
+    color: #f1eaf3;
+    border-left: thick #cbb9e8;
+}
+
+#sidebar-spacer {
+    height: 1fr;
+}
+
+#sidebar-foot {
+    color: #82738c;
+    border-top: solid #3b3247;
+    padding: 1;
+    height: 4;
+}
+
+#content {
+    width: 1fr;
+    height: 1fr;
+    padding: 1 2;
+}
+
+#pages {
+    height: 1fr;
+}
+
+#dashboard, #tasks, #inbox, #focus, #notes, #care, #review, #report {
+    width: 1fr;
+    height: 1fr;
+}
+
+.page-title {
+    color: #f1eaf3;
+    text-style: bold;
+    height: 2;
+    margin: 0 0 0 0;
+}
+
+.page-sub {
+    color: #bcadc5;
+    height: 2;
+    margin-bottom: 1;
+}
+
+.panel {
+    border: round #3b3247;
+    background: #211b28;
+    color: #d8cbdc;
+    padding: 1 2;
+    margin: 1 0;
+    height: auto;
+}
+
+.stats-panel {
+    color: #cbb9e8;
+    text-style: bold;
+}
+
+.button-row {
+    height: auto;
+    min-height: 3;
+    margin: 0 0 1 0;
+}
+
+Button.action {
+    min-width: 10;
+    height: 3;
+    border: round #51445f;
+    background: #211b28;
+    color: #d8cbdc;
+    margin: 0 1 0 0;
+}
+
+Button.action:hover {
+    background: #352b43;
+    color: #f1eaf3;
+}
+
+Button.action.primary {
+    background: #4b3b5c;
+    border: round #726080;
+    color: #f1eaf3;
+    text-style: bold;
+}
+
+Button.action.primary:hover {
+    background: #5a4869;
+}
+
+Input {
+    border: round #51445f;
+    background: #241d2b;
+    color: #f1eaf3;
+    height: 3;
+    margin: 0 0 1 0;
+}
+
+Input:focus {
+    border: round #cbb9e8;
+}
+
+OptionList {
+    border: round #3b3247;
+    background: #211b28;
+    color: #d8cbdc;
+    height: 1fr;
+    min-height: 10;
+    margin-bottom: 1;
+}
+
+OptionList > .option-list--option-highlighted {
+    background: #352b43;
+    color: #f1eaf3;
+}
+
+DataTable {
+    height: 1fr;
+    border: round #3b3247;
+    background: #211b28;
+    color: #d8cbdc;
+    margin-bottom: 1;
+}
+
+DataTable > .datatable--header {
+    background: #282130;
+    color: #cbb9e8;
+    text-style: bold;
+}
+
+DataTable > .datatable--cursor {
+    background: #352b43;
+    color: #f1eaf3;
+}
+
+.hint {
+    color: #82738c;
+    height: auto;
+    padding: 0 1;
+}
+
+.section-label {
+    color: #cbb9e8;
+    text-style: bold;
+    height: 2;
+    margin-top: 1;
+}
+
+#focus-time {
+    color: #f1eaf3;
+    text-style: bold;
+    height: 5;
+    padding: 1 0;
+    text-align: center;
+}
+
+#focus-mode {
+    text-align: center;
+    height: 2;
+}
+
+.notes-columns {
+    height: 1fr;
+    min-height: 20;
+}
+
+.notes-list-column {
+    width: 36;
+    min-width: 28;
+    margin-right: 1;
+}
+
+.notes-list-column OptionList {
+    height: 1fr;
+}
+
+.notes-editor-column {
+    width: 1fr;
+}
+
+#note-body {
+    height: 16;
+    border: round #3b3247;
+    background: #211b28;
+    color: #d8cbdc;
+    margin-bottom: 1;
+}
+
+#note-preview {
+    height: 16;
+    border: round #3b3247;
+    background: #211b28;
+    color: #d8cbdc;
+    padding: 1 2;
+}
+
+.care-form {
+    height: auto;
+    margin-bottom: 1;
+}
+
+.care-form Input {
+    width: 22;
+    margin-right: 1;
+}
+
+#review-wins, #review-challenges, #review-next {
+    height: 5;
+    border: round #3b3247;
+    background: #211b28;
+    color: #d8cbdc;
+    margin-bottom: 1;
+}
+
+Footer {
+    background: #1c1722;
+    color: #82738c;
+    border-top: solid #3b3247;
+}
+
+TaskModal, HelpModal {
+    align: center middle;
+    background: #0d0b10 65%;
+}
+
+.modal-box {
+    width: 64;
+    height: auto;
+    max-height: 90%;
+    background: #241d2b;
+    border: round #726080;
+    padding: 1 2;
+}
+
+.modal-title {
+    color: #f1eaf3;
+    text-style: bold;
+    height: 2;
+    margin-bottom: 1;
+}
+
+.help-text {
+    color: #d8cbdc;
+    height: auto;
+    padding: 1 0;
+}
+
+
+Button.nav:focus {
+    background: #352b43;
+    color: #f1eaf3;
+    border-left: thick #cbb9e8;
+}
+
+Button.action:focus {
+    border: round #cbb9e8;
+    color: #f1eaf3;
+}

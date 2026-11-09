@@ -1,5 +1,6 @@
 # Dependências e artefatos locais
 .venv/
+.venv-tui/
 venv/
 __pycache__/
 *.py[cod]
