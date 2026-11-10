@@ -3402,8 +3402,8 @@ class TestPWA:
         assert audio.data[8:12] == b"WAVE"
         with wave.open(io.BytesIO(audio.data), "rb") as handle:
             duration = handle.getnframes() / handle.getframerate()
-        assert duration < 1.5
-        assert len(audio.data) < 200_000
+        assert duration < 3.0
+        assert len(audio.data) < 300_000
 
     def test_offline_shell_and_icons_exist(self, client):
         response = client.get("/offline")

@@ -56,9 +56,10 @@ e no Docker, incluindo o estado compartilhado do servidor.
 
 ## 4. Áudio
 
-- [ ] O arquivo `static/audio/pomodoro-alert.wav` é o chime original encurtado,
-      com menos de 1,5 segundo.
-- [ ] **Testar som** reproduz o chime original, não apenas o sintetizador.
+- [ ] O arquivo `static/audio/pomodoro-alert.wav` tem o timbre próprio do app,
+      inspirado no padrão do timer do DuckDuckGo, com cerca de 2,5 segundos.
+- [ ] **Testar som** reproduz exatamente o mesmo chime usado na conclusão.
+- [ ] A URL do áudio inclui versão para não reutilizar cache antigo.
 - [ ] A conclusão inicia um alarme repetido a cada 2,5 s; não há sobreposição
       de áudios.
 - [ ] O alarme só para ao clicar no timer ou no aviso de conclusão.

@@ -217,7 +217,7 @@
   {% if show_onboarding %}
   {% include "_onboarding_modal.html" %}
   {% endif %}
-  <audio id="pomodoro-sound" src="{{ url_for('static', filename='audio/pomodoro-alert.wav') }}" preload="none" playsinline aria-hidden="true"></audio>
+  <audio id="pomodoro-sound" src="{{ url_for('static', filename='audio/pomodoro-alert.wav') }}?v={{ asset_version('audio/pomodoro-alert.wav') }}" preload="none" playsinline aria-hidden="true"></audio>
   <div class="pomodoro-completion-alert" id="pomodoro-completion-alert" role="alert" aria-live="assertive" hidden>
     <span class="pomodoro-alert-icon" data-pomodoro-alert-emoji aria-hidden="true"><span class="tomato-glyph"></span></span>
     <div class="pomodoro-alert-copy">
