@@ -56,8 +56,9 @@ e no Docker, incluindo o estado compartilhado do servidor.
 
 ## 4. Áudio
 
-- [ ] O arquivo `static/audio/pomodoro-alert.wav` tem menos de 1,5 segundo.
-- [ ] **Testar som** reproduz um único chime curto.
+- [ ] O arquivo `static/audio/pomodoro-alert.wav` é o chime original encurtado,
+      com menos de 1,5 segundo.
+- [ ] **Testar som** reproduz o chime original, não apenas o sintetizador.
 - [ ] A conclusão reproduz um único chime; não há som duplicado.
 - [ ] Pausar, reiniciar ou trocar de modo não reproduz som.
 - [ ] Escrever em Notas, criar tarefa ou navegar por outra página não reproduz o

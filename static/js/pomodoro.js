@@ -551,10 +551,8 @@
   function playChime() {
     useMixingAudioSession();
     primeAudio();
-    if (audioContext?.state === "running") {
-      playSynthChime();
-      return;
-    }
+    // O som original (encurtado) é o alerta principal; o sintetizador fica
+    // apenas como fallback se o elemento de áudio não puder tocar.
     if (soundEl) {
       try {
         soundEl.pause();
@@ -567,7 +565,7 @@
         }
         return;
       } catch (_error) {
-        /* sem contexto: tenta o áudio curto de fallback */
+        /* tenta o sintetizador abaixo */
       }
     }
     playSynthChime();
