@@ -32,7 +32,7 @@
 {%- set plot_h = baseline - top -%}
 {%- set slot = plot_w / (stats.daily|length) -%}
 {%- set bar_w = 38 -%}
-{%- set points = [] -%}
+{%- set trend = namespace(points=[]) -%}
 <svg class="weekly-chart" viewBox="0 0 720 250" role="img" aria-label="{{ aria_label }}">
   <g class="weekly-chart-grid">
     {%- for tick in range(4) -%}
@@ -45,7 +45,7 @@
   {%- set x_center = left + loop.index0 * slot + slot / 2 -%}
   {%- set bar_h = [2, (day.minutes / chart_max * plot_h)]|max -%}
   {%- set y_top = baseline - bar_h -%}
-  {%- set points = points + [x_center|string + ',' + y_top|string] -%}
+  {%- set trend.points = trend.points + [x_center|string ~ ',' ~ y_top|string] -%}
   <rect class="weekly-chart-bar {{ 'is-today' if loop.last }}" x="{{ x_center - bar_w / 2 }}" y="{{ y_top }}" width="{{ bar_w }}" height="{{ bar_h }}" rx="4">
     <title>{{ day.label }}: {{ day.minutes }} min</title>
   </rect>
@@ -54,7 +54,7 @@
   {%- endif -%}
   <text class="weekly-chart-day {{ 'is-today' if loop.last }}" x="{{ x_center }}" y="{{ baseline + 24 }}" text-anchor="middle">{{ day.label }}</text>
   {%- endfor -%}
-  <polyline class="weekly-chart-line" points="{{ points|join(' ') }}"></polyline>
+  <polyline class="weekly-chart-line" points="{{ trend.points|join(' ') }}"></polyline>
   {%- for day in stats.daily -%}
   {%- set x_center = left + loop.index0 * slot + slot / 2 -%}
   {%- set y_top = baseline - [2, (day.minutes / chart_max * plot_h)]|max -%}

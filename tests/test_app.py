@@ -3540,6 +3540,10 @@ class TestPages:
         assert "weekly-chart" in html
         assert "weekly-chart-line" in html
         assert "weekly-chart-grid" in html
+        points = re.search(
+            r'<polyline class="weekly-chart-line" points="([^"]+)"', html
+        )
+        assert points and points.group(1).strip()
         assert "/sw.js" not in html  # registro fica no app.js
 
 
