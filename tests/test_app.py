@@ -2606,6 +2606,58 @@ class TestPlanning:
         with app.app_context():
             assert PomodoroCycle.query.filter_by(run_id=state["runId"]).count() == 1
 
+    def test_paused_break_from_yesterday_resets_to_focus(self, client, app, make_user):
+        from datetime import timedelta
+
+        from models import PomodoroTimer
+
+        user_id = make_user()
+        login(client)
+        with app.app_context():
+            db.session.add(
+                PomodoroTimer(
+                    user_id=user_id,
+                    mode="long_break",
+                    duration_seconds=1200,
+                    remaining_seconds=1200,
+                    running=False,
+                    updated_at=utcnow() - timedelta(days=1),
+                    revision=2,
+                )
+            )
+            db.session.commit()
+
+        response = client.get("/foco/estado")
+        state = response.get_json()["state"]
+        assert state["mode"] == "focus"
+        assert state["duration"] == 1500
+        assert state["remaining"] == 1500
+
+    def test_pause_preserves_mode_and_remaining_time(self, client, app, make_user):
+        make_user()
+        login(client)
+        started = client.post(
+            "/foco/estado",
+            json={
+                "action": "start",
+                "mode": "long_break",
+                "duration": 1200,
+                "remaining": 1200,
+            },
+            headers={"X-Requested-With": "fetch", "Accept": "application/json"},
+        )
+        assert started.status_code == 200
+        paused = client.post(
+            "/foco/estado",
+            json={"action": "pause", "mode": "long_break", "remaining": 700},
+            headers={"X-Requested-With": "fetch", "Accept": "application/json"},
+        )
+        state = paused.get_json()["state"]
+        assert state["mode"] == "long_break"
+        assert state["duration"] == 1200
+        assert state["remaining"] == 700
+        assert state["running"] is False
+
     def test_timer_state_exposes_only_today_focus_cycles(
         self, client, app, make_user
     ):

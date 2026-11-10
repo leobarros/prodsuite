@@ -8,6 +8,7 @@ from datetime import timedelta
 
 from extensions import db
 from models import POMODORO_DURATIONS, POMODORO_MODES, PomodoroTimer, Task, utcnow
+from .timeutils import local_today, to_local
 
 MAX_TIMER_SECONDS = 6 * 60 * 60
 
@@ -54,7 +55,19 @@ def get_timer(user, create: bool = False) -> PomodoroTimer | None:
         )
         db.session.add(timer)
         db.session.flush()
-    elif _normalize_timer(timer):
+    elif timer is not None and not timer.running and timer.mode != "focus":
+        # Uma pausa parada ontem não deve abrir o app em pausa longa hoje.
+        updated = to_local(timer.updated_at)
+        if updated is not None and updated.date() < local_today():
+            timer.mode = "focus"
+            timer.duration_seconds = POMODORO_DURATIONS["focus"] * 60
+            timer.remaining_seconds = timer.duration_seconds
+            timer.ends_at = None
+            timer.run_id = None
+            timer.revision = (timer.revision or 0) + 1
+            timer.updated_at = utcnow()
+            db.session.commit()
+    if timer is not None and _normalize_timer(timer):
         db.session.commit()
     return timer
 
@@ -118,6 +131,12 @@ def apply_action(user, payload: dict) -> PomodoroTimer:
         timer.run_id = uuid.uuid4().hex
         timer.task_id = _task_for(user, payload.get("task_id"))
     elif action == "pause":
+        # O cliente envia o modo para evitar que uma resposta de pausa troque
+        # o modo local (foco/pausa longa) pelo modo antigo do servidor.
+        requested_mode = payload.get("mode")
+        if requested_mode in POMODORO_MODES:
+            timer.mode = requested_mode
+            timer.duration_seconds = POMODORO_DURATIONS[requested_mode] * 60
         try:
             supplied_remaining = int(payload.get("remaining"))
         except (TypeError, ValueError):

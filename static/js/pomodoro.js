@@ -714,14 +714,19 @@
   function pause() {
     if (!state.running) return;
     stopAudioKeepAlive();
+    // O relógio do navegador pode estar alguns minutos diferente do
+    // container; pause precisa usar a mesma referência do start.
     state.remaining = Math.max(
       0,
-      Math.ceil((state.endsAt - Date.now()) / 1000)
+      Math.ceil((state.endsAt - serverNowMs()) / 1000)
     );
     state.running = false;
     state.endsAt = null;
     save();
-    pushTimerState("pause", { remaining: state.remaining });
+    pushTimerState("pause", {
+      remaining: state.remaining,
+      mode: state.mode,
+    });
     if (state.remaining <= 0) {
       completeCycle();
     } else {
