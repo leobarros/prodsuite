@@ -3450,6 +3450,7 @@ class TestPWA:
         assert "max-age=3600" in static_asset.headers.get("Cache-Control", "")
         assert 'id="pomodoro-sound"' in html
         assert "/static/audio/pomodoro-alert.wav" in html
+        assert 'preload="none"' in html
 
     def test_user_can_change_profile_name(self, client, app, make_user):
         user_id = make_user()

@@ -62,6 +62,9 @@ e no Docker, incluindo o estado compartilhado do servidor.
 - [ ] Pausar, reiniciar ou trocar de modo não reproduz som.
 - [ ] Escrever em Notas, criar tarefa ou navegar por outra página não reproduz o
       chime de desbloqueio.
+- [ ] Abrir o app com um podcast/YouTube tocando não pausa o áudio externo.
+- [ ] O carregamento da página não cria AudioContext, não baixa o áudio para
+      reprodução e não inicia keepalive.
 - [ ] Voltar de outra tela ou de segundo plano não reproduz um som atrasado.
 - [ ] O som continua funcionando no PWA instalado por HTTPS.
 - [ ] Verificar o comportamento no iPhone/Safari, incluindo ativação por gesto.

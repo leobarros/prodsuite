@@ -53,7 +53,6 @@
 
   let audioContext = null;
   let soundUnlocked = false;
-  let keepAliveOscillator = null;
   let serverClockOffset = 0;
   let completionAlertVisible = false;
   let lastRenderedSecond = null;
@@ -176,13 +175,6 @@
     state.serverRevision = revision;
     save();
     render();
-    if (isRunning()) {
-      unlockAudio().finally(() => {
-        if (isRunning()) {
-          startAudioKeepAlive();
-        }
-      });
-    }
     return true;
   }
 
@@ -508,7 +500,6 @@
     }
     if (audioContext.state === "running") {
       soundUnlocked = true;
-      startAudioKeepAlive();
     }
   }
 
@@ -559,34 +550,6 @@
     }
   }
 
-  function startAudioKeepAlive() {
-    if (!audioContext || audioContext.state !== "running" || keepAliveOscillator) {
-      return;
-    }
-    const oscillator = audioContext.createOscillator();
-    const gain = audioContext.createGain();
-    oscillator.frequency.value = 30;
-    gain.gain.value = 0.00001;
-    oscillator.connect(gain).connect(audioContext.destination);
-    oscillator.start();
-    keepAliveOscillator = oscillator;
-  }
-
-  function stopAudioKeepAlive() {
-    if (!keepAliveOscillator) return;
-    try {
-      keepAliveOscillator.stop();
-      keepAliveOscillator.disconnect();
-    } catch (_error) {
-      /* já encerrado */
-    }
-    keepAliveOscillator = null;
-  }
-
-  function serverNowMs() {
-    return Date.now() + serverClockOffset;
-  }
-
   function playChime() {
     useNotificationAudioSession();
     primeAudio();
@@ -617,7 +580,6 @@
       playChime();
       PSuite.toast?.("Som de teste reproduzido.");
       if (!isRunning()) {
-        window.setTimeout(stopAudioKeepAlive, 1000);
       }
     });
   }
@@ -700,9 +662,8 @@
     state.running = true;
     save();
     render();
-    unlockAudio().finally(() => {
-      if (isRunning()) startAudioKeepAlive();
-    });
+    // Só ativa o contexto quando a pessoa inicia o Pomodoro explicitamente.
+    unlockAudio();
     pushTimerState("start", {
       mode: state.mode,
       duration: state.duration,
@@ -713,7 +674,6 @@
 
   function pause() {
     if (!state.running) return;
-    stopAudioKeepAlive();
     // O relógio do navegador pode estar alguns minutos diferente do
     // container; pause precisa usar a mesma referência do start.
     state.remaining = Math.max(
@@ -735,7 +695,6 @@
   }
 
   function reset() {
-    stopAudioKeepAlive();
     state.running = false;
     state.endsAt = null;
     state.remaining = state.duration;
@@ -775,7 +734,6 @@
   function advanceAfter(finishedMode, nextMode) {
     const next = MODES[nextMode] || MODES.focus;
     setMode(nextMode, { silent: true });
-    window.setTimeout(stopAudioKeepAlive, 1200);
     const message =
       finishedMode === "focus"
         ? `Pomodoro concluído! Hora de uma pausa de ${next.minutes} min.`
@@ -990,16 +948,6 @@
     start();
   });
 
-  // Qualquer primeiro gesto também desbloqueia o áudio, inclusive quando o
-  // usuário inicia o timer por atalho de teclado.
-  const unlockOnFirstGesture = () => {
-    unlockAudio();
-    document.removeEventListener("pointerdown", unlockOnFirstGesture);
-    document.removeEventListener("keydown", unlockOnFirstGesture);
-  };
-  document.addEventListener("pointerdown", unlockOnFirstGesture, { passive: true });
-  document.addEventListener("keydown", unlockOnFirstGesture);
-
   document.addEventListener("keydown", (event) => {
     const target = event.target;
     const typing =
@@ -1019,9 +967,6 @@
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState !== "visible") return;
     pageInteractiveAt = Date.now();
-    if (isRunning() && audioContext?.state === "running") {
-      startAudioKeepAlive();
-    }
     // Se o ciclo venceu enquanto o app estava em background, registra o
     // ciclo sem tocar o som atrasado.
     if (state.running && state.endsAt && state.endsAt <= Date.now()) {
@@ -1050,9 +995,6 @@
 
   // Recalcula ao carregar: se o ciclo terminou com a aba fechada, registra.
   render();
-  if (isRunning() && audioContext?.state === "running") {
-    startAudioKeepAlive();
-  }
   if (state.running && state.endsAt && state.endsAt <= Date.now()) {
     completeCycle({ reload: true });
   } else if (state.running) {
