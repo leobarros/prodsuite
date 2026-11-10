@@ -2,6 +2,10 @@
 {% from "_macros.html" import csrf %}
 {% block title %}{{ task.title }}{% endblock %}
 
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/task-attachments.js') }}" defer></script>
+{% endblock %}
+
 {% block content %}
 <div class="page-head task-detail-head">
   <div>
@@ -41,36 +45,31 @@
       {% endif %}
     </section>
 
-    <section class="bento-card task-detail-attachments" id="anexos">
+    <section class="bento-card task-detail-attachments" id="anexos"
+             data-task-attachments data-upload-url="{{ url_for('tasks.add_attachments', task_id=task.id) }}">
       <div class="card-head">
         <h2 class="card-title"><i class="bi bi-paperclip"></i> Anexos</h2>
-        <span class="card-link">{{ attachments|length }} arquivo{{ 's' if attachments|length != 1 }}</span>
+        <span class="card-link" data-attachment-count>{{ attachments|length }} arquivo{{ 's' if attachments|length != 1 }}</span>
       </div>
       {% if attachments %}
-      <div class="task-attachment-list">
+      <div class="task-attachment-list" data-attachment-list>
         {% for attachment in attachments %}
-        <div class="task-attachment">
-          {% if attachment.is_image %}
-          <a class="task-attachment-thumb" href="{{ url_for('tasks.download_attachment', task_id=task.id, attachment_id=attachment.id) }}" target="_blank" rel="noopener">
-            <img src="{{ url_for('tasks.download_attachment', task_id=task.id, attachment_id=attachment.id) }}" alt="{{ attachment.original_name }}" loading="lazy">
-          </a>
-          {% else %}
-          <span class="task-attachment-icon"><i class="bi bi-file-earmark"></i></span>
-          {% endif %}
-          <div class="task-attachment-info">
-            <a href="{{ url_for('tasks.download_attachment', task_id=task.id, attachment_id=attachment.id, download=1) }}">{{ attachment.original_name }}</a>
-            <span>{{ attachment.size_label }}{% if attachment.comment_id %} · em comentário{% endif %}</span>
-          </div>
-          <form method="post" action="{{ url_for('tasks.delete_attachment', task_id=task.id, attachment_id=attachment.id) }}" data-confirm="Remover este anexo?">
-            {{ csrf() }}
-            <button class="icon-btn-sm" type="submit" aria-label="Remover anexo" title="Remover anexo"><i class="bi bi-x-lg"></i></button>
-          </form>
-        </div>
+        {% include "_task_attachment.html" %}
         {% endfor %}
       </div>
       {% else %}
-      <p class="form-hint">Nenhum anexo ainda. Imagens e arquivos ficam privados nesta tarefa.</p>
+      <div class="task-attachment-list" data-attachment-list hidden></div>
+      <p class="form-hint" data-attachment-empty>Nenhum anexo ainda. Imagens e arquivos ficam privados nesta tarefa.</p>
       {% endif %}
+
+      <div class="task-attachment-paste" data-attachment-paste-zone tabindex="0" role="button"
+           aria-label="Colar imagem da área de transferência">
+        <i class="bi bi-clipboard-image"></i>
+        <span>Cole um print com <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>V</kbd> ou arraste uma imagem aqui.</span>
+        <button class="btn btn-ghost btn-sm" type="button" data-paste-attachment><i class="bi bi-clipboard"></i> Colar print</button>
+      </div>
+      <span class="task-attachment-status form-hint" data-attachment-status aria-live="polite"></span>
+
       <form class="task-attachment-upload" method="post" action="{{ url_for('tasks.add_attachments', task_id=task.id) }}" enctype="multipart/form-data">
         {{ csrf() }}
         <label class="visually-hidden" for="attachmentFiles">Anexar arquivos</label>

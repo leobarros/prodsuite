@@ -2095,6 +2095,31 @@ class TestTaskDetail:
         assert download.status_code == 200
         assert "attachment" in download.headers["Content-Disposition"]
 
+    def test_paste_attachment_endpoint_returns_fragment(self, client, app, make_user):
+        user_id = make_user()
+        task_id = self._task(app, user_id)
+        login(client)
+        png = (
+            b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
+            b"\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00"
+            b"\x1f\x15\xc4\x89\x00\x00\x00\x0aIEND\xaeB`\x82"
+        )
+        response = client.post(
+            f"/tarefas/{task_id}/anexos",
+            data={"files": (io.BytesIO(png), "print.png")},
+            content_type="multipart/form-data",
+            headers={"X-Requested-With": "fetch", "Accept": "application/json"},
+        )
+        assert response.status_code == 201
+        payload = response.get_json()
+        assert payload["ok"] is True
+        assert payload["count"] == 1
+        assert "task-attachment" in payload["html"]
+        assert "print.png" in payload["html"]
+        detail = client.get(f"/tarefas/{task_id}").get_data(as_text=True)
+        assert "data-paste-attachment" in detail
+        assert "data-task-attachments" in detail
+
     def test_invalid_attachment_is_rejected(self, client, app, make_user):
         user_id = make_user()
         task_id = self._task(app, user_id)

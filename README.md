@@ -8,7 +8,7 @@ Um app pessoal e auto-hospedado para organizar o que importa sem transformar a v
 ![Python](https://img.shields.io/badge/Python-3.13-7c6aa3)
 ![Flask](https://img.shields.io/badge/Flask-3.0-9e8ab8)
 ![Docker](https://img.shields.io/badge/Docker-ready-8eb7c6)
-![Testes](https://img.shields.io/badge/testes-170%20passando-b98aa4)
+![Testes](https://img.shields.io/badge/testes-171%20passando-b98aa4)
 ![Trivy](https://img.shields.io/badge/Trivy-0%20HIGH%2FCRITICAL-a7d1b0)
 
 ![Meu dia no ProdSuite](docs/images/readme-dashboard.webp)
@@ -69,6 +69,7 @@ Um quadro com as colunas que fizerem sentido para você.
 - organize tarefas em colunas personalizadas;
 - arraste cartões para mudar o estágio;
 - use prioridade, categoria, prazo, estimativa de foco e etiquetas;
+- anexe arquivos ou cole/arraste um print diretamente na tarefa;
 - marque uma coluna como conclusão para fechar o ciclo.
 
 ![Tarefas em um quadro personalizado](docs/images/readme-tasks.webp)
@@ -328,7 +329,7 @@ Testes:
 
 ```bash
 pytest -q
-# 170 testes
+# 171 testes
 ```
 
 O banco local fica em `instance/prodsuite.db` e não é apagado ao sair da conta.

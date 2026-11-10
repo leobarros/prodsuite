@@ -11438,3 +11438,69 @@ button.annotation-action:hover {
     max-width: none;
   }
 }
+
+/* Anexos: colar/arrastar print diretamente na tarefa. */
+.task-attachment-paste {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 9px 10px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: .7rem;
+  cursor: pointer;
+}
+
+.task-attachment-paste > i {
+  color: var(--emerald);
+  font-size: .95rem;
+}
+
+.task-attachment-paste span {
+  flex: 1;
+  min-width: 0;
+}
+
+.task-attachment-paste kbd {
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--surface);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: .6rem;
+  padding: 1px 4px;
+}
+
+.task-attachment-paste:hover,
+.task-attachment-paste:focus-visible,
+.task-attachment-paste.is-dragging {
+  border-color: var(--emerald);
+  background: var(--emerald-dim);
+}
+
+.task-attachment-paste button {
+  flex: 0 0 auto;
+}
+
+.task-attachment-status {
+  display: block;
+  min-height: 1.1em;
+  margin-top: 5px;
+  color: var(--emerald);
+  font-size: .66rem;
+}
+
+@media (max-width: 575.98px) {
+  .task-attachment-paste {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .task-attachment-paste button {
+    width: 100%;
+    justify-content: center;
+  }
+}

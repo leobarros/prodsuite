@@ -536,21 +536,41 @@ def add_comment(task_id: int):
 @login_required
 def add_attachments(task_id: int):
     task = _get_task(task_id)
+    wants_json = bool(
+        request.is_json
+        or request.headers.get("X-Requested-With") == "fetch"
+        or request.accept_mimetypes.best == "application/json"
+    )
     files = _uploaded_files()
     if not files:
+        if wants_json:
+            return jsonify(ok=False, error="Escolha ao menos uma imagem."), 400
         flash("Escolha ao menos um arquivo.", "warning")
         return redirect(url_for("tasks.detail", task_id=task.id))
     if len(files) > 5:
+        if wants_json:
+            return jsonify(ok=False, error="Envie no máximo 5 arquivos por vez."), 400
         flash("Envie no máximo 5 arquivos por vez.", "warning")
         return redirect(url_for("tasks.detail", task_id=task.id))
     try:
         attachments = _save_uploaded_files(task, files)
     except ValueError as exc:
         db.session.rollback()
+        if wants_json:
+            return jsonify(ok=False, error=str(exc)), 400
         flash(str(exc), "danger")
         return redirect(url_for("tasks.detail", task_id=task.id))
     db.session.add_all(attachments)
     db.session.commit()
+    if wants_json:
+        html = "".join(
+            render_template("_task_attachment.html", task=task, attachment=attachment)
+            for attachment in attachments
+        )
+        total = TaskAttachment.query.filter_by(
+            user_id=current_user.id, task_id=task.id
+        ).count()
+        return jsonify(ok=True, html=html, count=total), 201
     flash("Anexo adicionado.", "success")
     return redirect(url_for("tasks.detail", task_id=task.id) + "#anexos")
 

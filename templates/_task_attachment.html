@@ -1,0 +1,18 @@
+{% from "_macros.html" import csrf %}
+<div class="task-attachment" data-attachment-id="{{ attachment.id }}">
+  {% if attachment.is_image %}
+  <a class="task-attachment-thumb" href="{{ url_for('tasks.download_attachment', task_id=task.id, attachment_id=attachment.id) }}" target="_blank" rel="noopener">
+    <img src="{{ url_for('tasks.download_attachment', task_id=task.id, attachment_id=attachment.id) }}" alt="{{ attachment.original_name }}" loading="lazy">
+  </a>
+  {% else %}
+  <span class="task-attachment-icon"><i class="bi bi-file-earmark"></i></span>
+  {% endif %}
+  <div class="task-attachment-info">
+    <a href="{{ url_for('tasks.download_attachment', task_id=task.id, attachment_id=attachment.id, download=1) }}">{{ attachment.original_name }}</a>
+    <span>{{ attachment.size_label }}{% if attachment.comment_id %} · em comentário{% endif %}</span>
+  </div>
+  <form method="post" action="{{ url_for('tasks.delete_attachment', task_id=task.id, attachment_id=attachment.id) }}" data-confirm="Remover este anexo?">
+    {{ csrf() }}
+    <button class="icon-btn-sm" type="submit" aria-label="Remover anexo" title="Remover anexo"><i class="bi bi-x-lg"></i></button>
+  </form>
+</div>
