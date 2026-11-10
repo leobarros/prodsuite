@@ -2606,6 +2606,48 @@ class TestPlanning:
         with app.app_context():
             assert PomodoroCycle.query.filter_by(run_id=state["runId"]).count() == 1
 
+    def test_timer_state_exposes_only_today_focus_cycles(
+        self, client, app, make_user
+    ):
+        from datetime import timedelta
+
+        from services.timeutils import day_start_utc, local_today
+
+        user_id = make_user()
+        login(client)
+        with app.app_context():
+            today = local_today()
+            yesterday_start = day_start_utc(today - timedelta(days=1))
+            today_start = day_start_utc(today)
+            db.session.add_all(
+                [
+                    PomodoroCycle(
+                        user_id=user_id,
+                        mode="focus",
+                        duration_minutes=25,
+                        ended_at=yesterday_start + timedelta(hours=20),
+                    ),
+                    PomodoroCycle(
+                        user_id=user_id,
+                        mode="focus",
+                        duration_minutes=25,
+                        ended_at=today_start + timedelta(hours=8),
+                    ),
+                ]
+            )
+            db.session.commit()
+
+        client.post(
+            "/foco/estado",
+            json={"action": "start", "mode": "focus", "remaining": 1500},
+            headers={"X-Requested-With": "fetch", "Accept": "application/json"},
+        )
+        response = client.get("/foco/estado")
+        assert response.status_code == 200
+        state = response.get_json()["state"]
+        assert state["focusCyclesToday"] == 1
+        assert state["focusDate"] == today.isoformat()
+
     def test_stale_timer_state_is_normalized_to_mode_duration(
         self, client, app, make_user
     ):

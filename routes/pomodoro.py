@@ -21,9 +21,21 @@ from services.pomodoro import (
     record_cycle,
     suggested_next_mode,
 )
+from services.timeutils import local_today
 from services.timer_sync import apply_action, get_timer, serialize_timer
 
 pomodoro_bp = Blueprint("pomodoro", __name__)
+
+
+def _timer_payload(timer) -> dict | None:
+    """Estado do timer + contador diário autoritativo do servidor."""
+    state = serialize_timer(timer)
+    if state is None:
+        return None
+    stats = focus_stats(current_user, days=1)
+    state["focusCyclesToday"] = stats["focus_cycles_today"]
+    state["focusDate"] = local_today().isoformat()
+    return state
 
 
 @pomodoro_bp.get("/foco")
@@ -97,7 +109,7 @@ def focus():
 @login_required
 def timer_state():
     timer = get_timer(current_user)
-    return jsonify(ok=True, state=serialize_timer(timer))
+    return jsonify(ok=True, state=_timer_payload(timer))
 
 
 @pomodoro_bp.post("/foco/estado")
@@ -108,7 +120,7 @@ def update_timer_state():
         timer = apply_action(current_user, payload)
     except ValueError as exc:
         return jsonify(ok=False, error=str(exc)), 400
-    return jsonify(ok=True, state=serialize_timer(timer))
+    return jsonify(ok=True, state=_timer_payload(timer))
 
 
 @pomodoro_bp.post("/foco/ciclos")

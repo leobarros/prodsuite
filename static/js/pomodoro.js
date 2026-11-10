@@ -166,6 +166,13 @@
       : clamp(Number(remote.remaining) || 0, 0, canonicalDuration);
     state.taskId = remote.taskId ? String(remote.taskId) : null;
     state.runId = remote.runId || null;
+    if (remote.focusCyclesToday !== undefined) {
+      // O servidor é a fonte da verdade para o contador diário. O HTML pode
+      // vir do cache/bfcache e carregar a contagem de ontem.
+      state.focusCyclesToday = Math.max(0, Number(remote.focusCyclesToday) || 0);
+      state.focusDate = remote.focusDate || localDateKey();
+      updateSessionDots();
+    }
     state.serverRevision = revision;
     save();
     render();
@@ -756,8 +763,8 @@
 
   function laterMode(finishedMode) {
     if (finishedMode !== "focus") return "focus";
-    const count = Math.max(1, Number(state.focusCyclesToday) || 1);
-    return count % 4 === 0 ? "long_break" : "short_break";
+    const count = Math.max(0, Number(state.focusCyclesToday) || 0);
+    return count > 0 && count % 4 === 0 ? "long_break" : "short_break";
   }
 
   function advanceAfter(finishedMode, nextMode) {
