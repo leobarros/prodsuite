@@ -59,7 +59,10 @@ e no Docker, incluindo o estado compartilhado do servidor.
 - [ ] O arquivo `static/audio/pomodoro-alert.wav` é o chime original encurtado,
       com menos de 1,5 segundo.
 - [ ] **Testar som** reproduz o chime original, não apenas o sintetizador.
-- [ ] A conclusão reproduz um único chime; não há som duplicado.
+- [ ] A conclusão inicia um alarme repetido a cada 2,5 s; não há sobreposição
+      de áudios.
+- [ ] O alarme só para ao clicar no timer ou no aviso de conclusão.
+- [ ] Clicar fora do timer não silencia o alarme.
 - [ ] Pausar, reiniciar ou trocar de modo não reproduz som.
 - [ ] Escrever em Notas, criar tarefa ou navegar por outra página não reproduz o
       chime de desbloqueio.

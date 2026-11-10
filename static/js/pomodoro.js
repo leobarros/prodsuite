@@ -55,6 +55,9 @@
   let soundUnlocked = false;
   let serverClockOffset = 0;
   let completionAlertVisible = false;
+  let alarmTimer = null;
+  let alarmActive = false;
+  let synthNodes = [];
   let lastRenderedSecond = null;
   let transitioning = false;
   // Evita anunciar um ciclo que só foi percebido depois de uma navegação,
@@ -548,6 +551,40 @@
   // Configura a mistura antes de qualquer AudioContext/áudio do Pomodoro.
   useMixingAudioSession();
 
+  function stopAlarm() {
+    alarmActive = false;
+    if (alarmTimer) {
+      window.clearInterval(alarmTimer);
+      alarmTimer = null;
+    }
+    if (soundEl) {
+      try {
+        soundEl.pause();
+        soundEl.currentTime = 0;
+      } catch (_error) {
+        /* elemento ainda não carregado */
+      }
+    }
+    synthNodes.forEach((node) => {
+      try {
+        node.stop();
+      } catch (_error) {
+        /* já encerrado */
+      }
+    });
+    synthNodes = [];
+  }
+
+  function startAlarm() {
+    stopAlarm();
+    alarmActive = true;
+    playChime();
+    // O som original tem 1,25 s e o padrão se repete a cada 2,5 s.
+    alarmTimer = window.setInterval(() => {
+      if (alarmActive) playChime();
+    }, 2500);
+  }
+
   function playChime() {
     useMixingAudioSession();
     primeAudio();
@@ -602,6 +639,7 @@
   }
 
   function hideCompletionAlert() {
+    stopAlarm();
     if (!completionAlert) return;
     completionAlert.hidden = true;
     completionAlert.classList.remove("is-visible");
@@ -623,9 +661,11 @@
       completionAlertTitle.textContent = isFocus ? "Foco concluído" : "Pausa concluída";
     }
     if (completionAlertMessage) {
-      completionAlertMessage.textContent = isFocus
-        ? `${modeInfo(finishedMode).minutes} min de foco concluídos. Pausa de ${next.minutes} min.`
-        : `Pausa de ${modeInfo(finishedMode).minutes} min concluída. Hora do foco.`;
+      completionAlertMessage.textContent = (
+        isFocus
+          ? `${modeInfo(finishedMode).minutes} min de foco concluídos. Pausa de ${next.minutes} min.`
+          : `Pausa de ${modeInfo(finishedMode).minutes} min concluída. Hora do foco.`
+      ) + " O som continua até você tocar no timer.";
     }
     if (completionAlertAction) {
       completionAlertAction.textContent = isFocus ? "Iniciar pausa" : "Começar foco";
@@ -689,6 +729,7 @@
   }
 
   function reset() {
+    stopAlarm();
     state.running = false;
     state.endsAt = null;
     state.remaining = state.duration;
@@ -821,7 +862,7 @@
       Date.now() - pageInteractiveAt > 1200;
 
     if (shouldAnnounce) {
-      playChime();
+      startAlarm();
       showCompletionAlert(finishedMode, nextMode);
       if (navigator.vibrate && navigator.userActivation?.hasBeenActive) {
         try {
@@ -941,6 +982,21 @@
     setMode(nextMode);
     start();
   });
+
+  document.addEventListener(
+    "pointerdown",
+    (event) => {
+      if (!alarmActive) return;
+      const target = event.target;
+      if (
+        target instanceof Element &&
+        target.closest(".timer-card, #pomodoro-completion-alert")
+      ) {
+        stopAlarm();
+      }
+    },
+    { passive: true }
+  );
 
   document.addEventListener("keydown", (event) => {
     const target = event.target;

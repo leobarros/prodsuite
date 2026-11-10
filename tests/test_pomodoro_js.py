@@ -13,6 +13,9 @@ def test_pomodoro_js_keeps_required_runtime_helpers():
         "function completeCycle(",
         "function playChime(",
         "function useMixingAudioSession(",
+        "function startAlarm(",
+        "function stopAlarm(",
+        "alarmTimer = window.setInterval",
         'session.type = "ambient"',
     ):
         assert symbol in source, f"helper ausente no pomodoro.js: {symbol}"
