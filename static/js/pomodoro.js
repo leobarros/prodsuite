@@ -53,7 +53,6 @@
 
   let audioContext = null;
   let soundUnlocked = false;
-  let scheduledChime = [];
   let keepAliveOscillator = null;
   let serverClockOffset = 0;
   let completionAlertVisible = false;
@@ -174,7 +173,6 @@
       unlockAudio().finally(() => {
         if (isRunning()) {
           startAudioKeepAlive();
-          scheduleChimeAt(state.endsAt);
         }
       });
     }
@@ -493,42 +491,15 @@
    */
   async function unlockAudio() {
     primeAudio();
-    if (soundUnlocked) {
-      if (audioContext?.state === "suspended") {
-        try {
-          await audioContext.resume();
-        } catch (_error) {
-          /* tenta novamente no próximo gesto */
-        }
-      }
-      startAudioKeepAlive();
-      return;
-    }
-    let contextReady = false;
-    if (audioContext?.state === "suspended") {
+    if (!audioContext) return;
+    if (audioContext.state === "suspended") {
       try {
         await audioContext.resume();
-      } catch (_resumeError) {
-        /* o botão Testar som dá uma segunda chance dentro de um gesto */
-      }
-    }
-    contextReady = audioContext?.state === "running";
-    if (soundEl) {
-      try {
-        // Não use apenas muted: alguns navegadores não consideram a
-        // reprodução silenciosa como desbloqueio para o áudio posterior.
-        soundEl.muted = false;
-        soundEl.volume = 0.01;
-        await soundEl.play();
-        soundEl.pause();
-        soundEl.currentTime = 0;
-        soundEl.volume = 0.9;
-        soundUnlocked = true;
       } catch (_error) {
-        /* tenta novamente no próximo gesto */
+        /* o próximo gesto tenta novamente */
       }
     }
-    if (contextReady) {
+    if (audioContext.state === "running") {
       soundUnlocked = true;
       startAudioKeepAlive();
     }
@@ -575,7 +546,7 @@
         } catch (_error) {
           /* Safari antigo sem suporte completo */
         }
-      }, 6500);
+      }, 2200);
     } catch (_error) {
       /* API experimental indisponível */
     }
@@ -605,61 +576,17 @@
     keepAliveOscillator = null;
   }
 
-  function clearScheduledChime() {
-    scheduledChime.forEach((node) => {
-      try {
-        node.stop();
-      } catch (_error) {
-        /* já terminou */
-      }
-      try {
-        node.disconnect();
-      } catch (_error) {
-        /* já desconectado */
-      }
-    });
-    scheduledChime = [];
-  }
-
   function serverNowMs() {
     return Date.now() + serverClockOffset;
-  }
-
-  function scheduleChimeAt(endsAt) {
-    clearScheduledChime();
-    if (
-      !endsAt ||
-      !audioContext ||
-      audioContext.state !== "running" ||
-      endsAt <= serverNowMs()
-    ) {
-      return;
-    }
-    const start = audioContext.currentTime + (endsAt - serverNowMs()) / 1000;
-    [880, 1320].forEach((frequency, index) => {
-      const oscillator = audioContext.createOscillator();
-      const gain = audioContext.createGain();
-      oscillator.type = "sine";
-      oscillator.frequency.value = frequency;
-      gain.gain.setValueAtTime(0.0001, start + index * 0.2);
-      gain.gain.exponentialRampToValueAtTime(
-        0.16,
-        start + index * 0.2 + 0.02
-      );
-      gain.gain.exponentialRampToValueAtTime(
-        0.0001,
-        start + index * 0.2 + 0.35
-      );
-      oscillator.connect(gain).connect(audioContext.destination);
-      oscillator.start(start + index * 0.2);
-      oscillator.stop(start + index * 0.2 + 0.4);
-      scheduledChime.push(oscillator);
-    });
   }
 
   function playChime() {
     useNotificationAudioSession();
     primeAudio();
+    if (audioContext?.state === "running") {
+      playSynthChime();
+      return;
+    }
     if (soundEl) {
       try {
         soundEl.pause();
@@ -672,7 +599,7 @@
         }
         return;
       } catch (_error) {
-        /* tenta o sintetizador abaixo */
+        /* sem contexto: tenta o áudio curto de fallback */
       }
     }
     playSynthChime();
@@ -767,10 +694,7 @@
     save();
     render();
     unlockAudio().finally(() => {
-      if (isRunning()) {
-        startAudioKeepAlive();
-        scheduleChimeAt(state.endsAt);
-      }
+      if (isRunning()) startAudioKeepAlive();
     });
     pushTimerState("start", {
       mode: state.mode,
@@ -782,7 +706,6 @@
 
   function pause() {
     if (!state.running) return;
-    clearScheduledChime();
     stopAudioKeepAlive();
     state.remaining = Math.max(
       0,
@@ -800,7 +723,6 @@
   }
 
   function reset() {
-    clearScheduledChime();
     stopAudioKeepAlive();
     state.running = false;
     state.endsAt = null;
@@ -905,11 +827,7 @@
     }
   }
 
-  async function completeCycle({
-    reload = false,
-    silent = false,
-    allowLateSound = false,
-  } = {}) {
+  async function completeCycle({ reload = false, silent = false } = {}) {
     if (transitioning) return;
     const finishedMode = state.mode;
     const finishedInfo = modeInfo(finishedMode);
@@ -934,9 +852,9 @@
 
     const shouldAnnounce =
       !silent &&
+      !reload &&
       document.visibilityState === "visible" &&
-      (allowLateSound ||
-        (!reload && Date.now() - pageInteractiveAt > 1200));
+      Date.now() - pageInteractiveAt > 1200;
 
     if (shouldAnnounce) {
       playChime();
@@ -1063,9 +981,7 @@
   // Qualquer primeiro gesto também desbloqueia o áudio, inclusive quando o
   // usuário inicia o timer por atalho de teclado.
   const unlockOnFirstGesture = () => {
-    unlockAudio().finally(() => {
-      if (isRunning()) scheduleChimeAt(state.endsAt);
-    });
+    unlockAudio();
     document.removeEventListener("pointerdown", unlockOnFirstGesture);
     document.removeEventListener("keydown", unlockOnFirstGesture);
   };
@@ -1093,12 +1009,11 @@
     pageInteractiveAt = Date.now();
     if (isRunning() && audioContext?.state === "running") {
       startAudioKeepAlive();
-      scheduleChimeAt(state.endsAt);
     }
     // Se o ciclo venceu enquanto o app estava em background, registra o
     // ciclo sem tocar o som atrasado.
     if (state.running && state.endsAt && state.endsAt <= Date.now()) {
-      completeCycle({ reload: true, allowLateSound: true });
+      completeCycle({ reload: true });
     } else {
       tick();
     }
@@ -1110,7 +1025,7 @@
     // iOS/Safari pode restaurar a página do bfcache; não trate o tempo
     // decorrido como uma conclusão "ao vivo".
     if (state.running && state.endsAt && state.endsAt <= Date.now()) {
-      completeCycle({ reload: true, allowLateSound: true });
+      completeCycle({ reload: true });
     } else {
       render();
       tick();
@@ -1125,10 +1040,9 @@
   render();
   if (isRunning() && audioContext?.state === "running") {
     startAudioKeepAlive();
-    scheduleChimeAt(state.endsAt);
   }
   if (state.running && state.endsAt && state.endsAt <= Date.now()) {
-    completeCycle({ reload: true, allowLateSound: true });
+    completeCycle({ reload: true });
   } else if (state.running) {
     tick();
   }

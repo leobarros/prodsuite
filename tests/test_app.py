@@ -18,6 +18,7 @@ import re
 import sqlite3
 import struct
 import time
+import wave
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -3280,7 +3281,10 @@ class TestPWA:
         assert audio.status_code == 200
         assert audio.data[:4] == b"RIFF"
         assert audio.data[8:12] == b"WAVE"
-        assert len(audio.data) > 300_000
+        with wave.open(io.BytesIO(audio.data), "rb") as handle:
+            duration = handle.getnframes() / handle.getframerate()
+        assert duration < 1.5
+        assert len(audio.data) < 200_000
 
     def test_offline_shell_and_icons_exist(self, client):
         response = client.get("/offline")
