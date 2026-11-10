@@ -93,6 +93,14 @@ e no Docker, incluindo o estado compartilhado do servidor.
 - [ ] Atualizar o PWA, fechar e abrir; confirmar que o Service Worker novo assumiu.
 - [ ] Confirmar que o áudio antigo de 5 segundos não está no cache.
 
+## 6.1 HTTPS local
+
+- [ ] Rodar `make run-https` e abrir `https://localhost:5001`.
+- [ ] Confirmar que iniciar, pausar, retomar e reiniciar funcionam também no
+      servidor de desenvolvimento HTTPS, não apenas no Docker.
+- [ ] Abrir o console do navegador e confirmar que não há `ReferenceError` ou
+      erro de síntaxe no `pomodoro.js`.
+
 ## 7. Comandos automatizados mínimos
 
 ```bash

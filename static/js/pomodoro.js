@@ -528,6 +528,10 @@
     }
   }
 
+  function serverNowMs() {
+    return Date.now() + serverClockOffset;
+  }
+
   function useMixingAudioSession() {
     const session = window.navigator?.audioSession;
     if (!session) return;
@@ -573,8 +577,6 @@
     unlockAudio().finally(() => {
       playChime();
       PSuite.toast?.("Som de teste reproduzido.");
-      if (!isRunning()) {
-      }
     });
   }
 
