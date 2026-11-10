@@ -26,7 +26,7 @@
     "Helvetica Neue", Arial, sans-serif;
   --font-mono: "SFMono-Regular", ui-monospace, "JetBrains Mono", Menlo,
     Consolas, monospace;
-  --sidebar-w: 250px;
+  --sidebar-w: clamp(220px, 18vw, 250px);
   --bottom-nav-h: 64px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);

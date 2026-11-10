@@ -110,6 +110,10 @@ e no Docker, incluindo o estado compartilhado do servidor.
 - [ ] O corpo da página não ganha barra de rolagem vertical no desktop.
 - [ ] O histórico lateral usa rolagem própria quando necessário, sem empurrar o
       timer.
+- [ ] A sidebar inteira cabe em 1366×768 e 1280×720, com usuário e ações
+      visíveis e sem barra de rolagem.
+- [ ] O anel e os espaçamentos usam altura relativa (`vh`/`clamp`), não uma
+      altura fixa de 300 px em todas as telas.
 
 ## 7. Comandos automatizados mínimos
 
