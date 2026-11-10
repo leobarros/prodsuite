@@ -101,6 +101,16 @@ e no Docker, incluindo o estado compartilhado do servidor.
 - [ ] Abrir o console do navegador e confirmar que não há `ReferenceError` ou
       erro de síntaxe no `pomodoro.js`.
 
+## 6.2 Layout por viewport
+
+- [ ] Em **1366 × 768**, o card do timer não tem barra de rolagem interna e o
+      seletor de tarefa continua visível.
+- [ ] Em **1280 × 720**, o layout também cabe sem cortar o seletor.
+- [ ] Em **1920 × 1080**, o anel mantém o tamanho máximo e a composição original.
+- [ ] O corpo da página não ganha barra de rolagem vertical no desktop.
+- [ ] O histórico lateral usa rolagem própria quando necessário, sem empurrar o
+      timer.
+
 ## 7. Comandos automatizados mínimos
 
 ```bash
