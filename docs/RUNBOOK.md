@@ -489,7 +489,25 @@ Execute na ordem. É um runbook de aceitação, não uma prova de carga.
 - [ ] Abrir **Pomodoro** e escolher uma tarefa.
 - [ ] Iniciar o cronômetro e navegar para outra página; ele deve continuar.
 - [ ] Tocar em **Testar som** e ouvir o alerta exclusivo do app.
+- [ ] Pausar e retomar; o modo e o tempo restante não podem reiniciar.
 - [ ] Ao final de um ciclo, conferir o som, a faixa de conclusão e o título da aba.
+
+### 8.4.1 Pomodoro no Docker — validado no homelab
+
+Em **2026-11-10**, o Pomodoro foi validado no homelab usando Docker após a
+correção do commit `ef9a21e` (`fix: preserva modo e tempo ao pausar o pomodoro`).
+
+Comportamento confirmado:
+
+- pausar não reinicia o cronômetro;
+- o modo atual é preservado na pausa;
+- o tempo restante não volta para 25, 20 ou 5 minutos;
+- um modo de pausa parado no dia anterior volta para **Foco · 25 min**;
+- a pausa longa usa somente os ciclos de foco do dia atual.
+
+Esse teste vale para a instância Docker do homelab. Se o container for
+recriado, confirme o healthcheck e recarregue o PWA uma vez para atualizar o
+Service Worker.
 
 ### 8.5 Revisão e dados
 
