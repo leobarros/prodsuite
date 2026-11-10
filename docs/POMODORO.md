@@ -63,6 +63,8 @@ e no Docker, incluindo o estado compartilhado do servidor.
 - [ ] Escrever em Notas, criar tarefa ou navegar por outra página não reproduz o
       chime de desbloqueio.
 - [ ] Abrir o app com um podcast/YouTube tocando não pausa o áudio externo.
+- [ ] O som do Pomodoro mistura com podcast/música em vez de pausá-los
+      (`navigator.audioSession.type = "ambient"`).
 - [ ] O carregamento da página não cria AudioContext, não baixa o áudio para
       reprodução e não inicia keepalive.
 - [ ] Voltar de outra tela ou de segundo plano não reproduz um som atrasado.

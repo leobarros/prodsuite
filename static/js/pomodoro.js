@@ -60,7 +60,6 @@
   // Evita anunciar um ciclo que só foi percebido depois de uma navegação,
   // restauração do bfcache ou retorno do background no iOS.
   let pageInteractiveAt = Date.now();
-  let audioSessionRestoreTimer = null;
 
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
@@ -489,6 +488,7 @@
    * Safari iOS e evita que o navegador bloqueie o som no fim dos 25 minutos.
    */
   async function unlockAudio() {
+    useMixingAudioSession();
     primeAudio();
     if (!audioContext) return;
     if (audioContext.state === "suspended") {
@@ -528,30 +528,24 @@
     }
   }
 
-  function useNotificationAudioSession() {
+  function useMixingAudioSession() {
     const session = window.navigator?.audioSession;
     if (!session) return;
     try {
-      if (audioSessionRestoreTimer) {
-        window.clearTimeout(audioSessionRestoreTimer);
-      }
-      // "transient" é o tipo de aviso sonoro: toca por cima do áudio de
-      // outros apps e pode abaixá-lo, mas não encerra podcast/YouTube.
-      session.type = "transient";
-      audioSessionRestoreTimer = window.setTimeout(() => {
-        try {
-          session.type = "auto";
-        } catch (_error) {
-          /* Safari antigo sem suporte completo */
-        }
-      }, 2200);
+      // "ambient" mistura com podcast/música em vez de pausar ou abduzir
+      // a sessão de áudio do dispositivo. É o modo correto para um alerta
+      // curto que deve conviver com o que já está tocando.
+      session.type = "ambient";
     } catch (_error) {
       /* API experimental indisponível */
     }
   }
 
+  // Configura a mistura antes de qualquer AudioContext/áudio do Pomodoro.
+  useMixingAudioSession();
+
   function playChime() {
-    useNotificationAudioSession();
+    useMixingAudioSession();
     primeAudio();
     if (audioContext?.state === "running") {
       playSynthChime();
