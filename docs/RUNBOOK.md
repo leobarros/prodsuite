@@ -492,6 +492,12 @@ Execute na ordem. É um runbook de aceitação, não uma prova de carga.
 - [ ] Pausar e retomar; o modo e o tempo restante não podem reiniciar.
 - [ ] Ao final de um ciclo, conferir o som, a faixa de conclusão e o título da aba.
 
+### 8.4.0 Protocolo completo
+
+Antes de considerar qualquer mudança no Pomodoro concluída, execute o
+[protocolo de regressão do Pomodoro](POMODORO.md). Ele cobre controles, estado
+compartilhado, ciclos, pausa longa, áudio, notificações, Docker e PWA.
+
 ### 8.4.1 Pomodoro no Docker — validado no homelab
 
 Em **2026-11-10**, o Pomodoro foi validado no homelab usando Docker após a

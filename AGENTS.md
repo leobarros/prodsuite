@@ -45,6 +45,16 @@ explicar o bloqueio real.
   Não duplique gráficos na revisão.
 
 
+## Pomodoro: regressão obrigatória
+
+- Qualquer mudança em `pomodoro.js`, `focus.html`, rotas/serviços de timer,
+  ciclos, áudio ou cache do PWA exige o protocolo completo em
+  `docs/POMODORO.md`.
+- Validar sempre start, pause, resume, reset, modos 25/5/20, conclusão,
+  pausa longa diária, áudio, notificações, persistência e o fluxo no Docker.
+- Não considerar a mudança concluída apenas porque o arquivo alterado
+  funciona isoladamente.
+
 ## Compatibilidade de runtime
 
 - Imagens publicadas devem rodar em **x86-64 baseline**. O homelab alvo é um
