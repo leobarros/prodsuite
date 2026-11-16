@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import click
-from flask import Flask, flash, g, jsonify, redirect, request, url_for
+from flask import Flask, flash, g, jsonify, redirect, request, session, url_for
 from flask_login import current_user
 from sqlalchemy import event, inspect, text
 from sqlalchemy.engine import Engine
@@ -26,11 +26,13 @@ from security import (
     init_security_headers,
     init_session_guard,
 )
+from services.archive import archive_elapsed_weeks
 from services.observability import (
     configure_app_logging,
     init_request_logging,
     log_startup,
 )
+from services.planning import week_start_for
 from services.timeutils import app_timezone, format_minutes, local_today, to_local
 
 logger = logging.getLogger(__name__)
@@ -254,6 +256,18 @@ def create_app(config_override: dict | None = None) -> Flask:
     # Registre o request_id antes do CSRF: erros de CSRF também precisam
     # carregar o mesmo identificador no log.
     init_request_logging(app)
+
+    @app.before_request
+    def _archive_elapsed_tasks():
+        """Fecha o ciclo de tarefas concluídas quando a semana vira."""
+        if request.endpoint == "static" or not current_user.is_authenticated:
+            return
+        current_week_start = week_start_for(local_today())
+        marker = f"archive_week:{current_week_start.isoformat()}"
+        if session.get("archive_week_marker") == marker:
+            return
+        archive_elapsed_weeks(current_user, current_week_start)
+        session["archive_week_marker"] = marker
 
     secret_key = str(app.config.get("SECRET_KEY") or "")
     if not app.config.get("TESTING") and (

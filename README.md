@@ -8,7 +8,7 @@ Um app pessoal e auto-hospedado para organizar o que importa sem transformar a v
 ![Python](https://img.shields.io/badge/Python-3.13-7c6aa3)
 ![Flask](https://img.shields.io/badge/Flask-3.0-9e8ab8)
 ![Docker](https://img.shields.io/badge/Docker-ready-8eb7c6)
-![Testes](https://img.shields.io/badge/testes-173%20passando-b98aa4)
+![Testes](https://img.shields.io/badge/testes-174%20passando-b98aa4)
 ![Trivy](https://img.shields.io/badge/Trivy-0%20HIGH%2FCRITICAL-a7d1b0)
 
 ![Meu dia no ProdSuite](docs/images/readme-dashboard.webp)
@@ -154,7 +154,7 @@ Um check-in curto para perceber padrões.
 
 ### Revisão
 
-No fim da semana, o app vira uma conversa curta com você mesmo. A revisão pode ser completada ou ajustada mesmo depois que a semana foi encerrada; o relatório e o arquivamento continuam como registro.
+No fim da semana, o app vira uma conversa curta com você mesmo. A revisão pode ser completada ou ajustada mesmo depois que a semana foi encerrada; o relatório e o arquivamento continuam como registro; tarefas concluídas são arquivadas automaticamente quando a semana vira.
 
 Três perguntas:
 
@@ -329,7 +329,7 @@ Testes:
 
 ```bash
 pytest -q
-# 173 testes
+# 174 testes
 ```
 
 O banco local fica em `instance/prodsuite.db` e não é apagado ao sair da conta.

@@ -2970,6 +2970,54 @@ class TestPlanning:
             assert task.archived_at is None
             assert task.archived_week is None
 
+    def test_completed_tasks_are_archived_when_week_ends(
+        self, client, app, make_user
+    ):
+        from services.planning import week_start_for
+        from services.timeutils import day_start_utc, local_today
+
+        user_id = make_user()
+        login(client)
+        with app.app_context():
+            previous_start = week_start_for(local_today()) - timedelta(days=7)
+            project = Project.query.filter_by(name="Projeto de teste").one()
+            old_task = Task(
+                user_id=user_id,
+                project_id=project.id,
+                title="Concluída na semana passada",
+                status="done",
+                completed_at=day_start_utc(previous_start + timedelta(days=1)),
+                estimate_pomodoros=1,
+            )
+            current_task = Task(
+                user_id=user_id,
+                project_id=project.id,
+                title="Concluída nesta semana",
+                status="done",
+                completed_at=utcnow(),
+                estimate_pomodoros=1,
+            )
+            db.session.add_all([old_task, current_task])
+            db.session.commit()
+            old_id, current_id = old_task.id, current_task.id
+
+        # Simula a primeira visita da nova semana (o login já marcou a atual).
+        with client.session_transaction() as browser_session:
+            browser_session.pop("archive_week_marker", None)
+        client.get("/")
+
+        with app.app_context():
+            old_task = db.session.get(Task, old_id)
+            current_task = db.session.get(Task, current_id)
+            assert old_task.archived_at is not None
+            assert old_task.archived_week == previous_start
+            assert current_task.archived_at is None
+            assert current_task.archived_week is None
+
+        board = client.get("/tarefas").get_data(as_text=True)
+        assert "Concluída na semana passada" not in board
+        assert "Concluída nesta semana" in board
+
     def test_review_lists_ended_weeks(self, client, make_user):
         make_user()
         login(client)

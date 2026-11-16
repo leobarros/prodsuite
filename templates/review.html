@@ -125,7 +125,7 @@
         <h2 class="card-title"><i class="bi bi-check2-circle"></i> O que ficou pronto</h2>
         <span class="card-link">{{ metrics.completed_tasks }}</span>
       </div>
-      <p class="page-sub">Feche o ciclo arquivando as concluídas que ainda estão no quadro. Elas continuam recuperáveis no Arquivo.</p>
+      <p class="page-sub">As concluídas são arquivadas automaticamente quando a semana vira. Você também pode arquivar antes; elas continuam recuperáveis no Arquivo.</p>
       {% if metrics.completed_list %}
       <div class="list-stack">
         {% for task in metrics.completed_list[:7] %}

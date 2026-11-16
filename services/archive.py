@@ -6,7 +6,8 @@ from datetime import timedelta
 
 from extensions import db
 from models import Task, utcnow
-from services.timeutils import day_start_utc
+from services.planning import week_start_for
+from services.timeutils import day_start_utc, to_local
 
 
 def archive_week(user, week_start) -> int:
@@ -44,3 +45,24 @@ def count_unarchived_week(user, week_start) -> int:
             Task.completed_at < day_start_utc(end_day),
         ).count()
     )
+
+
+def archive_elapsed_weeks(user, current_week_start) -> int:
+    """Arquiva concluídas de semanas anteriores na virada da semana."""
+    tasks = (
+        Task.query.filter(
+            Task.user_id == user.id,
+            Task.status == "done",
+            Task.archived_at.is_(None),
+            Task.completed_at < day_start_utc(current_week_start),
+        )
+        .all()
+    )
+    now = utcnow()
+    for task in tasks:
+        local = to_local(task.completed_at)
+        task.archived_at = now
+        task.archived_week = week_start_for(local.date()) if local else current_week_start
+    if tasks:
+        db.session.commit()
+    return len(tasks)
