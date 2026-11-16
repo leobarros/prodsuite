@@ -238,9 +238,6 @@ def new():
     categories = ensure_categories(current_user)
     form = TaskForm()
     _prepare_category_form(form, categories, reset_default=request.method == "GET")
-    if request.method == "GET" and not form.due_date.data:
-        form.due_date.data = local_today()
-
     capture = None
     raw_scratchpad = request.form.get("scratchpad_id") or request.args.get("scratchpad")
     if raw_scratchpad and str(raw_scratchpad).isdigit():
@@ -256,7 +253,6 @@ def new():
         form.title.data = first_line[:160]
         form.description.data = capture.content
         form.estimate_pomodoros.data = 1
-        form.due_date.data = local_today()
 
     if form.validate_on_submit():
         task = create_task_from_form(
@@ -311,8 +307,6 @@ def index():
     _prepare_category_form(
         form, categories, reset_default=request.method == "GET"
     )
-    if request.method == "GET" and not form.due_date.data:
-        form.due_date.data = local_today()
     open_modal = request.args.get("nova") == "1"
 
     if form.validate_on_submit():

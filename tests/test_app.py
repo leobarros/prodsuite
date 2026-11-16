@@ -623,22 +623,20 @@ class TestTasks:
         assert "Reabra a tarefa para voltar a focar nela." in html
         assert "Começar foco nesta tarefa" not in html
 
-    def test_create_task_defaults_deadline_to_creation_date(
-        self, client, app, make_user
-    ):
+    def test_create_task_keeps_deadline_optional(self, client, app, make_user):
         make_user()
         login(client)
         client.post(
             "/tarefas",
             data={
-                "title": "Prazo de criação",
+                "title": "Sem prazo definido",
                 "estimate_pomodoros": "1",
             },
             follow_redirects=True,
         )
         with app.app_context():
-            task = Task.query.filter_by(title="Prazo de criação").one()
-            assert task.due_date == date.today()
+            task = Task.query.filter_by(title="Sem prazo definido").one()
+            assert task.due_date is None
 
     def test_create_task_validation_error_keeps_modal(self, client, app, make_user):
         make_user()
@@ -1582,7 +1580,8 @@ class TestScratchpad:
             assert db.session.get(Scratchpad, item_id) is None
             task = Task.query.one()
             assert task.title == "Ligar para o dentista"
-            assert task.due_date == local_today()
+            assert task.due_date is None
+            assert task.planned_for == local_today()
 
     def test_focus_mode_shows_one_item(self, client, app, make_user):
         make_user()

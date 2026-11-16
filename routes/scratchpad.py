@@ -122,7 +122,6 @@ def _task_form_context(item: Scratchpad, form: TaskForm | None = None) -> dict:
         task_form.title.data = (item.content.split("\n")[0] or "")[:160]
         task_form.description.data = item.content
         task_form.estimate_pomodoros.data = 1
-        task_form.due_date.data = local_today()
     return {
         "task_form": task_form,
         "categories": categories,
@@ -205,7 +204,6 @@ def _create_quick_task(item: Scratchpad) -> Task | None:
         project_id=project.id,
         priority="medium",
         estimate_pomodoros=1,
-        due_date=local_today(),
         planned_for=local_today(),
         category=categories[0].key,
         tags="",

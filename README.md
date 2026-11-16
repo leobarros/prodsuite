@@ -68,7 +68,7 @@ Um quadro com as colunas que fizerem sentido para você.
 - crie quantos projetos quiser;
 - organize tarefas em colunas personalizadas;
 - arraste cartões para mudar o estágio;
-- use prioridade, categoria, prazo, estimativa de foco e etiquetas;
+- defina prazo e estimativa só quando fizer sentido; o prazo pode ficar em branco;
 - anexe arquivos ou cole/arraste um print diretamente na tarefa;
 - marque uma coluna como conclusão para fechar o ciclo.
 

@@ -8,7 +8,6 @@ from sqlalchemy import func
 
 from extensions import db
 from models import Task, normalize_tags, utcnow
-from services.timeutils import local_today
 
 
 def create_task_from_form(
@@ -68,7 +67,7 @@ def create_task_from_form(
         position=max_position + 1,
         project_id=project.id,
         estimate_pomodoros=form.estimate_pomodoros.data or 0,
-        due_date=form.due_date.data or local_today(),
+        due_date=form.due_date.data,
         repeat_daily=bool(form.repeat_daily.data),
         daily_target_pomodoros=max(
             1, min(8, int(form.daily_target_pomodoros.data or 1))
