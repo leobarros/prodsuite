@@ -1,4 +1,18 @@
 # PRD//SUITE — atalhos de desenvolvimento e operação
+define BANNER
+░█████████                             ░██   ░██████              ░██   ░██
+░██     ░██                            ░██  ░██   ░██                   ░██
+░██     ░██ ░██░████  ░███████   ░████████ ░██         ░██    ░██ ░██░████████  ░███████
+░█████████  ░███     ░██    ░██ ░██    ░██  ░████████  ░██    ░██ ░██   ░██    ░██    ░██
+░██         ░██      ░██    ░██ ░██    ░██         ░██ ░██    ░██ ░██   ░██    ░█████████
+░██         ░██      ░██    ░██ ░██   ░███  ░██   ░██  ░██   ░███ ░██   ░██    ░██
+░██         ░██       ░███████   ░█████░██   ░██████    ░█████░██ ░██    ░████  ░███████
+
+
+                                                                                          https://patorjk.com/software/taag/
+# https://patorjk.com/software/taag/#p=display&f=Terrace&t=ProdSuite&x=none&v=4&h=4&w=80&we=false
+endef
+
 SHELL := /bin/bash
 PYTHON ?= python3
 VENV := .venv

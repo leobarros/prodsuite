@@ -12,6 +12,8 @@ from typing import Any
 from flask import Flask, g, has_request_context, request
 from flask_login import current_user
 
+from .branding import ASCII_BANNER
+
 _REQUEST_ID_RE = re.compile(r"^[A-Za-z0-9._-]{8,64}$")
 _SKIP_SUCCESS_ENDPOINTS = {
     "static",
@@ -147,6 +149,7 @@ def init_request_logging(app: Flask) -> None:
 
 def log_startup(app: Flask) -> None:
     """Resumo útil e sem segredos para diagnosticar o boot."""
+    app.logger.info("%s", ASCII_BANNER.rstrip())
     database_uri = str(app.config.get("SQLALCHEMY_DATABASE_URI", ""))
     backend = database_uri.split(":", 1)[0] if ":" in database_uri else database_uri
     app.logger.info(
