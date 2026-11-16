@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
+
 from flask import (
     Blueprint,
     flash,
@@ -19,8 +21,9 @@ from forms import ScratchpadForm, TaskForm
 from models import Note, Scratchpad, Task, utcnow
 from services.boards import ensure_default_project, project_columns
 from services.categories import category_choices, ensure_categories
+from services.planning import week_start_for
 from services.task_creation import create_task_from_form
-from services.timeutils import local_today, to_local
+from services.timeutils import day_start_utc, local_today, to_local
 
 scratchpad_bp = Blueprint("scratchpad", __name__)
 
@@ -62,6 +65,11 @@ def _get_item(item_id: int) -> Scratchpad:
     ).first_or_404()
 
 
+def _current_week_bounds():
+    start = week_start_for(local_today())
+    return day_start_utc(start), day_start_utc(start + timedelta(days=7))
+
+
 def _base_query():
     return Scratchpad.query.filter(
         Scratchpad.user_id == current_user.id,
@@ -78,6 +86,7 @@ def _active_query():
 
 def _counts() -> dict[str, int]:
     base = _base_query()
+    week_start_utc, week_end_utc = _current_week_bounds()
     return {
         "open": base.filter(
             Scratchpad.completed_at.is_(None),
@@ -87,7 +96,11 @@ def _counts() -> dict[str, int]:
             Scratchpad.completed_at.is_(None),
             Scratchpad.someday_at.isnot(None),
         ).count(),
-        "done": base.filter(Scratchpad.completed_at.isnot(None)).count(),
+        "done": base.filter(
+            Scratchpad.completed_at.isnot(None),
+            Scratchpad.completed_at >= week_start_utc,
+            Scratchpad.completed_at < week_end_utc,
+        ).count(),
     }
 
 
@@ -284,8 +297,13 @@ def index():
             .all()
         )
     elif view == "resolvidas":
+        week_start_utc, week_end_utc = _current_week_bounds()
         items = (
-            base.filter(Scratchpad.completed_at.isnot(None))
+            base.filter(
+                Scratchpad.completed_at.isnot(None),
+                Scratchpad.completed_at >= week_start_utc,
+                Scratchpad.completed_at < week_end_utc,
+            )
             .order_by(Scratchpad.completed_at.desc())
             .limit(100)
             .all()

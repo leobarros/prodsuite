@@ -157,6 +157,27 @@
       </div>
     </section>
 
+    {% if metrics.resolved_captures %}
+    <section class="bento-card review-completed review-inbox">
+      <div class="card-head">
+        <h2 class="card-title"><i class="bi bi-inbox"></i> Resolvidas na caixa</h2>
+        <span class="card-link">{{ metrics.resolved_captures }}</span>
+      </div>
+      <p class="page-sub">Capturas que saíram da caixa quando a semana virou.</p>
+      <div class="list-stack">
+        {% for capture in metrics.resolved_capture_list[:7] %}
+        <div class="list-row">
+          <i class="bi bi-check2-circle text-emerald"></i>
+          <span class="list-main">
+            <span class="list-title">{{ capture.preview }}</span>
+            <span class="list-meta">{{ capture.completed_at|localtime('%d/%m %H:%M') }}</span>
+          </span>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
     <section class="bento-card review-purpose">
       <div class="card-head"><h2 class="card-title"><i class="bi bi-compass"></i> O que fica aqui</h2><span class="chip">decisão</span></div>
       <p>O relatório mostra <strong>o que aconteceu</strong>. Esta revisão guarda <strong>o que você decidiu</strong> para a próxima semana.</p>

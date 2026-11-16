@@ -59,8 +59,8 @@
       <span class="card-link">{{ items|length }} {{ 'item' if items|length == 1 else 'itens' }}</span>
     </div>
     <div class="annotation-direction">
-      <span>{{ 'mais recentes primeiro' if view in ('resolvidas', 'talvez') else 'mais antigos primeiro' }}</span>
-      <span>{{ '' if view == 'resolvidas' else 'mais recentes ↓' }}</span>
+      <span>{{ 'resolvidas nesta semana · mais recentes primeiro' if view == 'resolvidas' else ('mais recentes primeiro' if view == 'talvez' else 'mais antigos primeiro') }}</span>
+      <span>{{ '' if view in ('resolvidas', 'talvez') else 'mais recentes ↓' }}</span>
     </div>
 
     {% if items %}
@@ -113,7 +113,7 @@
     <div class="empty-state annotation-empty">
       <i class="bi {{ 'bi-check2-circle' if view == 'resolvidas' else ('bi-cloud' if view == 'talvez' else 'bi-inbox') }}"></i>
       <span>
-        {% if view == 'resolvidas' %}Nada resolvido ainda. Quando algo sair da frente, fica registrado aqui.
+        {% if view == 'resolvidas' %}Nada resolvido nesta semana. Ao virar a semana, as resolvidas saem daqui e ficam na revisão.
         {% elif view == 'talvez' %}Nada guardado em Talvez. O que ainda não pede decisão pode descansar aqui.
         {% else %}Nada na cabeça agora. A próxima ideia pode entrar aqui.{% endif %}
       </span>
@@ -135,7 +135,7 @@
       <div class="divider"></div>
       <div class="small" style="color:var(--text);font-weight:650">Nem tudo precisa virar algo.</div>
       <div class="form-hint" style="line-height:1.55;margin-top:5px">Um item pode ser resolvido, guardado em Talvez, virar tarefa, virar nota ou simplesmente ser solto.</div>
-      {% if counts.done %}<a class="card-link" href="{{ url_for('scratchpad.index', ver='resolvidas') }}">{{ counts.done }} resolvida{{ 's' if counts.done != 1 }} <i class="bi bi-arrow-right"></i></a>{% endif %}
+      {% if counts.done %}<a class="card-link" href="{{ url_for('scratchpad.index', ver='resolvidas') }}">{{ counts.done }} resolvida{{ 's' if counts.done != 1 }} nesta semana <i class="bi bi-arrow-right"></i></a>{% endif %}
     </section>
 
     <section class="bento-card pad annotation-distinction">

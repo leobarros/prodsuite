@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 
-from models import PomodoroCycle, Task
+from models import PomodoroCycle, Scratchpad, Task
 from services.categories import ensure_categories
 from services.timeutils import day_start_utc, local_today
 
@@ -42,6 +42,17 @@ def weekly_metrics(user, day: date | None = None) -> dict:
         .all()
     )
 
+    resolved_captures = (
+        Scratchpad.query.filter(
+            Scratchpad.user_id == user.id,
+            Scratchpad.completed_at >= start_utc,
+            Scratchpad.completed_at < end_utc,
+            Scratchpad.converted_task_id.is_(None),
+        )
+        .order_by(Scratchpad.completed_at.asc())
+        .all()
+    )
+
     categories = ensure_categories(user)
     category_minutes = {category.key: 0 for category in categories}
     category_tasks = {category.key: 0 for category in categories}
@@ -73,6 +84,8 @@ def weekly_metrics(user, day: date | None = None) -> dict:
         "minutes": focus_minutes,
         "completed_tasks": len(completed_tasks),
         "completed_list": completed_tasks,
+        "resolved_captures": len(resolved_captures),
+        "resolved_capture_list": resolved_captures,
         "goal": goal,
         "goal_percent": goal_percent,
         "goal_remaining": max(0, goal - len(cycles)),

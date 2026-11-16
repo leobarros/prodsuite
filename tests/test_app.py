@@ -1481,6 +1481,44 @@ class TestScratchpad:
         with app.app_context():
             assert db.session.get(Scratchpad, item_id).is_completed is False
 
+    def test_resolved_captures_leave_inbox_and_go_to_review(
+        self, client, app, make_user
+    ):
+        from services.planning import week_start_for
+        from services.timeutils import day_start_utc, local_today
+
+        user_id = make_user()
+        login(client)
+        with app.app_context():
+            current_start = week_start_for(local_today())
+            previous_start = current_start - timedelta(days=7)
+            db.session.add_all(
+                [
+                    Scratchpad(
+                        user_id=user_id,
+                        content="Captura resolvida na semana passada",
+                        completed_at=day_start_utc(previous_start + timedelta(days=1)),
+                    ),
+                    Scratchpad(
+                        user_id=user_id,
+                        content="Captura resolvida nesta semana",
+                        completed_at=utcnow(),
+                    ),
+                ]
+            )
+            db.session.commit()
+
+        inbox = client.get("/entrada?ver=resolvidas").get_data(as_text=True)
+        assert "Captura resolvida nesta semana" in inbox
+        assert "Captura resolvida na semana passada" not in inbox
+
+        review = client.get(
+            f"/revisao?semana={previous_start.isoformat()}"
+        ).get_data(as_text=True)
+        assert "Resolvidas na caixa" in review
+        assert "Captura resolvida na semana passada" in review
+        assert "Captura resolvida nesta semana" not in review
+
     def test_someday_moves_item_out_of_decision_queue(self, client, app, make_user):
         make_user()
         login(client)
