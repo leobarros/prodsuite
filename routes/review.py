@@ -44,13 +44,13 @@ def weekly():
         user_id=current_user.id, week_start=week_start
     ).first()
     is_current_week = week_start == current_week_start
-    editing = is_current_week and request.args.get("editar") == "1"
+    # A revisão é um registro de decisão: pode ser completada ou ajustada
+    # depois que a semana operacional foi encerrada. O relatório e o
+    # arquivamento continuam somente para consulta.
+    editing = request.args.get("editar") == "1"
     form = WeeklyReviewForm(obj=review)
 
     if request.method == "POST":
-        if not is_current_week:
-            flash("Semana encerrada é somente para consulta.", "warning")
-            return redirect(url_for("review.weekly", semana=week_start.isoformat()))
         editing = True
 
     if form.validate_on_submit():

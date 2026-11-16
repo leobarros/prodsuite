@@ -2976,29 +2976,46 @@ class TestPlanning:
         ).get_data(as_text=True)
         assert "semana encerrada" in review
         assert "Progresso da semana passada" in review
-        assert "somente para leitura" in review
+        assert "Você ainda pode completar ou ajustar a revisão" in review
         assert "data-review-prompt-url" in dashboard
-        assert "Escrever revisão" not in review
+        assert "Escrever revisão" in review
         assert "Editar" not in review
 
-        client.post(
+        created = client.post(
             f"/revisao?semana={previous_start.isoformat()}",
             data={
-                "wins": "Tentativa indevida",
+                "wins": "Revisada depois do fechamento",
                 "challenges": "Foi corrida",
                 "next_steps": "Proteger a manhã",
             },
+            follow_redirects=True,
+        )
+        assert created.status_code == 200
+        assert "Revisada depois do fechamento" in created.get_data(as_text=True)
+        with app.app_context():
+            closed = WeeklyReview.query.filter_by(
+                user_id=user_id, week_start=previous_start
+            ).one()
+            assert closed.wins == "Revisada depois do fechamento"
+
+        edit_page = client.get(
+            f"/revisao?semana={previous_start.isoformat()}&editar=1"
+        ).get_data(as_text=True)
+        assert 'name="wins"' in edit_page
+        assert "Revisada depois do fechamento" in edit_page
+        client.post(
+            f"/revisao?semana={previous_start.isoformat()}&editar=1",
+            data={
+                "wins": "Ajustada depois do fechamento",
+                "challenges": "Foi corrida",
+                "next_steps": "Proteger a manhã",
+            },
+            follow_redirects=True,
         )
         with app.app_context():
-            assert WeeklyReview.query.count() == 0
-            db.session.add(
-                WeeklyReview(
-                    user_id=user_id,
-                    week_start=previous_start,
-                    wins="Revisada no desktop",
-                )
-            )
-            db.session.commit()
+            assert WeeklyReview.query.filter_by(
+                user_id=user_id, week_start=previous_start
+            ).one().wins == "Ajustada depois do fechamento"
 
         dashboard_after = client.get("/").get_data(as_text=True)
         assert "A semana passada terminou" not in dashboard_after

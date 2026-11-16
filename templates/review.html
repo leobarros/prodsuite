@@ -7,7 +7,7 @@
   <div>
     <p class="eyebrow"><i class="bi bi-journal-check"></i> revisão semanal <span class="sep">·</span> {{ metrics.week_start.strftime('%d/%m') }} a {{ metrics.week_end.strftime('%d/%m') }} {% if not is_current_week %}<span class="chip">semana encerrada</span>{% endif %}</p>
     <h1 class="page-title">Fechar a semana</h1>
-    <p class="page-sub">{% if is_current_week %}O relatório mostra o que aconteceu. Aqui você decide o que isso significa e o que leva para a próxima semana.{% else %}Consulta da semana encerrada. As decisões registradas são somente para leitura.{% endif %}</p>
+    <p class="page-sub">{% if is_current_week %}O relatório mostra o que aconteceu. Aqui você decide o que isso significa e o que leva para a próxima semana.{% else %}Consulta da semana encerrada. Você ainda pode completar ou ajustar a revisão quando precisar.{% endif %}</p>
   </div>
   <div class="d-flex flex-wrap gap-2">
     <a class="btn btn-ghost btn-sm" href="{{ url_for('reports.weekly', semana=metrics.week_start.isoformat()) }}"><i class="bi bi-bar-chart-line"></i> Ver relatório completo</a>
@@ -50,8 +50,8 @@
         <p class="page-sub mb-0">Três perguntas para transformar dados em decisão.</p>
       </div>
       <div class="d-flex align-items-center gap-2">
-        {% if review and not editing and is_current_week %}
-        <a class="btn btn-ghost btn-sm" href="{{ url_for('review.weekly', editar=1) }}">
+        {% if review and not editing %}
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('review.weekly', semana=week_start.isoformat(), editar=1) }}">
           <i class="bi bi-pencil-square" aria-hidden="true"></i> Editar
         </a>
         {% endif %}
@@ -59,7 +59,7 @@
       </div>
     </div>
 
-    {% if editing and is_current_week %}
+    {% if editing %}
     <form method="post" action="{{ url_for('review.weekly', editar=1, semana=week_start.isoformat()) }}">
       {{ form.hidden_tag() }}
       <div class="review-question">
@@ -105,18 +105,16 @@
       {% endfor %}
     </div>
     <div class="review-form-foot">
-      <span class="form-hint"><i class="bi bi-check2-circle"></i> Revisão salva. Você pode ajustar enquanto a semana estiver aberta.</span>
+      <span class="form-hint"><i class="bi bi-check2-circle"></i> Revisão salva. Você pode ajustar este registro quando precisar.</span>
       <a class="btn btn-ghost btn-sm" href="{{ url_for('planner.plan') }}">Ir para o planejamento <i class="bi bi-arrow-right"></i></a>
     </div>
     {% else %}
     <div class="empty-state review-empty">
       <i class="bi bi-journal-text"></i>
-      <span>{% if is_current_week %}Você ainda não escreveu a revisão desta semana. Comece pelo relatório, se quiser contexto.{% else %}Esta semana foi encerrada sem revisão registrada.{% endif %}</span>
-      {% if is_current_week %}
-      <a class="btn btn-neon btn-sm" href="{{ url_for('review.weekly', editar=1) }}">
+      <span>{% if is_current_week %}Você ainda não escreveu a revisão desta semana. Comece pelo relatório, se quiser contexto.{% else %}Esta semana foi encerrada sem revisão registrada. Você pode registrá-la agora.{% endif %}</span>
+      <a class="btn btn-neon btn-sm" href="{{ url_for('review.weekly', semana=week_start.isoformat(), editar=1) }}">
         <i class="bi bi-pencil-square" aria-hidden="true"></i> Escrever revisão
       </a>
-      {% endif %}
     </div>
     {% endif %}
   </section>

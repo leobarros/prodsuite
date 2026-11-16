@@ -154,7 +154,7 @@ Um check-in curto para perceber padrões.
 
 ### Revisão
 
-No fim da semana, o app vira uma conversa curta com você mesmo.
+No fim da semana, o app vira uma conversa curta com você mesmo. A revisão pode ser completada ou ajustada mesmo depois que a semana foi encerrada; o relatório e o arquivamento continuam como registro.
 
 Três perguntas:
 
