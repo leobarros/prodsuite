@@ -325,6 +325,14 @@ podman run -d --name prodsuite --init --restart unless-stopped \
 
 Abra **http://127.0.0.1:8090** e crie o primeiro usuário:
 
+> **Chrome da empresa com VPN/proxy:** use `127.0.0.1`, não `localhost`, e
+> inclua `localhost`, `127.0.0.1` e `::1` na lista de exceções do proxy/VPN.
+> Se as requisições para `/sair` ficarem pendentes, elas são o POST de logout,
+> não a troca de menu; confirme com o suporte de TI se o proxy está bloqueando
+> POSTs para o loopback. Extensões corporativas que automatizam formulários
+> também podem gerar esse comportamento.
+
+
 ```bash
 # Docker
 docker exec -it prodsuite flask --app app create-user
