@@ -95,7 +95,6 @@ Foco com começo, pausa e fim.
 - o timer continua enquanto você navega;
 - som e notificação ao terminar;
 - as pausas fazem parte do método;
-- opção de manter a tela ativa enquanto o timer roda.
 
 ![Pomodoro](docs/images/readme-focus.webp)
 
