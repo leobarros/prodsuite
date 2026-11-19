@@ -10,7 +10,7 @@
  *
  * Ao alterar assets, incremente CACHE_VERSION para promover a limpeza.
  */
-const CACHE_VERSION = "v3.11.5";
+const CACHE_VERSION = "v3.11.6";
 const PRECACHE = `prodsuite-precache-${CACHE_VERSION}`;
 const RUNTIME = `prodsuite-runtime-${CACHE_VERSION}`;
 const OFFLINE_URL = "/offline";
@@ -28,6 +28,7 @@ const CORE_ASSETS = [
   "/static/js/app.js",
   "/static/js/pomodoro.js",
   "/static/js/mood-radar.js",
+  "/static/js/note-tools.js",
   "/static/audio/pomodoro-alert.wav",
   "/static/icons/icon.svg",
   "/static/icons/water-notification.png",

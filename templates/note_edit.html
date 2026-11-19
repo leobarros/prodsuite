@@ -2,6 +2,10 @@
 {% from "_macros.html" import csrf, field_errors %}
 {% block title %}{{ 'Editar nota' if note else 'Nova nota' }}{% endblock %}
 
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/note-tools.js') }}" defer></script>
+{% endblock %}
+
 {% block content %}
 <div class="page-head">
   <div>

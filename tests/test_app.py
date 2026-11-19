@@ -2261,6 +2261,26 @@ class TestNotes:
         assert 'target="_blank"' in html
         assert 'rel="noopener noreferrer"' in html
 
+    def test_note_view_exposes_chat_share_and_code_copy(self, client, app, make_user):
+        make_user()
+        login(client)
+        client.post(
+            "/notas/nova",
+            data={
+                "title": "Reunião de quinta",
+                "body": "## Decisões\n\n- **Prazo:** sexta\n\n```bash\nnpm run build\n```",
+                "tags": "trabalho",
+            },
+        )
+        with app.app_context():
+            note_id = Note.query.one().id
+        html = client.get(f"/notas/{note_id}").get_data(as_text=True)
+        assert "data-note-share-open" in html
+        assert "data-note-share-dialog" in html
+        assert "Copiar para chat" in html
+        assert 'data-note-title="Reunião de quinta"' in html
+        assert "note-tools.js" in html
+
     def test_markdown_sanitizes_xss(self, client, app, make_user):
         make_user()
         login(client)

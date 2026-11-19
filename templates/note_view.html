@@ -2,6 +2,10 @@
 {% from "_macros.html" import csrf %}
 {% block title %}{{ note.title }}{% endblock %}
 
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/note-tools.js') }}" defer></script>
+{% endblock %}
+
 {% block content %}
 <div class="page-head">
   <div>
@@ -9,13 +13,16 @@
     <h1 class="page-title">Nota</h1>
     <p class="page-sub">Atualizada em {{ note.updated_at|localtime }}</p>
   </div>
-  <div class="d-flex gap-2">
+  <div class="d-flex flex-wrap gap-2">
+    <button class="btn btn-ghost btn-sm" type="button" data-note-share-open>
+      <i class="bi bi-share" aria-hidden="true"></i> Compartilhar
+    </button>
     <a class="btn btn-ghost btn-sm" href="{{ url_for('notes.index') }}"><i class="bi bi-arrow-left"></i> Notas</a>
     <a class="btn btn-neon btn-sm" href="{{ url_for('notes.edit', note_id=note.id) }}"><i class="bi bi-pencil"></i> Editar</a>
   </div>
 </div>
 
-<article class="bento-card">
+<article class="bento-card" data-note-view data-note-title="{{ note.title }}">
   <header class="note-header">
     <h1>{{ note.title }}</h1>
     <div class="note-meta">
@@ -43,6 +50,30 @@
   </div>
   {% endif %}
 </article>
+
+<div class="note-share-overlay" data-note-share-dialog hidden>
+  <div class="note-share-card" role="dialog" aria-modal="true" aria-labelledby="note-share-title">
+    <div class="note-share-head">
+      <div>
+        <p class="eyebrow">compartilhar</p>
+        <h2 id="note-share-title">Levar esta nota para o chat</h2>
+      </div>
+      <button class="note-share-close" type="button" data-note-share-close aria-label="Fechar compartilhamento">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </div>
+    <p class="note-share-description">Copia títulos, listas, links e blocos de código com a formatação preservada. Links internos do ProdSuite não são enviados.</p>
+    <div class="note-share-actions">
+      <button class="btn btn-neon btn-sm" type="button" data-note-share-copy>
+        <i class="bi bi-clipboard-check" aria-hidden="true"></i> Copiar para chat
+      </button>
+      <button class="btn btn-ghost btn-sm" type="button" data-note-share-native>
+        <i class="bi bi-box-arrow-up" aria-hidden="true"></i> Compartilhar pelo sistema
+      </button>
+    </div>
+    <p class="note-share-status" data-note-share-status role="status" aria-live="polite"></p>
+  </div>
+</div>
 
 <div class="d-flex justify-content-end mt-3">
   <form method="post" action="{{ url_for('notes.delete', note_id=note.id) }}"

@@ -11645,3 +11645,100 @@ button.annotation-action:hover {
 @media (prefers-reduced-motion: reduce) {
   .nav-progress span { animation: none; width: 100%; }
 }
+
+/* Compartilhamento de notas e cópia de blocos de código. */
+.note-share-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2500;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: var(--overlay);
+  backdrop-filter: blur(5px);
+}
+.note-share-overlay[hidden] { display: none; }
+.note-share-card {
+  width: min(520px, 100%);
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  box-shadow: var(--shadow-float);
+}
+.note-share-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.note-share-head h2 {
+  margin: 2px 0 0;
+  color: var(--text);
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+.note-share-close {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+}
+.note-share-close:hover {
+  border-color: var(--line-strong);
+  color: var(--text);
+}
+.note-share-description {
+  margin: 12px 0 16px;
+  color: var(--muted);
+  font-size: .82rem;
+  line-height: 1.55;
+}
+.note-share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.note-share-status {
+  min-height: 1.3em;
+  margin: 12px 0 0;
+  color: var(--emerald);
+  font-size: .76rem;
+  line-height: 1.4;
+}
+.prose pre {
+  position: relative;
+  padding-right: 74px;
+}
+.code-copy-btn {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 26px;
+  padding: 3px 7px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: .66rem;
+  line-height: 1;
+}
+.code-copy-btn:hover,
+.code-copy-btn.is-copied {
+  border-color: var(--emerald);
+  color: var(--emerald);
+}
+@media (max-width: 575.98px) {
+  .note-share-actions .btn { width: 100%; }
+  .prose pre { padding-right: 12px; padding-top: 38px; }
+  .code-copy-btn { left: 7px; right: auto; }
+}
