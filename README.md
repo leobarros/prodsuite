@@ -265,6 +265,103 @@ Para instalar e usar Web Push, o endereço precisa ser **HTTPS**. Veja [docs/HTT
 
 ## Instalação
 
+### Execução local apenas com a imagem (sem baixar o projeto)
+
+> **Ambiente corporativo:** use somente a imagem publicada. Não clone o
+> repositório, não baixe o código-fonte e não execute `docker compose` ou
+> `podman compose` a partir do projeto. O container abaixo é o único modo
+> suportado nesse ambiente.
+
+Pré-requisitos: Docker 24+ **ou** Podman 4+, com pelo menos 512 MB de memória
+disponível para o container. A imagem é `nickolback/prodsuite:latest`.
+
+Crie uma vez o arquivo de segredo local, fora do projeto:
+
+```bash
+mkdir -p "$HOME/.config/prodsuite"
+umask 077
+printf 'SECRET_KEY=%s\nAPP_TIMEZONE=America/Sao_Paulo\n' \
+  "$(openssl rand -hex 32)" > "$HOME/.config/prodsuite/prodsuite.env"
+chmod 600 "$HOME/.config/prodsuite/prodsuite.env"
+```
+
+Se `openssl` não estiver disponível, gere a chave com:
+
+```bash
+python3 -c 'import secrets; print(secrets.token_hex(32))'
+```
+
+e grave o valor em `SECRET_KEY=` no arquivo acima.
+
+#### Docker
+
+```bash
+docker volume create prodsuite_data
+
+docker run -d --name prodsuite --init --restart unless-stopped \
+  --memory=512m --memory-swap=512m \
+  --publish 127.0.0.1:8090:5000 \
+  --env-file "$HOME/.config/prodsuite/prodsuite.env" \
+  --volume prodsuite_data:/data \
+  --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+  --security-opt no-new-privileges --cap-drop ALL \
+  nickolback/prodsuite:latest
+```
+
+#### Podman
+
+```bash
+podman volume create prodsuite_data
+
+podman run -d --name prodsuite --init --restart unless-stopped \
+  --memory=512m --memory-swap=512m \
+  --publish 127.0.0.1:8090:5000 \
+  --env-file "$HOME/.config/prodsuite/prodsuite.env" \
+  --volume prodsuite_data:/data \
+  --read-only --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+  --security-opt no-new-privileges --cap-drop ALL \
+  docker.io/nickolback/prodsuite:latest
+```
+
+Abra **http://127.0.0.1:8090** e crie o primeiro usuário:
+
+```bash
+# Docker
+docker exec -it prodsuite flask --app app create-user
+
+# Podman
+podman exec -it prodsuite flask --app app create-user
+```
+
+O limite de memória pode ser conferido com:
+
+```bash
+# Docker — deve mostrar 536870912 bytes
+docker inspect -f '{{.HostConfig.Memory}}' prodsuite
+
+# Podman — deve mostrar 536870912 bytes
+podman inspect -f '{{.HostConfig.Memory}}' prodsuite
+```
+
+Para atualizar, baixe a nova imagem e recrie somente o container. O volume
+`prodsuite_data` e o arquivo de segredo são preservados:
+
+```bash
+# Docker
+docker pull nickolback/prodsuite:latest
+docker rm -f prodsuite
+# repita o comando docker run acima
+
+# Podman
+podman pull docker.io/nickolback/prodsuite:latest
+podman rm -f prodsuite
+# repita o comando podman run acima
+```
+
+Não é necessário instalar Python, criar ambiente virtual, rodar `pip` ou
+baixar este repositório. A aplicação, o banco SQLite e os uploads ficam no
+volume persistente; a porta 8090 é exposta apenas em `127.0.0.1`.
+
 ### Com Docker
 
 Requisitos: Docker 24+ com Compose v2 e cerca de 512 MB de memória.
