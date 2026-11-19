@@ -325,12 +325,22 @@ podman run -d --name prodsuite --init --restart unless-stopped \
 
 Abra **http://127.0.0.1:8090** e crie o primeiro usuário:
 
-> **Chrome da empresa com VPN/proxy:** use `127.0.0.1`, não `localhost`, e
-> inclua `localhost`, `127.0.0.1` e `::1` na lista de exceções do proxy/VPN.
-> Se as requisições para `/sair` ficarem pendentes, elas são o POST de logout,
-> não a troca de menu; confirme com o suporte de TI se o proxy está bloqueando
-> POSTs para o loopback. Extensões corporativas que automatizam formulários
-> também podem gerar esse comportamento.
+> **Chrome da empresa com VPN/proxy:** no Windows, o ajuste validado foi
+> definir `NO_PROXY` e `no_proxy` no usuário e reiniciar o Chrome/PWA.
+>
+> ```powershell
+> [Environment]::SetEnvironmentVariable(
+>   "NO_PROXY", "localhost,127.0.0.1,::1", "User"
+> )
+> [Environment]::SetEnvironmentVariable(
+>   "no_proxy", "localhost,127.0.0.1,::1", "User"
+> )
+> ```
+>
+> Se a política corporativa ignorar a variável, inclua `localhost`,
+> `127.0.0.1` e `::1` nas exceções do proxy do Windows. Se as requisições para
+> `/sair` ficarem pendentes, elas são o POST de logout, não a troca de menu;
+> confirme com o TI se o proxy bloqueia POSTs para o loopback.
 
 
 ```bash
