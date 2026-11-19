@@ -3658,6 +3658,13 @@ class TestPages:
             for term in forbidden:
                 assert term not in visible, f"{term!r} appears in {path}"
 
+    def test_shell_exposes_navigation_progress(self, client, make_user):
+        make_user()
+        login(client)
+        html = client.get("/").get_data(as_text=True)
+        assert "data-nav-progress" in html
+        assert 'aria-hidden="true"' in html
+
     def test_dashboard_contains_bento_and_weekly_chart(self, client, make_user):
         make_user()
         login(client)

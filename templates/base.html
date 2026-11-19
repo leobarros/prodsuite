@@ -47,6 +47,8 @@
 {% set ep = request.endpoint or '' %}
 <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
 
+<div class="nav-progress" data-nav-progress hidden aria-hidden="true"><span></span></div>
+
 <div class="app-shell{% if not current_user.is_authenticated %} app-shell--auth{% endif %}">
   {% if current_user.is_authenticated %}
   <aside class="sidebar" aria-label="Navegação principal">

@@ -790,6 +790,35 @@
     });
   });
 
+  // --------------------------------------------------- feedback de navegação
+  const navProgress = document.querySelector("[data-nav-progress]");
+  let navProgressTimer = null;
+
+  function hideNavProgress() {
+    if (!navProgress) return;
+    navProgress.hidden = true;
+    document.body.classList.remove("is-navigating");
+    if (navProgressTimer) {
+      window.clearTimeout(navProgressTimer);
+      navProgressTimer = null;
+    }
+  }
+
+  document.addEventListener("click", (event) => {
+    if (!navProgress || event.defaultPrevented || event.button !== 0) return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const link = event.target.closest?.("a[href]");
+    if (!link || link.target || link.hasAttribute("download")) return;
+    const url = new URL(link.href, window.location.href);
+    if (url.origin !== window.location.origin) return;
+    if (url.pathname === window.location.pathname && url.search === window.location.search) return;
+    navProgress.hidden = false;
+    document.body.classList.add("is-navigating");
+    navProgressTimer = window.setTimeout(hideNavProgress, 12000);
+  });
+
+  window.addEventListener("pageshow", hideNavProgress);
+
   // ------------------------------------------------------ service worker
   if ("serviceWorker" in navigator) {
     if (window.isSecureContext) {
