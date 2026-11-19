@@ -11742,3 +11742,17 @@ button.annotation-action:hover {
   .prose pre { padding-right: 12px; padding-top: 38px; }
   .code-copy-btn { left: 7px; right: auto; }
 }
+
+/* Tela ativa durante o Pomodoro. */
+.timer-actions [data-wake-lock] {
+  color: var(--muted);
+}
+.timer-actions [data-wake-lock].is-active {
+  border-color: color-mix(in srgb, var(--emerald) 55%, var(--line));
+  background: var(--emerald-dim);
+  color: var(--emerald);
+}
+.timer-actions [data-wake-lock]:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}

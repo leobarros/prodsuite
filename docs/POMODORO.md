@@ -76,6 +76,15 @@ e no Docker, incluindo o estado compartilhado do servidor.
 - [ ] O som continua funcionando no PWA instalado por HTTPS.
 - [ ] Verificar o comportamento no iPhone/Safari, incluindo ativação por gesto.
 
+## 4.1 Tela ativa
+
+- [ ] Com o timer rodando, a tela permanece ativa quando o navegador permite.
+- [ ] Pausar, reiniciar ou concluir libera a wake lock.
+- [ ] Voltar para a aba reacquire a wake lock se o timer ainda estiver rodando.
+- [ ] O botão de tela ativa reflete o estado e pode ser desligado.
+- [ ] Navegador sem suporte mostra o controle desabilitado, sem erro no console.
+- [ ] Confirmar que a wake lock não impede bloqueio obrigatório por política do Windows.
+
 ## 5. Conclusão e interface
 
 - [ ] A faixa de conclusão aparece ao terminar.

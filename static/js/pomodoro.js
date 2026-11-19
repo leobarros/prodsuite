@@ -19,6 +19,7 @@
   const userId = body.dataset.userId || "anon";
   const STORAGE_KEY = `prodsuite.timer.v2.${userId}`;
   const PENDING_KEY = `prodsuite.timer.pending.${userId}`;
+  const WAKE_LOCK_KEY = `prodsuite.timer.wakelock.${userId}`;
   const baseTitle = document.title;
 
   const MODES = {
@@ -50,6 +51,7 @@
   const completionAlertTitle = document.querySelector("[data-pomodoro-alert-title]");
   const completionAlertMessage = document.querySelector("[data-pomodoro-alert-message]");
   const completionAlertAction = document.querySelector("[data-pomodoro-alert-action]");
+  const wakeLockToggle = document.querySelector("[data-wake-lock]");
 
   let audioContext = null;
   let soundUnlocked = false;
@@ -60,11 +62,123 @@
   let synthNodes = [];
   let lastRenderedSecond = null;
   let transitioning = false;
+  let wakeLock = null;
+  let wakeLockWanted = true;
+  let wakeLockFailureNotified = false;
   // Evita anunciar um ciclo que só foi percebido depois de uma navegação,
   // restauração do bfcache ou retorno do background no iOS.
   let pageInteractiveAt = Date.now();
 
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+  function readWakeLockPreference() {
+    try {
+      const raw = window.localStorage.getItem(WAKE_LOCK_KEY);
+      return raw === null ? true : raw === "1";
+    } catch (_error) {
+      return true;
+    }
+  }
+
+  function saveWakeLockPreference() {
+    try {
+      window.localStorage.setItem(WAKE_LOCK_KEY, wakeLockWanted ? "1" : "0");
+    } catch (_error) {
+      /* sem storage: mantém só nesta sessão */
+    }
+  }
+
+  function updateWakeLockControl() {
+    if (!wakeLockToggle) return;
+    const supported = "wakeLock" in navigator;
+    const active = Boolean(wakeLock && !wakeLock.released);
+    wakeLockToggle.disabled = !supported;
+    wakeLockToggle.setAttribute(
+      "aria-pressed",
+      String(supported && wakeLockWanted)
+    );
+    wakeLockToggle.classList.toggle("is-active", active);
+    const icon = wakeLockToggle.querySelector("i");
+    if (icon) icon.className = `bi ${active ? "bi-display-fill" : "bi-display"}`;
+    wakeLockToggle.title = !supported
+      ? "Este navegador não permite manter a tela ativa"
+      : active
+        ? "Tela ativa durante o Pomodoro (clique para desativar)"
+        : wakeLockWanted
+          ? "Manter tela ativa durante o Pomodoro (clique para desativar)"
+          : "Manter tela ativa desativado (clique para ativar)";
+  }
+
+  function shouldHoldWakeLock() {
+    return (
+      wakeLockWanted &&
+      (isRunning() || alarmActive) &&
+      document.visibilityState === "visible"
+    );
+  }
+
+  async function acquireWakeLock({ notify = false } = {}) {
+    if (!wakeLockWanted) return;
+    if (!("wakeLock" in navigator)) {
+      updateWakeLockControl();
+      return;
+    }
+    if (!shouldHoldWakeLock()) {
+      releaseWakeLock();
+      return;
+    }
+    if (wakeLock && !wakeLock.released) {
+      updateWakeLockControl();
+      return;
+    }
+    try {
+      wakeLock = await navigator.wakeLock.request("screen");
+      wakeLock.addEventListener("release", () => {
+        wakeLock = null;
+        updateWakeLockControl();
+      });
+      updateWakeLockControl();
+    } catch (_error) {
+      wakeLock = null;
+      updateWakeLockControl();
+      if (notify && !wakeLockFailureNotified) {
+        wakeLockFailureNotified = true;
+        PSuite.toast?.(
+          "O navegador ou a política do dispositivo não permitiu manter a tela ativa.",
+          "error"
+        );
+      }
+    }
+  }
+
+  function releaseWakeLock() {
+    if (!wakeLock) {
+      updateWakeLockControl();
+      return;
+    }
+    const lock = wakeLock;
+    wakeLock = null;
+    lock.release?.().catch(() => {});
+    updateWakeLockControl();
+  }
+
+  wakeLockWanted = readWakeLockPreference();
+  updateWakeLockControl();
+
+  wakeLockToggle?.addEventListener("click", () => {
+    if (!("wakeLock" in navigator)) {
+      PSuite.toast?.("Este navegador não permite manter a tela ativa.", "error");
+      return;
+    }
+    wakeLockWanted = !wakeLockWanted;
+    saveWakeLockPreference();
+    updateWakeLockControl();
+    if (wakeLockWanted) {
+      acquireWakeLock({ notify: true });
+    } else {
+      releaseWakeLock();
+    }
+  });
 
   function localDateKey() {
     const now = new Date();
@@ -177,6 +291,8 @@
     state.serverRevision = revision;
     save();
     render();
+    if (isRunning()) acquireWakeLock();
+    else if (!alarmActive) releaseWakeLock();
     return true;
   }
 
@@ -573,11 +689,13 @@
       }
     });
     synthNodes = [];
+    if (!isRunning()) releaseWakeLock();
   }
 
   function startAlarm() {
     stopAlarm();
     alarmActive = true;
+    acquireWakeLock();
     playChime();
     // O som original tem 1,25 s e o padrão se repete a cada 2,5 s.
     alarmTimer = window.setInterval(() => {
@@ -698,6 +816,7 @@
     render();
     // Só ativa o contexto quando a pessoa inicia o Pomodoro explicitamente.
     unlockAudio();
+    acquireWakeLock({ notify: true });
     pushTimerState("start", {
       mode: state.mode,
       duration: state.duration,
@@ -717,6 +836,7 @@
     state.running = false;
     state.endsAt = null;
     save();
+    releaseWakeLock();
     pushTimerState("pause", {
       remaining: state.remaining,
       mode: state.mode,
@@ -730,6 +850,7 @@
 
   function reset() {
     stopAlarm();
+    releaseWakeLock();
     state.running = false;
     state.endsAt = null;
     state.remaining = state.duration;
@@ -748,6 +869,7 @@
     state.running = false;
     state.endsAt = null;
     save();
+    if (!alarmActive) releaseWakeLock();
     if (!silent) primeAudio();
     render();
     pushTimerState("mode", { mode: state.mode });
@@ -1015,8 +1137,12 @@
   });
 
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState !== "visible") return;
+    if (document.visibilityState !== "visible") {
+      releaseWakeLock();
+      return;
+    }
     pageInteractiveAt = Date.now();
+    acquireWakeLock();
     // Se o ciclo venceu enquanto o app estava em background, registra o
     // ciclo sem tocar o som atrasado.
     if (state.running && state.endsAt && state.endsAt <= Date.now()) {
@@ -1028,6 +1154,7 @@
 
   window.addEventListener("pageshow", (event) => {
     pageInteractiveAt = Date.now();
+    acquireWakeLock();
     if (!event.persisted) return;
     // iOS/Safari pode restaurar a página do bfcache; não trate o tempo
     // decorrido como uma conclusão "ao vivo".
@@ -1048,6 +1175,7 @@
   if (state.running && state.endsAt && state.endsAt <= Date.now()) {
     completeCycle({ reload: true });
   } else if (state.running) {
+    acquireWakeLock();
     tick();
   }
 

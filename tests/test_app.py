@@ -2598,6 +2598,13 @@ class TestPlanning:
         board = client.get("/tarefas").get_data(as_text=True)
         assert board.index("Segundo card") < board.index("Primeiro card")
 
+    def test_focus_page_exposes_screen_wake_lock_toggle(self, client, make_user):
+        make_user()
+        login(client)
+        html = client.get("/foco").get_data(as_text=True)
+        assert "data-wake-lock" in html
+        assert "Manter tela ativa durante o Pomodoro" in html
+
     def test_shared_pomodoro_state_and_idempotent_cycle(
         self, client, app, make_user
     ):
