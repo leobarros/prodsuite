@@ -37,6 +37,14 @@ explicar o bloqueio real.
 
 ## Produto
 
+- O ProdSuite é pessoal, não corporativo. Não crie quadros compartilhados,
+  colaboração em tempo real, convites de equipe, comentários públicos ou links
+  públicos de tarefas/notas.
+- "Multiusuário" significa contas isoladas no mesmo servidor, não um workspace
+  de equipe. Todo dado (board, tarefas, notas, caixa de entrada, revisão,
+  Pomodoro e métricas) é privado do respectivo usuário.
+- Compartilhar uma nota é uma exportação iniciada pelo usuário (clipboard);
+  não criar link público ou acesso compartilhado no app.
 - A interface é em português.
 - Não transporte frases do chat literalmente para a interface. Reescreva em
   microcopy curta, profissional e consistente com o produto; se a informação

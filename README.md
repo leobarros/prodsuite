@@ -474,6 +474,19 @@ O agendador respeita o fuso de cada usuário, o horário silencioso e evita dupl
 
 ---
 
+## Privacidade por padrão
+
+O ProdSuite é um app **pessoal** de desenvolvimento, foco e metas — não uma
+ferramenta corporativa de colaboração. Cada conta tem seu próprio board,
+tarefas, notas, caixa de entrada, revisão, Pomodoro e métricas.
+
+- não há quadro compartilhado, convite de equipe ou comentário público;
+- não há link público de tarefa ou nota;
+- compartilhar uma nota copia o conteúdo para o chat escolhido, sem criar
+  acesso ao app para outras pessoas;
+- multiusuário significa contas isoladas no mesmo servidor, não um workspace
+  compartilhado.
+
 ## Segurança e operação
 
 - Imagem Docker compatível com x86-64 baseline.
