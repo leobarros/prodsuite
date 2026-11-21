@@ -531,6 +531,32 @@ Service Worker.
 
 ---
 
+### 8.7 Limpeza de testes em containers
+
+Testes com Docker/Podman devem usar nomes e volumes temporários e limpar tudo
+ao final, inclusive em falha:
+
+```bash
+TEST_IMAGE="prodsuite:test-$(date +%s)"
+TEST_CONTAINER="prodsuite-test-$(date +%s)"
+TEST_VOLUME="prodsuite-test-data-$(date +%s)"
+cleanup() {
+  docker rm -f "$TEST_CONTAINER" 2>/dev/null || true
+  docker volume rm "$TEST_VOLUME" 2>/dev/null || true
+  docker image rm "$TEST_IMAGE" 2>/dev/null || true
+}
+trap cleanup EXIT
+```
+
+Não remova `prodsuite`, `prodsuite_data`, `nickolback/prodsuite:latest`,
+`instance/` ou `backups/` durante essa limpeza. Confirme depois:
+
+```bash
+docker ps -a
+docker volume ls
+docker images
+```
+
 ## 9. Testes automatizados
 
 ```bash

@@ -9,13 +9,14 @@ Antes de responder ao usuário:
    ```bash
    .venv/bin/python -m pytest -q
    ```
-2. Reconstrua a imagem Docker:
+2. Reconstrua uma imagem de teste com tag temporária e única:
    ```bash
-   docker build -t prodsuite:1.0 .
+   TEST_IMAGE="prodsuite:test-$(date +%s)"
+   docker build -t "$TEST_IMAGE" .
    ```
-3. Valide a aplicação dentro da imagem, não apenas no host. Quando a mudança
+3. Valide a aplicação dentro dessa imagem, não apenas no host. Quando a mudança
    tocar rotas, links, relatório ou PDF, faça um smoke test no container com
-   banco temporário e confirme status HTTP, links e geração de PDF.
+   banco e volume temporários e confirme status HTTP, links e geração de PDF.
 4. Verifique que rotas, menus e links internos continuam válidos.
 5. Atualize a contagem de testes na documentação quando ela mudar.
 6. Incremente `CACHE_VERSION` em `static/sw.js` quando assets estáticos mudarem.
@@ -27,6 +28,21 @@ explicar o bloqueio real.
    localmente e no Docker, crie o commit automaticamente. Use uma mensagem
    objetiva em português. Em seguida, faça push para `origin/main` sem force.
    Não peça permissão adicional para commit ou push.
+
+## Limpeza obrigatória de testes em containers
+
+- Todo teste em Docker/Podman deve usar nomes exclusivos e temporários para
+  container, volume, rede, portas e imagem.
+- Ao terminar — inclusive quando o teste falhar — remova o container, o volume,
+  a rede, a imagem de teste, os diretórios temporários e os logs criados.
+- Prefira `--rm` e `trap` de limpeza. Não deixe containers parados nem imagens
+  órfãs no disco.
+- Nunca remova os recursos de produção: container `prodsuite`, volume
+  `prodsuite_data`, imagem `nickolback/prodsuite:latest`, `instance/` ou
+  `backups/`.
+- Antes de finalizar, confirme com `docker ps -a`, `docker volume ls` e
+  `docker images`; caches de navegador/scan usados só no teste também devem ser
+  removidos.
 
 ## Segurança e dados
 
