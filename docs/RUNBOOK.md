@@ -548,8 +548,10 @@ cleanup() {
 trap cleanup EXIT
 ```
 
-Não remova `prodsuite`, `prodsuite_data`, `nickolback/prodsuite:latest`,
-`instance/` ou `backups/` durante essa limpeza. Confirme depois:
+O container é sempre efêmero. A imagem de produção e uma imagem local
+reutilizável podem permanecer; não acumule várias tags de teste. Não remova
+`prodsuite`, `prodsuite_data`, `nickolback/prodsuite:latest`, `instance/` ou
+`backups/` durante essa limpeza. Confirme depois:
 
 ```bash
 docker ps -a

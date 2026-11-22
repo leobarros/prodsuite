@@ -34,9 +34,12 @@ explicar o bloqueio real.
 - Todo teste em Docker/Podman deve usar nomes exclusivos e temporários para
   container, volume, rede, portas e imagem.
 - Ao terminar — inclusive quando o teste falhar — remova o container, o volume,
-  a rede, a imagem de teste, os diretórios temporários e os logs criados.
-- Prefira `--rm` e `trap` de limpeza. Não deixe containers parados nem imagens
-  órfãs no disco.
+  a rede, os diretórios temporários e os logs criados.
+- Prefira `--rm` e `trap` de limpeza. Não deixe containers parados.
+- Imagens: não acumule tags. É aceitável manter a imagem de produção e, no
+  máximo, uma imagem local reutilizável; remova imagens de teste antigas ou
+  órfãs. Se a validação exigir uma imagem temporária, use uma tag única e
+  remova-a ao final, salvo pedido explícito para mantê-la.
 - Nunca remova os recursos de produção: container `prodsuite`, volume
   `prodsuite_data`, imagem `nickolback/prodsuite:latest`, `instance/` ou
   `backups/`.
