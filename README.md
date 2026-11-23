@@ -3,7 +3,7 @@
 ### Seu dia, mais leve.
 
 **Tarefas, foco, notas e cuidado pessoal em um só lugar.**
-O app pessoal e auto-hospedado para quem quer sair do modo automático e voltar a fazer o que importa.
+O app pessoal e auto-hospedado para quem quer parar de administrar a vida e voltar a vivê-la.
 
 **Menos abas abertas. Menos ruído. Mais intenção.**
 
@@ -11,7 +11,7 @@ O app pessoal e auto-hospedado para quem quer sair do modo automático e voltar 
 
 <p align="center">
   <strong>Comece em poucos minutos. Seus dados ficam com você.</strong><br>
-  <a href="#instalação">Instalar agora</a> · <a href="#conheça-as-funções">Conhecer os recursos</a>
+  <a href="#comece-agora">Instalar agora</a> · <a href="#recursos">Conhecer os recursos</a>
 </p>
 
 ![Python](https://img.shields.io/badge/Python-3.13-7c6aa3)
@@ -29,11 +29,13 @@ O app pessoal e auto-hospedado para quem quer sair do modo automático e voltar 
 ## Índice
 
 - [Por que ProdSuite](#por-que-prodsuite)
-- [Conheça as funções](#conheça-as-funções)
+- [O que muda no seu dia](#o-que-muda-no-seu-dia)
+- [Recursos](#recursos)
+- [Comece agora](#comece-agora)
 - [Primeiros passos](#primeiros-passos)
 - [No celular](#no-celular)
-- [Instalação](#instalação)
-- [Notificações](#notificações)
+- [Lembretes](#lembretes)
+- [Privacidade](#privacidade)
 - [Segurança e operação](#segurança-e-operação)
 - [Desenvolvimento](#desenvolvimento)
 - [Documentação](#documentação)
@@ -58,11 +60,35 @@ Sem feed infinito, sem ranking, sem cobrança e sem transformar sua vida em uma 
 
 Se você tem cinco minutos, use o Pomodoro. Se tem uma ideia, capture. Se tem uma semana, revise. O restante o app guarda para você.
 
-[Quero começar agora](#instalação)
+[Quero começar agora](#comece-agora)
 
 ---
 
-## Conheça as funções
+## O que muda no seu dia
+
+### Menos decisões pequenas
+
+O ProdSuite não pede que você decida tudo de uma vez. Ele separa o que é para agora do que pode esperar.
+
+### Mais foco no que importa
+
+Um Pomodoro, uma tarefa e um próximo passo. O resto fica fora do caminho até ser a hora.
+
+### Uma cabeça mais leve
+
+Capture uma ideia em segundos. Decida depois. Nem tudo precisa virar tarefa agora.
+
+### Uma rotina que cabe na vida real
+
+Trabalho, estudo, descanso, água, humor e revisão no mesmo lugar — sem culpa e sem gamificação vazia.
+
+### Clareza para continuar
+
+No fim da semana, você olha para o que aconteceu e decide o que levar para a próxima. Sem planilha, sem cobrança.
+
+---
+
+## Recursos
 
 ### Meu dia
 
@@ -109,7 +135,7 @@ Foco com começo, pausa e fim.
 - escolha a tarefa antes de começar;
 - o timer continua enquanto você navega;
 - som e notificação ao terminar;
-- as pausas fazem parte do método;
+- as pausas fazem parte do método.
 
 ![Pomodoro](docs/images/readme-focus.webp)
 
@@ -195,7 +221,7 @@ Uma leitura dos seus dados, sem transformar a semana em uma nota.
 
 ### TUI beta
 
-Existe uma versão local em terminal, separada do app web e sem Docker:
+Para quem vive no terminal, existe uma versão local separada do app web:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/leobarros/prodsuite/main/tui/install.py -o /tmp/prodsuite-tui-install.py
@@ -203,94 +229,19 @@ python3 /tmp/prodsuite-tui-install.py
 prodsuite-tui
 ```
 
-O instalador detecta Linux/Debian, macOS e Windows, cria um ambiente isolado e
-usa um banco SQLite local. Veja [tui/README.md](tui/README.md).
-
-## Notificações
-
-Lembretes discretos para a rotina:
-
-- check-in de humor antes do fim do expediente;
-- revisão semanal;
-- prazos de tarefas;
-- horário silencioso configurável;
-- central interna e histórico.
-
-O sino ao lado do perfil mostra as notificações das últimas 2 horas.
-
-![Central de notificações](docs/images/readme-notifications.webp)
-
-### Perfil e preferências
-
-Cada pessoa configura o próprio ritmo:
-
-- fuso horário;
-- semana e horário de trabalho;
-- notificações;
-- tema;
-- segurança da conta;
-- exportação dos próprios dados.
-
-![Perfil](docs/images/readme-profile.webp)
+O instalador detecta Linux/Debian, macOS e Windows, cria um ambiente isolado e usa um banco SQLite local. Veja [tui/README.md](tui/README.md).
 
 ---
 
-## Primeiros passos
+## Comece agora
 
-### 1. Crie sua conta
+### Você só precisa da imagem
 
-Abra o app, informe como quer ser chamado e crie seu acesso. O nome de perfil aparece nas boas-vindas; o usuário de acesso serve para entrar.
+Sem clonar o projeto. Sem instalar Python. Sem montar um ambiente de desenvolvimento.
 
-### 2. Crie um projeto e suas colunas
+Você precisa de **Docker 24+ ou Podman 4+** e pelo menos **512 MB** de memória para o container. A imagem é `nickolback/prodsuite:latest`.
 
-Abra **Tarefas** e crie o primeiro projeto. Depois crie as colunas que representam seu fluxo: ideias, esta semana, em andamento, concluídas — ou qualquer nome que funcione para você.
-
-### 3. Coloque uma tarefa no lugar
-
-Adicione uma tarefa com título claro. Prazo, categoria, prioridade e estimativa são opcionais.
-
-### 4. Escolha o essencial
-
-Abra **Planejar** e marque até três prioridades do dia. O resto pode esperar.
-
-### 5. Faça um bloco de foco
-
-Abra **Pomodoro**, escolha uma tarefa e comece. Quando o ciclo terminar, faça a pausa de verdade.
-
-### 6. Registre o dia
-
-Use **Hidratação** e **Humor** para registrar o que o corpo e a cabeça pedirem. Não precisa preencher tudo.
-
-### 7. Feche a semana
-
-Abra **Revisão**, responda às três perguntas e consulte o **Relatório** para enxergar o que mudou.
-
----
-
-## No celular
-
-O ProdSuite é instalável como PWA:
-
-- abra o endereço HTTPS no navegador do celular;
-- use **Adicionar à Tela de Início**;
-- o app abre sem a barra do navegador;
-- a navegação inferior mantém o essencial por perto.
-
-Para instalar e usar Web Push, o endereço precisa ser **HTTPS**. Veja [docs/HTTPS.md](docs/HTTPS.md).
-
----
-
-## Instalação
-
-### Comece em minutos, só com a imagem
-
-Você não precisa baixar o projeto, instalar Python ou montar um ambiente de
-desenvolvimento. Só precisa de Docker ou Podman e um lugar para chamar de seu.
-
-Pré-requisitos: Docker 24+ **ou** Podman 4+, com pelo menos 512 MB de memória
-disponível para o container. A imagem é `nickolback/prodsuite:latest`.
-
-Crie uma vez o arquivo de segredo local, fora do projeto:
+Crie uma vez o arquivo de segredo local:
 
 ```bash
 mkdir -p "$HOME/.config/prodsuite"
@@ -340,6 +291,24 @@ podman run -d --name prodsuite --init --restart unless-stopped \
 
 Abra **http://127.0.0.1:8090** e crie o primeiro usuário:
 
+```bash
+# Docker
+docker exec -it prodsuite flask --app app create-user
+
+# Podman
+podman exec -it prodsuite flask --app app create-user
+```
+
+Confira o limite de memória:
+
+```bash
+# Docker — deve mostrar 536870912 bytes
+docker inspect -f '{{.HostConfig.Memory}}' prodsuite
+
+# Podman — deve mostrar 536870912 bytes
+podman inspect -f '{{.HostConfig.Memory}}' prodsuite
+```
+
 > **Usa proxy?** Se a sua rede exige proxy, inclua `localhost`, `127.0.0.1` e
 > `::1` nas exceções — ou defina `NO_PROXY`/`no_proxy` no seu usuário:
 >
@@ -354,27 +323,48 @@ Abra **http://127.0.0.1:8090** e crie o primeiro usuário:
 >
 > Reinicie o navegador ou o app depois de alterar a variável.
 
+### Já tem o projeto?
+
+Se preferir usar o Compose:
 
 ```bash
-# Docker
-docker exec -it prodsuite flask --app app create-user
-
-# Podman
-podman exec -it prodsuite flask --app app create-user
+git clone https://github.com/leobarros/prodsuite.git
+cd prodsuite
+cp .env.example .env
+make secret
+docker compose pull
+docker compose up -d --wait
+docker compose ps
 ```
 
-O limite de memória pode ser conferido com:
+Abra `http://localhost:8090` e crie a primeira conta:
 
 ```bash
-# Docker — deve mostrar 536870912 bytes
-docker inspect -f '{{.HostConfig.Memory}}' prodsuite
-
-# Podman — deve mostrar 536870912 bytes
-podman inspect -f '{{.HostConfig.Memory}}' prodsuite
+docker compose exec app flask --app app create-user
 ```
 
-Para atualizar, baixe a nova imagem e recrie somente o container. O volume
-`prodsuite_data` e o arquivo de segredo são preservados:
+Depois de criar sua conta, feche o registro em `.env`:
+
+```env
+ALLOW_REGISTRATION=false
+```
+
+E recrie o container:
+
+```bash
+docker compose up -d --force-recreate
+```
+
+Verificação rápida:
+
+```bash
+curl http://127.0.0.1:8090/healthz
+# {"status":"ok"}
+```
+
+### Atualização
+
+Baixe a nova imagem e recrie o container. O volume `prodsuite_data` e o arquivo de segredo são preservados:
 
 ```bash
 # Docker
@@ -388,88 +378,83 @@ podman rm -f prodsuite
 # repita o comando podman run acima
 ```
 
-Não é necessário instalar Python, criar ambiente virtual, rodar `pip` ou
-baixar este repositório. A aplicação, o banco SQLite e os uploads ficam no
-volume persistente; a porta 8090 é exposta apenas em `127.0.0.1`.
-
-### Com Docker
-
-Requisitos: Docker 24+ com Compose v2 e cerca de 512 MB de memória.
-
-```bash
-git clone https://github.com/leobarros/prodsuite.git
-cd prodsuite
-cp .env.example .env
-make secret
-docker compose pull
-docker compose up -d --wait
-docker compose ps
-```
-
-Abra:
-
-```text
-http://localhost:8090
-```
-
-Para criar a primeira conta pelo terminal:
-
-```bash
-docker compose exec app flask --app app create-user
-```
-
-Depois de criar sua conta, feche o registro:
-
-```env
-ALLOW_REGISTRATION=false
-```
-
-```bash
-docker compose up -d --force-recreate
-```
-
-Verificação rápida:
-
-```bash
-curl http://127.0.0.1:8090/healthz
-# {"status":"ok"}
-```
-
-### Build local
-
-```bash
-docker build -t nickolback/prodsuite:latest .
-docker compose up -d --force-recreate --pull never
-```
-
-### Desenvolvimento
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements-dev.txt
-flask --app app init-db
-flask --app app run --debug
-```
-
-Testes:
-
-```bash
-pytest -q
-# 177 testes
-```
-
-O banco local fica em `instance/prodsuite.db` e não é apagado ao sair da conta.
+O banco SQLite, os uploads e as configurações ficam no volume persistente. A porta 8090 é exposta apenas em `127.0.0.1`.
 
 ---
 
-## Notificações
+## Primeiros passos
 
-As notificações são configuradas em **Perfil → Notificações**.
+### 1. Crie sua conta
 
-O check-in de humor é calculado **30 minutos antes do fim do expediente**. A semana de trabalho é configurável, incluindo sábado e domingo para quem trabalha nesses dias.
+Abra o app, informe como quer ser chamado e crie seu acesso. O nome de perfil aparece nas boas-vindas; o usuário de acesso serve para entrar.
 
-Para Web Push com o app fechado:
+### 2. Crie um projeto e suas colunas
+
+Abra **Tarefas** e crie o primeiro projeto. Depois crie as colunas que representam seu fluxo: ideias, esta semana, em andamento, concluídas — ou qualquer nome que funcione para você.
+
+### 3. Coloque uma tarefa no lugar
+
+Adicione uma tarefa com título claro. Prazo, categoria, prioridade e estimativa são opcionais.
+
+### 4. Escolha o essencial
+
+Abra **Planejar** e marque até três prioridades do dia. O resto pode esperar.
+
+### 5. Faça um bloco de foco
+
+Abra **Pomodoro**, escolha uma tarefa e comece. Quando o ciclo terminar, faça a pausa de verdade.
+
+### 6. Registre o dia
+
+Use **Hidratação** e **Humor** para registrar o que o corpo e a cabeça pedirem. Não precisa preencher tudo.
+
+### 7. Feche a semana
+
+Abra **Revisão**, responda às três perguntas e consulte o **Relatório** para enxergar o que mudou.
+
+---
+
+## No celular
+
+O ProdSuite é instalável como PWA:
+
+- abra o endereço HTTPS no navegador do celular;
+- use **Adicionar à Tela de Início**;
+- o app abre sem a barra do navegador;
+- a navegação inferior mantém o essencial por perto.
+
+Para instalar e usar Web Push, o endereço precisa ser **HTTPS**. Veja [docs/HTTPS.md](docs/HTTPS.md).
+
+---
+
+## Lembretes
+
+Lembretes discretos para a rotina:
+
+- check-in de humor antes do fim do expediente;
+- revisão semanal;
+- prazos de tarefas;
+- horário silencioso configurável;
+- central interna e histórico.
+
+O sino ao lado do perfil mostra as notificações das últimas 2 horas.
+
+![Central de notificações](docs/images/readme-notifications.webp)
+
+### Perfil e preferências
+
+Cada pessoa configura o próprio ritmo:
+
+- fuso horário;
+- semana e horário de trabalho;
+- notificações;
+- tema;
+- segurança da conta;
+- exportação dos próprios dados.
+
+![Perfil](docs/images/readme-profile.webp)
+
+### Web Push com o app fechado
 
 1. configure `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` e `VAPID_SUBJECT`;
 2. acesse por HTTPS;
@@ -484,25 +469,25 @@ O agendador respeita o fuso de cada usuário, o horário silencioso e evita dupl
 
 ---
 
-## Privacidade por padrão
+## Privacidade
 
-O ProdSuite é um app **pessoal** de desenvolvimento, foco e metas — não uma
-ferramenta de colaboração. Cada conta tem seu próprio board, tarefas, notas,
-caixa de entrada, revisão, Pomodoro e métricas.
+O ProdSuite é um app **pessoal** de desenvolvimento, foco e metas — não uma ferramenta de colaboração. Cada conta tem seu próprio board, tarefas, notas, caixa de entrada, revisão, Pomodoro e métricas.
 
 - não há quadro compartilhado, convite de equipe ou comentário público;
 - não há link público de tarefa ou nota;
-- compartilhar uma nota copia o conteúdo para o chat escolhido, sem criar
-  acesso ao app para outras pessoas;
-- multiusuário significa contas isoladas no mesmo servidor, não um workspace
-  compartilhado.
+- compartilhar uma nota copia o conteúdo para o chat escolhido, sem criar acesso ao app para outras pessoas;
+- multiusuário significa contas isoladas no mesmo servidor, não um workspace compartilhado.
+
+**Sem assinatura. Sem feed. Sem ruído. Seus dados ficam com você.**
+
+---
 
 ## Segurança e operação
 
 - Imagem Docker compatível com x86-64 baseline.
 - Runtime sem `pip`, `setuptools` ou `wheel`.
 - WeasyPrint atualizado para geração segura do PDF.
-- Trivy sem achados **HIGH/CRITICAL** na verificação atual:
+- Trivy sem achados **HIGH/CRITICAL** na verificação atual.
 
 ```bash
 make scan
@@ -511,19 +496,20 @@ make scan
 - Dados ficam no volume Docker `prodsuite_data`.
 - O relatório e o PDF são privados.
 - Notas íntimas não entram no relatório.
-- Backup frio:
+
+Backup frio:
 
 ```bash
 make backup
 ```
 
-- Backup do banco local:
+Backup do banco local:
 
 ```bash
 make backup-local
 ```
 
-Mais detalhes:
+Mais detalhes técnicos:
 
 - [Runbook de operação](docs/RUNBOOK.md)
 - [Segurança da imagem](docs/SECURITY.md)
@@ -542,6 +528,34 @@ Mais detalhes:
 
 ---
 
+## Desenvolvimento
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+flask --app app init-db
+flask --app app run --debug
+```
+
+Testes:
+
+```bash
+pytest -q
+# 177 testes
+```
+
+Build local:
+
+```bash
+docker build -t nickolback/prodsuite:latest .
+docker compose up -d --force-recreate --pull never
+```
+
+O banco local fica em `instance/prodsuite.db` e não é apagado ao sair da conta.
+
+---
+
 ## Documentação
 
 | Documento | Conteúdo |
@@ -551,6 +565,8 @@ Mais detalhes:
 | [SECURITY](docs/SECURITY.md) | Imagem, scan Trivy e política de atualização |
 | [CPU_COMPATIBILITY](docs/CPU_COMPATIBILITY.md) | Requisitos para homelabs com CPUs antigas |
 | [DESIGN_SYSTEM](docs/DESIGN_SYSTEM.md) | Tokens, componentes e regras visuais |
+| [POMODORO](docs/POMODORO.md) | Protocolo de regressão do Pomodoro |
+| [TUI](tui/README.md) | Beta local em terminal |
 
 ---
 
@@ -562,7 +578,7 @@ O ProdSuite não tenta preencher cada minuto do dia. Ele deixa espaço para o qu
 
 **Sem assinatura. Sem feed. Sem ruído. Seus dados ficam com você.**
 
-<p align="center"><a href="#instalação"><strong>Instalar o ProdSuite agora</strong></a></p>
+<p align="center"><a href="#comece-agora"><strong>Instalar o ProdSuite agora</strong></a></p>
 
 **ProdSuite v1.0**
 Feito para o seu dia a dia e o seu ritmo.
