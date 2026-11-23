@@ -3,7 +3,16 @@
 ### Seu dia, mais leve.
 
 **Tarefas, foco, notas e cuidado pessoal em um só lugar.**
-Um app pessoal e auto-hospedado para organizar o que importa sem transformar a vida em uma planilha.
+O app pessoal e auto-hospedado para quem quer sair do modo automático e voltar a fazer o que importa.
+
+**Menos abas abertas. Menos ruído. Mais intenção.**
+
+**Sua produtividade não precisa de mais uma assinatura. Precisa de um lugar para começar.**
+
+<p align="center">
+  <strong>Comece em poucos minutos. Seus dados ficam com você.</strong><br>
+  <a href="#instalação">Instalar agora</a> · <a href="#conheça-as-funções">Conhecer os recursos</a>
+</p>
 
 ![Python](https://img.shields.io/badge/Python-3.13-7c6aa3)
 ![Flask](https://img.shields.io/badge/Flask-3.0-9e8ab8)
@@ -33,9 +42,9 @@ Um app pessoal e auto-hospedado para organizar o que importa sem transformar a v
 
 ## Por que ProdSuite
 
-O ProdSuite parte de uma ideia simples: você não precisa de mais uma ferramenta para gerenciar a ferramenta.
+Porque produtividade não deveria significar viver dentro de uma ferramenta.
 
-Ele reúne o essencial em uma rotina curta:
+O ProdSuite reúne o essencial em uma rotina curta e possível:
 
 1. **Escolher** o que importa hoje.
 2. **Focar** em uma coisa por vez.
@@ -43,7 +52,13 @@ Ele reúne o essencial em uma rotina curta:
 4. **Cuidar** do corpo e do humor.
 5. **Revisar** o que funcionou.
 
-Sem feed infinito, sem ranking e sem cobrança. Você pode usar só uma tarefa e o Pomodoro, ou aproveitar o sistema completo.
+Sem feed infinito, sem ranking, sem cobrança e sem transformar sua vida em uma planilha.
+
+**Você não precisa organizar tudo. Só precisa começar pelo próximo passo.**
+
+Se você tem cinco minutos, use o Pomodoro. Se tem uma ideia, capture. Se tem uma semana, revise. O restante o app guarda para você.
+
+[Quero começar agora](#instalação)
 
 ---
 
@@ -267,12 +282,10 @@ Para instalar e usar Web Push, o endereço precisa ser **HTTPS**. Veja [docs/HTT
 
 ## Instalação
 
-### Execução local apenas com a imagem (sem baixar o projeto)
+### Comece em minutos, só com a imagem
 
-> **Ambiente corporativo:** use somente a imagem publicada. Não clone o
-> repositório, não baixe o código-fonte e não execute `docker compose` ou
-> `podman compose` a partir do projeto. O container abaixo é o único modo
-> suportado nesse ambiente.
+Você não precisa baixar o projeto, instalar Python ou montar um ambiente de
+desenvolvimento. Só precisa de Docker ou Podman e um lugar para chamar de seu.
 
 Pré-requisitos: Docker 24+ **ou** Podman 4+, com pelo menos 512 MB de memória
 disponível para o container. A imagem é `nickolback/prodsuite:latest`.
@@ -327,8 +340,8 @@ podman run -d --name prodsuite --init --restart unless-stopped \
 
 Abra **http://127.0.0.1:8090** e crie o primeiro usuário:
 
-> **Chrome da empresa com VPN/proxy:** no Windows, o ajuste validado foi
-> definir `NO_PROXY` e `no_proxy` no usuário e reiniciar o Chrome/PWA.
+> **Usa proxy?** Se a sua rede exige proxy, inclua `localhost`, `127.0.0.1` e
+> `::1` nas exceções — ou defina `NO_PROXY`/`no_proxy` no seu usuário:
 >
 > ```powershell
 > [Environment]::SetEnvironmentVariable(
@@ -339,10 +352,7 @@ Abra **http://127.0.0.1:8090** e crie o primeiro usuário:
 > )
 > ```
 >
-> Se a política corporativa ignorar a variável, inclua `localhost`,
-> `127.0.0.1` e `::1` nas exceções do proxy do Windows. Se as requisições para
-> `/sair` ficarem pendentes, elas são o POST de logout, não a troca de menu;
-> confirme com o TI se o proxy bloqueia POSTs para o loopback.
+> Reinicie o navegador ou o app depois de alterar a variável.
 
 
 ```bash
@@ -477,8 +487,8 @@ O agendador respeita o fuso de cada usuário, o horário silencioso e evita dupl
 ## Privacidade por padrão
 
 O ProdSuite é um app **pessoal** de desenvolvimento, foco e metas — não uma
-ferramenta corporativa de colaboração. Cada conta tem seu próprio board,
-tarefas, notas, caixa de entrada, revisão, Pomodoro e métricas.
+ferramenta de colaboração. Cada conta tem seu próprio board, tarefas, notas,
+caixa de entrada, revisão, Pomodoro e métricas.
 
 - não há quadro compartilhado, convite de equipe ou comentário público;
 - não há link público de tarefa ou nota;
@@ -544,9 +554,15 @@ Mais detalhes:
 
 ---
 
-## Um app para o seu ritmo
+## O próximo passo é seu
 
-O ProdSuite não tenta preencher cada minuto do dia. Ele tenta deixar espaço para o que importa — e para parar quando for hora.
+Você não precisa de uma vida perfeita. Precisa de um lugar para começar, um foco por vez e a liberdade de parar quando for hora.
+
+O ProdSuite não tenta preencher cada minuto do dia. Ele deixa espaço para o que importa.
+
+**Sem assinatura. Sem feed. Sem ruído. Seus dados ficam com você.**
+
+<p align="center"><a href="#instalação"><strong>Instalar o ProdSuite agora</strong></a></p>
 
 **ProdSuite v1.0**
 Feito para o seu dia a dia e o seu ritmo.

@@ -54,6 +54,17 @@ explicar o bloqueio real.
   corpos de requisição em logs/respostas.
 - O relatório e o PDF são privados: não inclua notas íntimas nem diagnósticos.
 
+## Tom da documentação
+
+- O README é a vitrine: tom de apresentação, benefícios, clichês de produto e
+  chamada clara para instalar. Ele deve fazer a pessoa querer experimentar.
+- A documentação técnica (`docs/`, RUNBOOK, POMODORO, HTTPS etc.) é howto:
+  direta, objetiva, com comandos e critérios de validação.
+- Não use o README para detalhes operacionais internos. Leve esses detalhes
+  para `docs/`.
+- Se houver orientação de proxy, fale apenas "se você usa proxy, faça X".
+  Não mencione Chrome corporativo, Cisco, VPN da empresa ou contexto de trabalho.
+
 ## Produto
 
 - O ProdSuite é pessoal, não corporativo. Não crie quadros compartilhados,

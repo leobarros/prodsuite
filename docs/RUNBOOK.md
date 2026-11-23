@@ -305,7 +305,7 @@ sudo tailscale serve reset
 ### 5.5 Verificar o offline
 
 1. Abra o app online e aguarde o service worker instalar.
-2. Ative o modo avião ou desligue a VPN.
+2. Ative o modo avião ou desligue a rede.
 3. Recarregue: deve aparecer a tela **Sem conexão**.
 4. Volte à rede e recarregue.
 
